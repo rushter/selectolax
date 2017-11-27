@@ -5,10 +5,32 @@ from libc.stdlib cimport free
 
 
 class HtmlParser:
-    def __init__(self, html):
+    def __init__(self, html, detect_encoding=True, use_meta_tags=True):
+        """
+
+        Parameters
+        ----------
+        html: str (unicode) or bytes
+        detect_encoding: Bool, default True
+            If `True` and html type is `bytes` then encoding will be detected automatically.
+        use_meta_tags: Bool, default True
+            Whether to use meta tags in encoding detection process.
+        """
         self.html = html
 
     def css(self, selector):
+        """Initialize CSS selector.
+
+        Parameters
+        ----------
+        selector: str
+            CSS selector (e.g. "div > :nth-child(2n+1):not(:has(a))").
+
+        Returns
+        -------
+        selector : `Selector` object
+
+        """
         return Selector(self.html, selector)
 
 
@@ -23,6 +45,14 @@ cdef class Node:
 
     @property
     def attributes(self):
+        """Get all attributes that belong to the current node.
+
+        Returns
+        -------
+        attributes: dictionary of all attributes.
+            Note that the value of empty attributes is None.
+
+        """
         cdef myhtml_tree_attr_t *attr = myhtml_node_attribute_first(self.node)
         attributes = dict()
 
@@ -40,6 +70,13 @@ cdef class Node:
 
     @property
     def text(self):
+        """Returns the text of the node including the text of child nodes.
+
+        Returns
+        -------
+        text : str
+
+        """
         text = None
         cdef const char*c_text
         cdef myhtml_tree_node_t*child = self.node.child
@@ -57,7 +94,13 @@ cdef class Node:
 
     @property
     def tag(self):
-        cdef const char*c_text
+        """Return the name of the current tag (e.g. div, p, img).
+
+        Returns
+        -------
+        text : str
+        """
+        cdef const char *c_text
         c_text = myhtml_tag_name_by_id(self.node.tree, self.node.tag_id, NULL)
         text = None
         if c_text:
@@ -66,6 +109,7 @@ cdef class Node:
 
     @property
     def child(self):
+        """Returns the child of current node."""
         cdef Node node
         if self.node.child:
             node = Node()
@@ -75,6 +119,7 @@ cdef class Node:
 
     @property
     def parent(self):
+        """Returns the parent of current node."""
         cdef Node node
         if self.node.parent:
             node = Node()
@@ -84,6 +129,12 @@ cdef class Node:
 
     @property
     def html(self):
+        """Returns html representation of current node including all its child nodes.
+
+        Returns
+        -------
+        text : str
+        """
         cdef mycore_string_raw_t c_str
         c_str.data = NULL
         c_str.length = 0
@@ -98,6 +149,10 @@ cdef class Node:
         free(c_str.data)
         return None
 
+    def css(self, str selector):
+        return Selector(self.html, selector)
+
+
 cdef class Selector:
     cdef char *c_html
     cdef char *c_selector
@@ -111,14 +166,11 @@ cdef class Selector:
     cdef myhtml_tree_node_t *tree_node
 
     def __cinit__(self, str html, str selector):
-        # self.html
-        # self.selector = selector
 
         html_pybyte = html.encode('UTF-8')
         self.c_html = html_pybyte
         selector_pybyte = selector.encode('UTF-8')
         self.c_selector = selector_pybyte
-        # self._init()
 
         # In order to propagate errors all these methods should return no value
         self._parse_html(self.c_html, len(self.c_html))
@@ -128,9 +180,16 @@ cdef class Selector:
         self.finder = modest_finder_create_simple()
         self.collection = NULL
         self.tree_node = get_html_node(self.html_tree)
+
         modest_finder_by_selectors_list(self.finder, self.tree_node, self.selectors_list, &self.collection)
 
     cpdef find(self):
+        """Find all possible matches.
+        
+        Returns
+        -------
+        result : list of `Node` objects 
+        """
         cdef size_t i
 
         cdef Node node
@@ -168,8 +227,8 @@ cdef class Selector:
             raise RuntimeError("Can't init MyCSS Entry object.")
 
 
-    cdef _parse_html(self,const char* data, size_t data_size):
-        cdef myhtml_t* myhtml = myhtml_create()
+    cdef _parse_html(self,const char *data, size_t data_size):
+        cdef myhtml_t *myhtml = myhtml_create()
         cdef mystatus_t status = myhtml_init(myhtml, MyHTML_OPTIONS_DEFAULT, 1, 0)
 
         if status != 0:
@@ -190,7 +249,7 @@ cdef class Selector:
 
 
     cdef _prepare_selector(self, mycss_entry_t *css_entry,
-                                                   const char* selector, size_t selector_size):
+                                                   const char *selector, size_t selector_size):
         cdef mystatus_t out_status;
         self.selectors_list = mycss_selectors_parse(mycss_entry_selectors(css_entry),
                                                          MyENCODING_UTF_8,

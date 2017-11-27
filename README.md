@@ -66,6 +66,6 @@ modest 2.133077474019956
 
 ### License
 
-* Modest engine — [GNU Lesser General Public License, version 2.1](src/source/modest/LICENSE)
+* Modest engine — [GNU Lesser General Public License, version 2.1](https://github.com/lexborisov/Modest/blob/master/LICENSE)
 * selectolax - [MIT](LICENSE)
 

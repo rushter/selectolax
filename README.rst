@@ -61,14 +61,14 @@ Simple Benchmark
 Links
 -----
 
-*  `API reference <http://selectolax.readthedocs.io/en/latest/parser.html>`_.
-*  `Modest introduction <https://lexborisov.github.io/Modest/`_.
-*  `Modest benchmark <http://lexborisov.github.io/benchmark-html-persers/`_.
+*  `selectolax API reference <http://selectolax.readthedocs.io/en/latest/parser.html>`_
+*  `Modest introduction <https://lexborisov.github.io/Modest/>`_
+*  `Modest benchmark <http://lexborisov.github.io/benchmark-html-persers/>`_
 
 
 License
 -------
 
-* Modest engine — `LGPL2.1 <https://github.com/lexborisov/Modest/blob/master/LICENSE>`_.
-* selectolax - `MIT <https://github.com/rushter/selectolax/blob/master/LICENSE>`_.
+* Modest engine — `LGPL2.1 <https://github.com/lexborisov/Modest/blob/master/LICENSE>`_
+* selectolax - `MIT <https://github.com/rushter/selectolax/blob/master/LICENSE>`_
 

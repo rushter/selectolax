@@ -10,15 +10,6 @@ API
    parser
 
 
-Readme
---------
-
-.. toctree::
-   :maxdepth: 2
-
-   readme
-
-
 Indices and tables
 ==================
 

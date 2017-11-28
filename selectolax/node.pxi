@@ -1,3 +1,4 @@
+from libc.stdlib cimport free
 
 cdef class Node:
     cdef myhtml_tree_node_t *node

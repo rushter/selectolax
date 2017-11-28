@@ -4,7 +4,9 @@ include "selector.pxi"
 include "node.pxi"
 
 cdef class HtmlParser:
-    """HTML Parser class
+    """The HTML parser.
+
+    Use this class to parse raw HTML.
 
     Parameters
     ----------
@@ -33,17 +35,19 @@ cdef class HtmlParser:
         self._parse_html(self.c_html, len(self.c_html))
 
     def css(self, str query):
+        """A CSS selector.
 
-        """Initialize CSS selector.
-    
+        Matches pattern `query` against HTML tree.
+        `CSS selectors reference <https://www.w3schools.com/cssref/css_selectors.asp>`_.
+
         Parameters
         ----------
         query: str
             CSS selector (e.g. "div > :nth-child(2n+1):not(:has(a))").
-    
+
         Returns
         -------
-        selector : `Selector` object
+        selector : list of `Node` objects
     
         """
         cdef myhtml_collection_t *collection

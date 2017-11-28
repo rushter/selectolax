@@ -1,6 +1,7 @@
 from libc.stdlib cimport free
 
 cdef class Node:
+    """A class that represents HTML node (element)."""
     cdef myhtml_tree_node_t *node
     cdef HtmlParser parser
 
@@ -14,11 +15,11 @@ cdef class Node:
     def attributes(self):
         """Get all attributes that belong to the current node.
 
+        Note that the value of empty attributes is None.
+
         Returns
         -------
         attributes: dictionary of all attributes.
-            Note that the value of empty attributes is None.
-
         """
         cdef myhtml_tree_attr_t *attr = myhtml_node_attribute_first(self.node)
         attributes = dict()
@@ -76,7 +77,7 @@ cdef class Node:
 
     @property
     def child(self):
-        """Returns the child of current node."""
+        """Return the child of current node."""
         cdef Node node
         if self.node.child:
             node = Node()
@@ -86,7 +87,7 @@ cdef class Node:
 
     @property
     def parent(self):
-        """Returns the parent of current node."""
+        """Return the parent of current node."""
         cdef Node node
         if self.node.parent:
             node = Node()
@@ -96,7 +97,7 @@ cdef class Node:
 
     @property
     def html(self):
-        """Returns html representation of current node including all its child nodes.
+        """Return html representation of current node including all its child nodes.
 
         Returns
         -------
@@ -118,4 +119,5 @@ cdef class Node:
         return None
 
     def css(self, str selector):
+        """Perform CSS selector against current node and its child nodes."""
         return HtmlParser(self.html).css(selector)

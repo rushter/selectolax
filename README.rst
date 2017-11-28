@@ -15,8 +15,15 @@ A fast HTML5 parser and CSS selectors using `Modest engine <https://github.com/l
 
 Installation
 ------------
+From PyPI using pip:
 
 .. code-block:: bash
+
+        pip install selectolax 
+
+Development version from github:
+
+.. code-block:: bash       
 
         git clone --recursive  https://github.com/rushter/selectolax
         cd selectolax && python setup.py install
@@ -41,7 +48,7 @@ Example
 Simple Benchmark
 ----------------
 
-* Average time of 5 experiments to parse and retrieve urls from 1000 Google SERP pages.
+* Average of 5 experiments to parse and retrieve urls from 1000 Google SERP pages.
 
 +------------+------------+--------------+
 | Package    | Time       | Memory (peak)|

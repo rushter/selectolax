@@ -8,7 +8,7 @@ selectolax
 .. image:: https://img.shields.io/travis/rushter/selectolax.svg
         :target: https://travis-ci.org/rushter/selectolax
 
-A fast HTML5 parser and CSS selectors using [Modest engine](https://github.com/lexborisov/Modest/).
+A fast HTML5 parser and CSS selectors using `Modest engine <https://github.com/lexborisov/Modest/>`_.
 
 * Alpha version.
 
@@ -16,7 +16,8 @@ A fast HTML5 parser and CSS selectors using [Modest engine](https://github.com/l
 Installation
 ------------
 
-.. code:: bash
+.. code-block:: bash
+
         git clone --recursive  https://github.com/rushter/selectolax
         cd selectolax && python setup.py install
 
@@ -25,6 +26,7 @@ Example
 -------
  
 .. code:: python
+
         from selectolax.parser import HtmlParser
 
         html = "<div><p id=p1><p id=p2><p id=p3><a>link</a><p id=p4><p id=p5>text<p id=p6></div>"
@@ -40,6 +42,7 @@ Simple Benchmark
 ----------------
 
 .. code:: python
+
         In [1]: from lxml.cssselect import CSSSelector
            ...: from lxml.html import fromstring
            ...:

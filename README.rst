@@ -41,40 +41,15 @@ Example
 Simple Benchmark
 ----------------
 
-.. code:: python
+* Average time of 5 experiments to parse and retrieve urls from 1000 Google SERP pages.
 
-        In [1]: from lxml.cssselect import CSSSelector
-           ...: from lxml.html import fromstring
-           ...:
-           ...: from selectolax.parser import HtmlParser
-           ...: import timeit
-           ...:
-           ...: html = open('google.html').read()
-           ...: selector = "cite._Rm"
-           ...:
-           ...:
-           ...: def modest_parser(html, selector):
-           ...:     links = [node.text for node in HtmlParser(html).css(selector)]
-           ...:     assert len(links) == 9
-           ...:     return links
-           ...:
-           ...:
-           ...: def lxml_parser(html, selector):
-           ...:     sel = CSSSelector(selector)
-           ...:     h = fromstring(html)
-           ...:
-           ...:     links = [e.text for e in sel(h)]
-           ...:     assert len(links) == 9
-           ...:     return links
-           ...:
-           ...:
-           ...: print('lxml', timeit.timeit('lxml_parser(html, selector)', number=1000, globals=globals()))
-           ...: print('modest', timeit.timeit('modest_parser(html, selector)', number=1000, globals=globals()))
-           ...:
-           ...:
-        lxml 17.79081910100649
-        modest 2.133077474019956
-
++------------+------------+--------------+
+| Package    | Time       | Memory (peak)|
++============+============+==============+
+| selectolax | 2.33 sec.  | 20.3 MB      |
++------------+------------+--------------+
+| lxml       | 19.01 sec. | 18.5 MB      |
++------------+------------+--------------+
 
 License
 -------

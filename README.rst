@@ -2,7 +2,7 @@
 selectolax
 ==========
 
-.. image:: https://img.shields.io/pypi/v/heamy.svg
+.. image:: https://img.shields.io/pypi/v/selectolax.svg
         :target: https://pypi.python.org/pypi/selectolax
 
 .. image:: https://img.shields.io/travis/rushter/selectolax.svg

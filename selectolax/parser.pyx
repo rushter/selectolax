@@ -4,20 +4,20 @@ include "selector.pxi"
 include "node.pxi"
 
 cdef class HtmlParser:
+    """HTML Parser class
 
+    Parameters
+    ----------
+
+    html: str (unicode) or bytes
+    detect_encoding: bool, default True
+        If `True` and html type is `bytes` then encoding will be detected automatically.
+    use_meta_tags: bool, default True
+        Whether to use meta tags in encoding detection process.
+
+    """
     def __cinit__(self, html, detect_encoding=True, use_meta_tags=True):
-        """
 
-        Parameters
-        ----------
-
-        html: str (unicode) or bytes
-        detect_encoding: bool, default True
-            If `True` and html type is `bytes` then encoding will be detected automatically.
-        use_meta_tags: bool, default True
-            Whether to use meta tags in encoding detection process.
-
-        """
 
         if isinstance(html, str):
             html = html.encode('UTF-8')

@@ -1,5 +1,8 @@
 # selectolax
 
+[![Build Status](https://travis-ci.org/rushter/selectolax.svg?branch=master)](https://travis-ci.org/rushter/selectolax)
+[![PyPI](https://img.shields.io/pypi/v/selectolax.svg)](https://pypi.python.org/pypi/selectolax)
+
 A fast HTML5 parser and CSS selectors using [Modest engine](https://github.com/lexborisov/Modest/).
 
 * Alpha version.

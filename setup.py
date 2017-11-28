@@ -4,6 +4,7 @@
 import os
 import platform
 
+import sys
 from Cython.Build import cythonize
 from setuptools import setup, find_packages, Extension
 
@@ -24,10 +25,14 @@ test_requirements = [
     'pytest',
 ]
 
-if platform.system() == 'Windows':
-    myport_platform = 'windows_nt'
+# Setup flags
+myport_platform = 'windows_nt' if platform.system() == 'Windows' else 'posix'
+
+if "--static" in sys.argv:
+    is_static = True
+    sys.argv.remove("--static")
 else:
-    myport_platform = 'posix'
+    is_static = False
 
 
 def find_modest_files(modest_path="modest/source"):
@@ -105,5 +110,5 @@ setup(
     ],
     # test_suite='tests',
     # tests_require=test_requirements,
-    ext_modules=cythonize(([make_extension()])),
+    ext_modules=cythonize(([make_extension(is_static)])),
 )

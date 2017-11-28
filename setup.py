@@ -8,7 +8,7 @@ import sys
 from Cython.Build import cythonize
 from setuptools import setup, find_packages, Extension
 
-with open('README.MD') as readme_file:
+with open('README.md') as readme_file:
     readme = readme_file.read()
 
 requirements = [

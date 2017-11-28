@@ -58,6 +58,14 @@ Simple Benchmark
 | lxml       | 19.01 sec. | 18.5 MB      |
 +------------+------------+--------------+
 
+Links
+-----
+
+*  `API reference <http://selectolax.readthedocs.io/en/latest/parser.html>`_.
+*  `Modest introduction <https://lexborisov.github.io/Modest/`_.
+*  `Modest benchmark <http://lexborisov.github.io/benchmark-html-persers/`_.
+
+
 License
 -------
 

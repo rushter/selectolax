@@ -4,6 +4,16 @@ include LICENSE
 include README.rst
 include selectolax/*
 
+
+exclude selectolax/*.so
+exclude selectolax/*.c
+
+include modest/*
+include modest/include/*
+include modest/source/*
+recursive-include modest/source/ *.h .c
+recursive-include modest/include/ *
+
 recursive-include tests *
 recursive-exclude * __pycache__
 recursive-exclude * *.py[co]

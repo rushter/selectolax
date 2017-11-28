@@ -1,49 +1,16 @@
 
-#todo: split into different extern blocks
-
-cdef extern from "mycss/mycss.h" nogil:
-    ctypedef unsigned int mystatus_t
-
-    ctypedef struct mycss_entry_t
-    ctypedef struct mycss_t
-    ctypedef struct mycss_selectors_t
-
-    ctypedef struct mycss_selectors_entries_list_t
-    ctypedef struct mycss_declaration_entry_t
-
-    ctypedef enum mycss_selectors_flags_t:
-        MyCSS_SELECTORS_FLAGS_UNDEF         = 0x00
-        MyCSS_SELECTORS_FLAGS_SELECTOR_BAD  = 0x01
-
-    ctypedef struct mycss_selectors_list_t:
-        mycss_selectors_entries_list_t* entries_list;
-        size_t entries_list_length;
-
-        mycss_declaration_entry_t* declaration_entry;
-
-        mycss_selectors_flags_t flags;
-
-        mycss_selectors_list_t* parent;
-        mycss_selectors_list_t* next;
-        mycss_selectors_list_t* prev;
-
-    # CSS init routines
-    mycss_t * mycss_create()
-    mystatus_t mycss_init(mycss_t* mycss)
-    mycss_entry_t * mycss_entry_create()
-    mystatus_t mycss_entry_init(mycss_t* mycss, mycss_entry_t* entry)
-
-    mycss_selectors_list_t * mycss_selectors_parse(mycss_selectors_t* selectors, myencoding_t encoding,
-                                                   const char* data, size_t data_size, mystatus_t* out_status)
-    mycss_selectors_t * mycss_entry_selectors(mycss_entry_t* entry)
 
 cdef extern from "myhtml/myhtml.h" nogil:
-
+    ctypedef unsigned int mystatus_t
     ctypedef struct myhtml_t
     ctypedef size_t myhtml_tag_id_t
-    ctypedef struct myhtml_tree_t
-    ctypedef struct mchar_async_t
 
+    ctypedef struct myhtml_tree_t:
+        # not completed struct
+        myhtml_t* myhtml
+        myhtml_tree_node_t*   node_html
+
+    ctypedef struct mchar_async_t
     ctypedef struct mycore_string_t:
         char*  data
         size_t size
@@ -165,6 +132,28 @@ cdef extern from "myhtml/myhtml.h" nogil:
         size_t raw_value_begin
         size_t raw_value_length
 
+
+
+    myhtml_t * myhtml_create()
+    mystatus_t myhtml_init(myhtml_t* myhtml, myhtml_options opt, size_t thread_count, size_t queue_size)
+    myhtml_tree_t * myhtml_tree_create()
+    mystatus_t myhtml_tree_init(myhtml_tree_t* tree, myhtml_t* myhtml)
+    mystatus_t myhtml_parse(myhtml_tree_t* tree, myencoding_t encoding, const char* html, size_t html_size)
+
+    myhtml_tree_attr_t* myhtml_node_attribute_first(myhtml_tree_node_t* node)
+    const char* myhtml_node_text(myhtml_tree_node_t *node, size_t *length)
+    mycore_string_t * myhtml_node_string(myhtml_tree_node_t *node)
+    const char * myhtml_tag_name_by_id(myhtml_tree_t* tree, myhtml_tag_id_t tag_id, size_t *length)
+
+    myhtml_collection_t * myhtml_collection_destroy(myhtml_collection_t *collection)
+    myhtml_tree_t * myhtml_tree_destroy(myhtml_tree_t* tree)
+    myhtml_t* myhtml_destroy(myhtml_t* myhtml)
+
+cdef extern from "myhtml/serialization.h" nogil:
+    mystatus_t myhtml_serialization(myhtml_tree_node_t* scope_node, mycore_string_raw_t* str)
+
+
+cdef extern from "myencoding/encoding.h" nogil:
     ctypedef enum myencoding_t:
         MyENCODING_DEFAULT        = 0x00
         # MyENCODING_AUTO           = 0x01  // future
@@ -210,38 +199,21 @@ cdef extern from "myhtml/myhtml.h" nogil:
         MyENCODING_X_MAC_CYRILLIC = 0x29
         MyENCODING_LAST_ENTRY     = 0x2a
 
-    myhtml_t * myhtml_create()
-    mystatus_t myhtml_init(myhtml_t* myhtml, myhtml_options opt, size_t thread_count, size_t queue_size)
-
-
-    myhtml_tree_t * myhtml_tree_create()
-    mystatus_t myhtml_tree_init(myhtml_tree_t* tree, myhtml_t* myhtml)
-
-    mystatus_t myhtml_parse(myhtml_tree_t* tree, myencoding_t encoding, const char* html, size_t html_size)
-
-
-cdef extern from "helper.h" nogil:
-
-    ctypedef struct modest_finder_t
+    bint myencoding_detect_bom(const char *text, size_t length, myencoding_t *encoding)
+    bint myencoding_detect(const char *text, size_t length, myencoding_t *encoding)
+    myencoding_t myencoding_prescan_stream_to_determine_encoding(const char *data, size_t data_size)
+    const char* myencoding_name_by_id(myencoding_t encoding, size_t *length)
 
 
 
-    modest_finder_t* modest_finder_create_simple()
-    myhtml_tree_node_t* get_html_node(myhtml_tree_t* html_tree)
-    mystatus_t modest_finder_by_selectors_list(modest_finder_t* finder, myhtml_tree_node_t* scope_node,
-                                                mycss_selectors_list_t* selector_list, myhtml_collection_t** collection)
+cdef class HtmlParser:
+    cdef char *c_html
+    cdef myhtml_tree_t *html_tree
+    cdef bint detect_encoding
+    cdef bint use_meta_tags
+    cdef myencoding_t _encoding
 
-
-
-    myhtml_collection_t* myhtml_collection_destroy(myhtml_collection_t* collection)
-    void destroy_selector(modest_finder_t* finder, myhtml_tree_t* html_tree, mycss_entry_t* css_entry,
-                          mycss_selectors_list_t* selectors_list, myhtml_collection_t* collection)
-
-    myhtml_tree_attr_t* myhtml_node_attribute_first(myhtml_tree_node_t* node)
-    const char* myhtml_node_text(myhtml_tree_node_t *node, size_t *length)
-    mycore_string_t * myhtml_node_string(myhtml_tree_node_t *node)
-    const char * myhtml_tag_name_by_id(myhtml_tree_t* tree, myhtml_tag_id_t tag_id, size_t *length)
-    const char* get_tag(myhtml_tree_node_t* node)
-    mystatus_t myhtml_serialization(myhtml_tree_node_t* scope_node, mycore_string_raw_t* str)
-
-
+    # cpdef css(self, str query)
+    cpdef _detect_encoding(self)
+    cdef _parse_html(self, const char *data, size_t data_size)
+    cpdef _get_input_encoding(self)

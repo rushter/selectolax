@@ -6,7 +6,7 @@ selectolax.parser module
 HtmlParser
 ----------
 
-.. autoclass:: HtmlParser
+.. autoclass:: HTMLParser
     :members:
 
 

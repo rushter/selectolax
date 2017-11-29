@@ -32,8 +32,6 @@ Development version from github:
 Examples
 --------
 
- * `Detailed overview <https://github.com/rushter/selectolax/blob/master/examples/walkthrough.ipynb>`_
-
 .. code:: python
 
         from selectolax.parser import HTMLParser
@@ -47,6 +45,8 @@ Examples
             print(node.html)
 
 
+* `Detailed overview <https://github.com/rushter/selectolax/blob/master/examples/walkthrough.ipynb>`_
+ 
 Simple Benchmark
 ----------------
 
@@ -64,6 +64,7 @@ Links
 -----
 
 *  `selectolax API reference <http://selectolax.readthedocs.io/en/latest/parser.html>`_
+*  `Detailed overview <https://github.com/rushter/selectolax/blob/master/examples/walkthrough.ipynb>`_
 *  `Modest introduction <https://lexborisov.github.io/Modest/>`_
 *  `Modest benchmark <http://lexborisov.github.io/benchmark-html-persers/>`_
 

@@ -1,7 +1,7 @@
 from lxml.cssselect import CSSSelector
 from lxml.html import fromstring
 
-from selectolax.parser import HtmlParser
+from selectolax.parser import HTMLParser
 import timeit
 
 html = open('google.html').read()
@@ -9,7 +9,7 @@ selector = "cite._Rm"
 
 
 def modest_parser(html, selector):
-    links = [node.text for node in HtmlParser(html).css(selector).find()]
+    links = [node.text for node in HTMLParser(html).css(selector).find()]
     assert len(links) == 9
     return links
 

@@ -3,7 +3,7 @@
 include "selector.pxi"
 include "node.pxi"
 
-cdef class HtmlParser:
+cdef class HTMLParser:
     """The HTML parser.
 
     Use this class to parse raw HTML.
@@ -11,24 +11,25 @@ cdef class HtmlParser:
     Parameters
     ----------
 
-    html: str (unicode) or bytes
-    detect_encoding: bool, default True
+    html : str (unicode) or bytes
+    detect_encoding : bool, default True
         If `True` and html type is `bytes` then encoding will be detected automatically.
-    use_meta_tags: bool, default True
+    use_meta_tags : bool, default True
         Whether to use meta tags in encoding detection process.
 
     """
-    def __cinit__(self, html, detect_encoding=True, use_meta_tags=True):
+    def __init__(self, html, detect_encoding=True, use_meta_tags=True):
 
-
-        if isinstance(html, str):
-            html = html.encode('UTF-8')
-            self.c_html = html
+        if isinstance(html, (str, unicode)):
+            pybyte_html = html.encode('UTF-8')
+            self.c_html = pybyte_html
             self._encoding = MyENCODING_UTF_8
         elif isinstance(html, bytes):
             self.c_html = <char *> html
             if detect_encoding:
                 self._detect_encoding()
+        else:
+            raise TypeError("Excepted a string, but %s found" % type(html).__name__)
 
         self.detect_encoding = detect_encoding
         self.use_meta_tags = use_meta_tags
@@ -42,7 +43,7 @@ cdef class HtmlParser:
 
         Parameters
         ----------
-        query: str
+        query : str
             CSS selector (e.g. "div > :nth-child(2n+1):not(:has(a))").
 
         Returns
@@ -51,7 +52,7 @@ cdef class HtmlParser:
     
         """
         cdef myhtml_collection_t *collection
-        cdef Selector selector =  Selector(query)
+        cdef Selector selector = Selector(query)
         result = list()
         collection = selector.find(self.html_tree)
 
@@ -63,6 +64,36 @@ cdef class HtmlParser:
         myhtml_collection_destroy(collection)
 
         return result
+
+    def css_first(self, str query, default=None, strict=False):
+        """Same as `css` but returns only first match.
+        
+        Parameters
+        ----------
+        
+        query : str
+        default : bool, default None
+            Default value to return if there is no match.
+        strict: bool, default True
+            Set to True if you want to check if there is strictly only one match in the document.
+            
+
+        Returns
+        -------
+        selector : `Node` object
+        
+        """
+        results = self.css(query)
+        n_results = len(results)
+
+        if n_results > 0:
+
+            if strict and n_results > 1:
+                raise ValueError("Excepted 1 match, but found %s matches" % n_results)
+
+            return results[0]
+
+        return default
 
     cpdef _detect_encoding(self):
         cdef myencoding_t encoding = MyENCODING_DEFAULT;
@@ -102,7 +133,12 @@ cdef class HtmlParser:
             return 'unknown'
 
     def __dealloc__(self):
-        cdef myhtml_t *myhtml = self.html_tree.myhtml
-        myhtml_tree_destroy(self.html_tree)
-        myhtml_destroy(myhtml)
+        cdef myhtml_t *myhtml
 
+        if self.html_tree != NULL:
+            myhtml = self.html_tree.myhtml
+            myhtml_tree_destroy(self.html_tree)
+            myhtml_destroy(myhtml)
+
+    def __repr__(self):
+        return '<HTMLParser chars=%s>' % len(self.c_html)

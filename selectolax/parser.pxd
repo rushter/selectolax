@@ -206,7 +206,7 @@ cdef extern from "myencoding/encoding.h" nogil:
 
 
 
-cdef class HtmlParser:
+cdef class HTMLParser:
     cdef char *c_html
     cdef myhtml_tree_t *html_tree
     cdef bint detect_encoding

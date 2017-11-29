@@ -3,9 +3,9 @@ from libc.stdlib cimport free
 cdef class Node:
     """A class that represents HTML node (element)."""
     cdef myhtml_tree_node_t *node
-    cdef HtmlParser parser
+    cdef HTMLParser parser
 
-    cdef _init(self, myhtml_tree_node_t *node, HtmlParser parser):
+    cdef _init(self, myhtml_tree_node_t *node, HTMLParser parser):
         # custom init, because __cinit__ doesn't accept C types
         self.node = node
         # Keep reference to the selector object, so myhtml structures will not be garbage collected prematurely
@@ -19,7 +19,7 @@ cdef class Node:
 
         Returns
         -------
-        attributes: dictionary of all attributes.
+        attributes : dictionary of all attributes.
         """
         cdef myhtml_tree_attr_t *attr = myhtml_node_attribute_first(self.node)
         attributes = dict()
@@ -96,6 +96,36 @@ cdef class Node:
         return None
 
     @property
+    def next(self):
+        """Return next node."""
+        cdef Node node
+        if self.node.next:
+            node = Node()
+            node._init(self.node.next, self.parser)
+            return node
+        return None
+
+    @property
+    def prev(self):
+        """Return previous node."""
+        cdef Node node
+        if self.node.prev:
+            node = Node()
+            node._init(self.node.prev, self.parser)
+            return node
+        return None
+
+    @property
+    def last_child(self):
+        """Return last child node."""
+        cdef Node node
+        if self.node.last_child:
+            node = Node()
+            node._init(self.node.last_child, self.parser)
+            return node
+        return None
+
+    @property
     def html(self):
         """Return html representation of current node including all its child nodes.
 
@@ -120,4 +150,7 @@ cdef class Node:
 
     def css(self, str selector):
         """Perform CSS selector against current node and its child nodes."""
-        return HtmlParser(self.html).css(selector)
+        return HTMLParser(self.html).css(selector)
+
+    def __repr__(self):
+        return '<Node %s>' % self.tag

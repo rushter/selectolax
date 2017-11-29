@@ -70,7 +70,7 @@ def make_extension(static=False):
                               "-pedantic", "-fPIC",
                               "-DMODEST_BUILD_OS=%s" % platform.system(),
                               "-DMyCORE_OS_%s" % platform.system(),
-                              "-DMODEST_PORT_NAME=posix",
+                              "-DMODEST_PORT_NAME=%s" % myport_platform,
                               "-DMyCORE_BUILD_WITHOUT_THREADS=YES",
                               "-DMyCORE_BUILD_DEBUG=NO",
                               "-O2", "-Wno-unused-variable",

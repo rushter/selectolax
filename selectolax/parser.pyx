@@ -32,7 +32,7 @@ cdef class HTMLParser:
             if detect_encoding:
                 self._detect_encoding()
         else:
-            raise TypeError("Excepted a string, but %s found" % type(html).__name__)
+            raise TypeError("Expected a string, but %s found" % type(html).__name__)
 
 
         self._parse_html(self.c_html, len(self.c_html))
@@ -91,7 +91,7 @@ cdef class HTMLParser:
         if n_results > 0:
 
             if strict and n_results > 1:
-                raise ValueError("Excepted 1 match, but found %s matches" % n_results)
+                raise ValueError("Expected 1 match, but found %s matches" % n_results)
 
             return results[0]
 

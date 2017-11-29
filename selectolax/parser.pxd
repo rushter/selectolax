@@ -216,4 +216,3 @@ cdef class HTMLParser:
     # cpdef css(self, str query)
     cpdef _detect_encoding(self)
     cdef _parse_html(self, const char *data, size_t data_size)
-    cpdef _get_input_encoding(self)

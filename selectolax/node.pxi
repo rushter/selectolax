@@ -152,5 +152,9 @@ cdef class Node:
         """Perform CSS selector against current node and its child nodes."""
         return HTMLParser(self.html).css(selector)
 
+    def css_first(self, str query, default=None, strict=False):
+        """Perform CSS selector against current node and its child nodes."""
+        return HTMLParser(self.html).css_first(query=query, default=None, strict=False)
+
     def __repr__(self):
         return '<Node %s>' % self.tag

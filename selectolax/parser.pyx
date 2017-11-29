@@ -20,6 +20,9 @@ cdef class HTMLParser:
     """
     def __init__(self, html, detect_encoding=True, use_meta_tags=True):
 
+        self.detect_encoding = detect_encoding
+        self.use_meta_tags = use_meta_tags
+
         if isinstance(html, (str, unicode)):
             pybyte_html = html.encode('UTF-8')
             self.c_html = pybyte_html
@@ -31,8 +34,7 @@ cdef class HTMLParser:
         else:
             raise TypeError("Excepted a string, but %s found" % type(html).__name__)
 
-        self.detect_encoding = detect_encoding
-        self.use_meta_tags = use_meta_tags
+
         self._parse_html(self.c_html, len(self.c_html))
 
     def css(self, str query):
@@ -98,11 +100,15 @@ cdef class HTMLParser:
     cpdef _detect_encoding(self):
         cdef myencoding_t encoding = MyENCODING_DEFAULT;
 
-        if not myencoding_detect_bom(self.c_html, len(self.c_html), &encoding):
-            if not myencoding_detect(self.c_html, len(self.c_html), &encoding):
+        if self.use_meta_tags:
+                encoding = myencoding_prescan_stream_to_determine_encoding(self.c_html, len(self.c_html))
+                if encoding != MyENCODING_DEFAULT and encoding != MyENCODING_NOT_DETERMINED:
+                    self._encoding = encoding
+                    return
 
-                if encoding == MyENCODING_DEFAULT and self.use_meta_tags:
-                    encoding = myencoding_prescan_stream_to_determine_encoding(self.c_html, len(self.c_html))
+        if not myencoding_detect_bom(self.c_html, len(self.c_html), &encoding):
+            myencoding_detect(self.c_html, len(self.c_html), &encoding)
+
         self._encoding = encoding
 
     cdef _parse_html(self, const char *data, size_t data_size):
@@ -123,7 +129,8 @@ cdef class HTMLParser:
         if status != 0:
             raise RuntimeError("Can't parse HTML:\n%s" % data)
 
-    cpdef _get_input_encoding(self):
+    @property
+    def input_encoding(self):
         cdef const char* encoding
         encoding = myencoding_name_by_id(self._encoding, NULL)
 

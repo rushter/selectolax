@@ -139,6 +139,30 @@ cdef class HTMLParser:
         else:
             return 'unknown'
 
+    def get_root(self):
+        """Returns root node"""
+        cdef myhtml_tree_node_t* root
+        root = myhtml_tree_get_document(self.html_tree)
+
+        if root != NULL:
+            node = Node()
+            node._init(root, self)
+            return node
+
+        return None
+
+    def get_body(self):
+        """Returns document body."""
+        cdef myhtml_tree_node_t* body
+        body = myhtml_tree_get_node_body(self.html_tree)
+
+        if body != NULL:
+            node = Node()
+            node._init(body, self)
+            return node
+
+        return None
+
     def __dealloc__(self):
         cdef myhtml_t *myhtml
 

@@ -5,34 +5,36 @@ import os
 import platform
 
 import sys
-from Cython.Build import cythonize
 from setuptools import setup, find_packages, Extension
 
 with open('README.rst') as readme_file:
     readme = readme_file.read()
 
-requirements = [
-    'cython',
-
-]
-
-setup_requirements = [
-    'pytest-runner',
-
-]
-
-test_requirements = [
-    'pytest',
-]
-
 # Setup flags
-myport_platform = 'windows_nt' if platform.system() == 'Windows' else 'posix'
+USE_STATIC = False
+USE_CYTHON = False
+PLATFORM = 'windows_nt' if platform.system() == 'Windows' else 'posix'
+
+try:
+    from Cython.Build import cythonize
+    HAVE_CYTHON = True
+except ImportError as err:
+    HAVE_CYTHON = False
 
 if "--static" in sys.argv:
-    is_static = True
+    USE_STATIC = True
     sys.argv.remove("--static")
-else:
-    is_static = False
+
+if "--cython" in sys.argv:
+    if HAVE_CYTHON:
+        USE_CYTHON = True
+    else:
+        raise ImportError("No module named 'Cython'")
+    sys.argv.remove("--cython")
+
+# If there is no pretranspiled source files
+if HAVE_CYTHON and not os.path.exists("selectolax/parser.c"):
+    USE_CYTHON = True
 
 
 def find_modest_files(modest_path="modest/source"):
@@ -44,21 +46,24 @@ def find_modest_files(modest_path="modest/source"):
                     file_path = os.path.join(root, file)
 
                     # Filter platform specific files
-                    if (file_path.find('myport') >= 0) and (not file_path.find(myport_platform) >= 0):
+                    if (file_path.find('myport') >= 0) and (not file_path.find(PLATFORM) >= 0):
                         continue
 
                     c_files.append(file_path)
     return c_files
 
 
-def make_extension(static=False):
-    files_to_compile = ["selectolax/parser.pyx"]
-    if not static:
-        files_to_compile.extend(find_modest_files())
+def make_extensions():
 
-    if static:
+    if USE_CYTHON:
+        files_to_compile = ["selectolax/parser.pyx"]
+    else:
+        files_to_compile = ["selectolax/parser.c"]
+
+    if USE_STATIC:
         extra_objects = ["modest/lib/libmodest_static.a"]
     else:
+        files_to_compile.extend(find_modest_files())
         extra_objects = []
 
     extension = Extension("selectolax.parser",
@@ -70,7 +75,7 @@ def make_extension(static=False):
                               "-pedantic", "-fPIC",
                               "-DMODEST_BUILD_OS=%s" % platform.system(),
                               "-DMyCORE_OS_%s" % platform.system(),
-                              "-DMODEST_PORT_NAME=%s" % myport_platform,
+                              "-DMODEST_PORT_NAME=%s" % PLATFORM,
                               "-DMyCORE_BUILD_WITHOUT_THREADS=YES",
                               "-DMyCORE_BUILD_DEBUG=NO",
                               "-O2", "-Wno-unused-variable",
@@ -78,12 +83,18 @@ def make_extension(static=False):
                               "-std=c99"
                           ]
                           )
-    return extension
+
+    extensions = ([extension, ])
+
+    if USE_CYTHON:
+        extensions = cythonize(extensions)
+
+    return extensions
 
 
 setup(
     name='selectolax',
-    version='0.1.1',
+    version='0.1.2.1',
     description="Fast HTML5 CSS selector.",
     long_description=readme,
     author="Artem Golubin",
@@ -91,7 +102,7 @@ setup(
     url='https://github.com/rushter/selectolax',
     packages=find_packages(include=['selectolax']),
     include_package_data=True,
-    install_requires=requirements,
+    install_requires=[],
     license="MIT license",
     zip_safe=False,
     keywords='selectolax',
@@ -109,6 +120,8 @@ setup(
         'Programming Language :: Python :: 3.5',
     ],
     test_suite='tests',
-    tests_require=test_requirements,
-    ext_modules=cythonize(([make_extension(is_static)])),
+    tests_require=[
+        'pytest',
+    ],
+    ext_modules=make_extensions(),
 )

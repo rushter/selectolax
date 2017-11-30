@@ -22,7 +22,7 @@ install:
   - source activate test-environment
   - pip install pytest
   - pip install -r requirements_dev.txt
-  - python setup.py build_ext --inplace
+  - python setup.py build_ext --inplace --cython
 
 
 script:

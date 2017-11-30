@@ -149,6 +149,10 @@ cdef extern from "myhtml/myhtml.h" nogil:
     myhtml_tree_t * myhtml_tree_destroy(myhtml_tree_t* tree)
     myhtml_t* myhtml_destroy(myhtml_t* myhtml)
 
+    myhtml_tree_node_t* myhtml_tree_get_document(myhtml_tree_t* tree)
+    myhtml_tree_node_t* myhtml_tree_get_node_body(myhtml_tree_t* tree)
+
+
 cdef extern from "myhtml/serialization.h" nogil:
     mystatus_t myhtml_serialization(myhtml_tree_node_t* scope_node, mycore_string_raw_t* str)
 

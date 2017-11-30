@@ -9,4 +9,4 @@ Sphinx==1.4.8
 numpydoc
 pytest==2.9.2
 pytest-runner==2.11.1
-cython
+Cython>=0.25.2

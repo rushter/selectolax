@@ -26,7 +26,9 @@ Development version from github:
 .. code-block:: bash       
 
         git clone --recursive  https://github.com/rushter/selectolax
-        cd selectolax && python setup.py install
+        cd selectolax
+        pip -r requirements_dev.txt
+        python setup.py install
 
 
 Examples

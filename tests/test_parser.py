@@ -1,6 +1,6 @@
 # coding:utf-8
 import pytest
-from selectolax.parser import HTMLParser
+from selectolax.parser import HTMLParser, Node
 
 """
 We'are testing only our own code.
@@ -33,3 +33,11 @@ def test_parser():
 
     with pytest.raises(TypeError):
         HTMLParser("asd").css(123)
+
+
+def test_nodes():
+    html = "<div><p id=p1><p id=p2><p id=p3><a>link</a><p id=p4><p id=p5>text<p id=p6></div>"
+    html = HTMLParser(html)
+
+    assert isinstance(html.get_root(), Node)
+    assert isinstance(html.get_body(), Node)

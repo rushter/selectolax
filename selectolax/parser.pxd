@@ -209,6 +209,60 @@ cdef extern from "myencoding/encoding.h" nogil:
     const char* myencoding_name_by_id(myencoding_t encoding, size_t *length)
 
 
+cdef extern from "mycss/mycss.h" nogil:
+    ctypedef unsigned int mystatus_t
+
+    ctypedef struct mycss_entry_t:
+        # not completed struct
+        mycss_t* mycss
+
+    ctypedef struct mycss_t
+
+    ctypedef struct mycss_selectors_t
+
+    ctypedef struct mycss_selectors_entries_list_t
+    ctypedef struct mycss_declaration_entry_t
+
+    ctypedef enum mycss_selectors_flags_t:
+        MyCSS_SELECTORS_FLAGS_UNDEF         = 0x00
+        MyCSS_SELECTORS_FLAGS_SELECTOR_BAD  = 0x01
+
+    ctypedef struct mycss_selectors_list_t:
+        mycss_selectors_entries_list_t* entries_list;
+        size_t entries_list_length;
+
+        mycss_declaration_entry_t* declaration_entry;
+
+        mycss_selectors_flags_t flags;
+
+        mycss_selectors_list_t* parent;
+        mycss_selectors_list_t* next;
+        mycss_selectors_list_t* prev;
+
+    # CSS init routines
+    mycss_t * mycss_create()
+    mystatus_t mycss_init(mycss_t* mycss)
+    mycss_entry_t * mycss_entry_create()
+    mystatus_t mycss_entry_init(mycss_t* mycss, mycss_entry_t* entry)
+
+    mycss_selectors_list_t * mycss_selectors_parse(mycss_selectors_t* selectors, myencoding_t encoding,
+                                                   const char* data, size_t data_size, mystatus_t* out_status)
+    mycss_selectors_t * mycss_entry_selectors(mycss_entry_t* entry)
+
+    mycss_selectors_list_t * mycss_selectors_list_destroy(mycss_selectors_t* selectors,
+                                                          mycss_selectors_list_t* selectors_list, bint self_destroy)
+    mycss_entry_t * mycss_entry_destroy(mycss_entry_t* entry, bint self_destroy)
+    mycss_t * mycss_destroy(mycss_t* mycss, bint self_destroy)
+
+
+
+cdef extern from "modest/finder/finder.h" nogil:
+    ctypedef struct modest_finder_t
+    modest_finder_t* modest_finder_create_simple()
+    mystatus_t modest_finder_by_selectors_list(modest_finder_t* finder, myhtml_tree_node_t* scope_node,
+                                                mycss_selectors_list_t* selector_list, myhtml_collection_t** collection)
+    modest_finder_t * modest_finder_destroy(modest_finder_t* finder, bint self_destroy)
+
 
 cdef class HTMLParser:
     cdef char *c_html

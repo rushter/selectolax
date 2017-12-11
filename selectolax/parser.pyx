@@ -140,7 +140,7 @@ cdef class HTMLParser:
             return 'unknown'
 
     def get_root(self):
-        """Returns root node"""
+        """Returns root node."""
         cdef myhtml_tree_node_t* root
         root = myhtml_tree_get_document(self.html_tree)
 

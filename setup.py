@@ -17,23 +17,23 @@ PLATFORM = 'windows_nt' if platform.system() == 'Windows' else 'posix'
 
 try:
     from Cython.Build import cythonize
-    HAVE_CYTHON = True
+    HAS_CYTHON = True
 except ImportError as err:
-    HAVE_CYTHON = False
+    HAS_CYTHON = False
 
 if "--static" in sys.argv:
     USE_STATIC = True
     sys.argv.remove("--static")
 
 if "--cython" in sys.argv:
-    if HAVE_CYTHON:
+    if HAS_CYTHON:
         USE_CYTHON = True
     else:
         raise ImportError("No module named 'Cython'")
     sys.argv.remove("--cython")
 
 # If there is no pretranspiled source files
-if HAVE_CYTHON and not os.path.exists("selectolax/parser.c"):
+if HAS_CYTHON and not os.path.exists("selectolax/parser.c"):
     USE_CYTHON = True
 
 

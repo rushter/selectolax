@@ -9,7 +9,7 @@ selector = "cite._Rm"
 
 
 def modest_parser(html, selector):
-    links = [node.text for node in HTMLParser(html).css(selector).find()]
+    links = [node.text() for node in HTMLParser(html).css(selector).find()]
     assert len(links) == 9
     return links
 

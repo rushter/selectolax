@@ -14,7 +14,7 @@ def test_selector():
     selector = "p#p3"
 
     for node in HTMLParser(html).css(selector):
-        assert node.text == 'text'
+        assert node.text() == 'text'
         assert node.tag == 'p'
         assert node.parent.tag == 'div'
         assert node.parent.next.tag == 'p'
@@ -29,7 +29,7 @@ def test_css_one():
     assert HTMLParser(html).css_first(selector) is None
 
     selector = "p.p3"
-    assert HTMLParser(html).css_first(selector).text == 'text'
+    assert HTMLParser(html).css_first(selector).text() == 'text'
 
     with pytest.raises(ValueError):
         HTMLParser(html).css_first(selector, strict=True)

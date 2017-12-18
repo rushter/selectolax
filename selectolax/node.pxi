@@ -36,29 +36,53 @@ cdef class Node:
 
         return attributes
 
-    @property
-    def text(self):
-        """Returns the text of the node including the text of child nodes.
+    def text(self, deep=True):
+        """Returns the text of the node including the text of all child nodes.
+
+        Parameters
+        ----------
+        deep : bool, default True
+            Whenever to include the text from all child nodes.
 
         Returns
         -------
         text : str
 
         """
-        text = None
-        cdef const char*c_text
-        cdef myhtml_tree_node_t*child = self.node.child
+        text = ""
+        cdef const char* c_text
+        cdef myhtml_tree_node_t* node = self.node.child
 
-        while child != NULL:
-            if child.tag_id == 1:
-                c_text = myhtml_node_text(child, NULL)
+        if not deep:
+            while node != NULL:
+                if node.tag_id == MyHTML_TAG__TEXT:
+                    c_text = myhtml_node_text(node, NULL)
+                    if c_text != NULL:
+                        text += c_text.decode('utf-8')
+                node = node.next
+        else:
+            return  self._text_deep(node)
+
+        return text
+
+
+    cdef _text_deep(self, myhtml_tree_node_t* node):
+        text = ""
+
+        # Depth-first left-to-right tree traversal
+        if node != NULL:
+            if node.tag_id == MyHTML_TAG__TEXT:
+                c_text = myhtml_node_text(node, NULL)
                 if c_text != NULL:
-                    if text is None:
-                        text = ""
                     text += c_text.decode('utf-8')
 
-            child = child.child
+            if node.child is not NULL:
+                text += self._text_deep(node.child)
+            if node.next is not NULL:
+                text += self._text_deep(node.next)
+
         return text
+
 
     @property
     def tag(self):

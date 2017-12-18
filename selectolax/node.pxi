@@ -83,6 +83,24 @@ cdef class Node:
 
         return text
 
+    def iter(self):
+        """Iterate over nodes on the current level
+
+        Returns
+        -------
+        generator
+        """
+
+        cdef myhtml_tree_node_t* node = self.node.child
+        cdef Node next_node
+        while node != NULL:
+            if node.tag_id != MyHTML_TAG__TEXT:
+                next_node = Node()
+                next_node._init(node, self.parser)
+                yield next_node
+
+            node = node.next
+
 
     @property
     def tag(self):

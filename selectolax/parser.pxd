@@ -409,6 +409,9 @@ cdef extern from "myhtml/myhtml.h" nogil:
     myhtml_tree_node_t* myhtml_tree_get_document(myhtml_tree_t* tree)
     myhtml_tree_node_t* myhtml_tree_get_node_body(myhtml_tree_t* tree)
 
+    myhtml_collection_t* myhtml_get_nodes_by_name(myhtml_tree_t* tree, myhtml_collection_t *collection,
+                         const char* name, size_t length, mystatus_t *status)
+
 
 cdef extern from "myhtml/serialization.h" nogil:
     mystatus_t myhtml_serialization(myhtml_tree_node_t* scope_node, mycore_string_raw_t* str)

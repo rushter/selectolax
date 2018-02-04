@@ -163,6 +163,35 @@ cdef class HTMLParser:
 
         return None
 
+    def get_tags(self, str name):
+        """Returns a list of tags that match specified name.
+
+        Parameters
+        ----------
+        name : str (e.g. div)
+        
+        """
+        cdef myhtml_collection_t* collection = NULL
+        pybyte_name = name.encode('UTF-8')
+        cdef char* c_name = pybyte_name
+        cdef mystatus_t status = 0;
+
+        result = list()
+        collection = myhtml_get_nodes_by_name(self.html_tree, NULL, c_name, len(c_name), &status)
+
+        if collection == NULL:
+            return result
+
+        if status == 0:
+            for i in range(collection.length):
+                node = Node()
+                node._init(collection.list[i], self)
+                result.append(node)
+
+        myhtml_collection_destroy(collection)
+
+        return result
+
     def __dealloc__(self):
         cdef myhtml_t *myhtml
 

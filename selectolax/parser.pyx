@@ -58,12 +58,13 @@ cdef class HTMLParser:
         result = list()
         collection = selector.find(self.html_tree)
 
-        for i in range(collection.length):
-            node = Node()
-            node._init(collection.list[i], self)
-            result.append(node)
+        if collection != NULL:
+            for i in range(collection.length):
+                node = Node()
+                node._init(collection.list[i], self)
+                result.append(node)
 
-        myhtml_collection_destroy(collection)
+            myhtml_collection_destroy(collection)
 
         return result
 

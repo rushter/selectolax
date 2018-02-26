@@ -42,8 +42,8 @@ cdef class Node:
 
         Parameters
         ----------
-        strip
-        separator
+        strip : bool, default False
+        separator : str, default ''
         deep : bool, default True
             Whenever to include the text from all child nodes.
 

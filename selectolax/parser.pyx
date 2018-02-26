@@ -194,8 +194,8 @@ cdef class HTMLParser:
 
         return result
 
-    def text(self, deep=True):
-        return self.body.text(deep=deep)
+    def text(self, deep=True, separator='', strip=False):
+        return self.body.text(deep=deep, separator='', strip=False)
 
     @property
     def html(self):

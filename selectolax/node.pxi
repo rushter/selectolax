@@ -50,8 +50,8 @@ cdef class Node:
 
         """
         text = ""
-        cdef const char* c_text
-        cdef myhtml_tree_node_t* node = self.node.child
+        cdef const char*c_text
+        cdef myhtml_tree_node_t*node = self.node.child
 
         if not deep:
             while node != NULL:
@@ -61,12 +61,11 @@ cdef class Node:
                         text += c_text.decode('utf-8')
                 node = node.next
         else:
-            return  self._text_deep(node)
+            return self._text_deep(node)
 
         return text
 
-
-    cdef _text_deep(self, myhtml_tree_node_t* node):
+    cdef _text_deep(self, myhtml_tree_node_t*node):
         text = ""
 
         # Depth-first left-to-right tree traversal
@@ -91,7 +90,7 @@ cdef class Node:
         generator
         """
 
-        cdef myhtml_tree_node_t* node = self.node.child
+        cdef myhtml_tree_node_t*node = self.node.child
         cdef Node next_node
         while node != NULL:
             if node.tag_id != MyHTML_TAG__TEXT:
@@ -100,7 +99,6 @@ cdef class Node:
                 yield next_node
 
             node = node.next
-
 
     @property
     def tag(self):
@@ -197,6 +195,21 @@ cdef class Node:
     def css_first(self, str query, default=None, strict=False):
         """Perform CSS selector against current node and its child nodes."""
         return HTMLParser(self.html).css_first(query=query, default=None, strict=False)
+
+    def decompose(self, recursive=True):
+        """Remove an element from the tree.
+
+        Parameters
+        ----------
+        recursive : bool, default True
+            Whenever to delete all its child nodes
+        """
+        if recursive:
+            myhtml_node_delete_recursive(self.node)
+        else:
+            myhtml_node_delete(self.node)
+
+        del self
 
     def __repr__(self):
         return '<Node %s>' % self.tag

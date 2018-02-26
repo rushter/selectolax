@@ -140,7 +140,8 @@ cdef class HTMLParser:
         else:
             return 'unknown'
 
-    def get_root(self):
+    @property
+    def root(self):
         """Returns root node."""
         cdef myhtml_tree_node_t* root
         root = myhtml_tree_get_document(self.html_tree)
@@ -152,7 +153,8 @@ cdef class HTMLParser:
 
         return None
 
-    def get_body(self):
+    @property
+    def body(self):
         """Returns document body."""
         cdef myhtml_tree_node_t* body
         body = myhtml_tree_get_node_body(self.html_tree)
@@ -164,7 +166,7 @@ cdef class HTMLParser:
 
         return None
 
-    def get_tags(self, str name):
+    def tags(self, str name):
         """Returns a list of tags that match specified name.
 
         Parameters
@@ -195,7 +197,7 @@ cdef class HTMLParser:
 
     @property
     def html(self):
-        return self.get_root().html
+        return self.root().html
 
 
     def __dealloc__(self):

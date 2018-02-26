@@ -209,7 +209,6 @@ cdef class Node:
         else:
             myhtml_node_delete(self.node)
 
-        del self
 
     def __repr__(self):
         return '<Node %s>' % self.tag

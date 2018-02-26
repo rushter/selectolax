@@ -1,5 +1,6 @@
 from libc.stdlib cimport free
 
+
 cdef class Node:
     """A class that represents HTML node (element)."""
     cdef myhtml_tree_node_t *node
@@ -36,11 +37,13 @@ cdef class Node:
 
         return attributes
 
-    def text(self, deep=True):
+    def text(self, deep=True, separator='', strip=False):
         """Returns the text of the node including the text of all child nodes.
 
         Parameters
         ----------
+        strip
+        separator
         deep : bool, default True
             Whenever to include the text from all child nodes.
 
@@ -50,22 +53,22 @@ cdef class Node:
 
         """
         text = ""
-        cdef const char*c_text
+        cdef const char* c_text
         cdef myhtml_tree_node_t*node = self.node.child
 
         if not deep:
+            texts = []
             while node != NULL:
                 if node.tag_id == MyHTML_TAG__TEXT:
                     c_text = myhtml_node_text(node, NULL)
                     if c_text != NULL:
-                        text += c_text.decode('utf-8')
+                        text = append_text(text, c_text, separator, strip)
                 node = node.next
         else:
-            return self._text_deep(node)
-
+            return self._text_deep(node, separator=separator, strip=strip)
         return text
 
-    cdef _text_deep(self, myhtml_tree_node_t*node):
+    cdef _text_deep(self, myhtml_tree_node_t *node, separator='', strip=False):
         text = ""
 
         # Depth-first left-to-right tree traversal
@@ -73,12 +76,12 @@ cdef class Node:
             if node.tag_id == MyHTML_TAG__TEXT:
                 c_text = myhtml_node_text(node, NULL)
                 if c_text != NULL:
-                    text += c_text.decode('utf-8')
+                    text = append_text(text, c_text, separator, strip)
 
             if node.child is not NULL:
-                text += self._text_deep(node.child)
+                text += self._text_deep(node.child, separator=separator, strip=strip)
             if node.next is not NULL:
-                text += self._text_deep(node.next)
+                text += self._text_deep(node.next, separator=separator, strip=strip)
 
         return text
 
@@ -209,6 +212,15 @@ cdef class Node:
         else:
             myhtml_node_delete(self.node)
 
-
     def __repr__(self):
         return '<Node %s>' % self.tag
+
+cdef inline str append_text(str text, const char* c_text, str separator='', bint strip=False):
+        node_text = c_text.decode('utf-8')
+
+        if strip:
+            text += node_text.strip() + separator
+        else:
+            text += node_text + separator
+
+        return text

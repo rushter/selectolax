@@ -34,7 +34,6 @@ cdef class HTMLParser:
         else:
             raise TypeError("Expected a string, but %s found" % type(html).__name__)
 
-
         self._parse_html(self.c_html, len(self.c_html))
 
     def css(self, str query):
@@ -102,10 +101,10 @@ cdef class HTMLParser:
         cdef myencoding_t encoding = MyENCODING_DEFAULT;
 
         if self.use_meta_tags:
-                encoding = myencoding_prescan_stream_to_determine_encoding(self.c_html, len(self.c_html))
-                if encoding != MyENCODING_DEFAULT and encoding != MyENCODING_NOT_DETERMINED:
-                    self._encoding = encoding
-                    return
+            encoding = myencoding_prescan_stream_to_determine_encoding(self.c_html, len(self.c_html))
+            if encoding != MyENCODING_DEFAULT and encoding != MyENCODING_NOT_DETERMINED:
+                self._encoding = encoding
+                return
 
         if not myencoding_detect_bom(self.c_html, len(self.c_html), &encoding):
             myencoding_detect(self.c_html, len(self.c_html), &encoding)
@@ -132,7 +131,7 @@ cdef class HTMLParser:
 
     @property
     def input_encoding(self):
-        cdef const char* encoding
+        cdef const char*encoding
         encoding = myencoding_name_by_id(self._encoding, NULL)
 
         if encoding != NULL:
@@ -143,7 +142,7 @@ cdef class HTMLParser:
     @property
     def root(self):
         """Returns root node."""
-        cdef myhtml_tree_node_t* root
+        cdef myhtml_tree_node_t*root
         root = myhtml_tree_get_document(self.html_tree)
 
         if root != NULL:
@@ -156,7 +155,7 @@ cdef class HTMLParser:
     @property
     def body(self):
         """Returns document body."""
-        cdef myhtml_tree_node_t* body
+        cdef myhtml_tree_node_t*body
         body = myhtml_tree_get_node_body(self.html_tree)
 
         if body != NULL:
@@ -174,9 +173,9 @@ cdef class HTMLParser:
         name : str (e.g. div)
         
         """
-        cdef myhtml_collection_t* collection = NULL
+        cdef myhtml_collection_t*collection = NULL
         pybyte_name = name.encode('UTF-8')
-        cdef char* c_name = pybyte_name
+        cdef char*c_name = pybyte_name
         cdef mystatus_t status = 0;
 
         result = list()
@@ -195,10 +194,12 @@ cdef class HTMLParser:
 
         return result
 
+    def text(self, deep=True):
+        return self.body.text(deep=deep)
+
     @property
     def html(self):
-        return self.root().html
-
+        return self.root.html
 
     def __dealloc__(self):
         cdef myhtml_t *myhtml

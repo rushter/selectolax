@@ -193,6 +193,11 @@ cdef class HTMLParser:
 
         return result
 
+    @property
+    def html(self):
+        return self.get_root().html
+
+
     def __dealloc__(self):
         cdef myhtml_t *myhtml
 

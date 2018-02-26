@@ -47,3 +47,13 @@ def test_attributes():
     for node in HTMLParser(html).css(selector):
         assert 'attr' in node.attributes
         assert node.attributes['attr'] is None
+
+
+def test_decompose():
+    html = "<body><div><p id='p3'>text</p></div></body>"
+    html_parser = HTMLParser(html)
+
+    for node in html_parser.tags('p'):
+        node.decompose()
+
+    assert html_parser.body.child.html == '<div></div>'

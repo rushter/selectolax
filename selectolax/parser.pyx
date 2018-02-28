@@ -54,20 +54,10 @@ cdef class HTMLParser:
         selector : list of `Node` objects
     
         """
-        cdef myhtml_collection_t *collection
-        cdef Selector selector = Selector(query)
-        result = list()
-        collection = selector.find(self.html_tree)
 
-        if collection != NULL:
-            for i in range(collection.length):
-                node = Node()
-                node._init(collection.list[i], self)
-                result.append(node)
-
-            myhtml_collection_destroy(collection)
-
-        return result
+        node = Node()
+        node._init(self.html_tree.node_html, self)
+        return node.css(query)
 
     def css_first(self, str query, default=None, strict=False):
         """Same as `css` but returns only first match.
@@ -87,17 +77,9 @@ cdef class HTMLParser:
         selector : `Node` object
         
         """
-        results = self.css(query)
-        n_results = len(results)
-
-        if n_results > 0:
-
-            if strict and n_results > 1:
-                raise ValueError("Expected 1 match, but found %s matches" % n_results)
-
-            return results[0]
-
-        return default
+        node = Node()
+        node._init(self.html_tree.node_html, self)
+        return node.css_first(query, default, strict)
 
     cpdef _detect_encoding(self):
         cdef myencoding_t encoding = MyENCODING_DEFAULT;
@@ -130,6 +112,7 @@ cdef class HTMLParser:
 
         if status != 0:
             raise RuntimeError("Can't parse HTML:\n%s" % data)
+
 
     @property
     def input_encoding(self):

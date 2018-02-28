@@ -16,13 +16,13 @@ cdef class Selector:
         self._prepare_selector(self.css_entry, self.c_selector, len(self.c_selector))
         self.finder = modest_finder_create_simple()
 
-    cdef myhtml_collection_t* find(self, myhtml_tree_t *html_tree):
+    cdef myhtml_collection_t* find(self, myhtml_tree_node_t* scope):
         """Find all possible matches."""
 
         cdef myhtml_collection_t *collection
 
         collection = NULL
-        modest_finder_by_selectors_list(self.finder, html_tree.node_html, self.selectors_list, &collection)
+        modest_finder_by_selectors_list(self.finder, scope, self.selectors_list, &collection)
 
         return collection
 

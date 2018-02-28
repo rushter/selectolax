@@ -193,13 +193,37 @@ cdef class Node:
 
         return None
 
-    def css(self, str selector):
-        """Perform CSS selector against current node and its child nodes."""
-        return self.parser.css(selector)
+    def css(self, str query):
+        """Performs CSS selector against current node and its child nodes."""
+        cdef myhtml_collection_t *collection
+        cdef Selector selector = Selector(query)
+
+        result = list()
+        collection = selector.find(self.node)
+
+        if collection != NULL:
+            for i in range(collection.length):
+                node = Node()
+                node._init(collection.list[i], self.parser)
+                result.append(node)
+
+            myhtml_collection_destroy(collection)
+
+        return result
 
     def css_first(self, str query, default=None, strict=False):
-        """Perform CSS selector against current node and its child nodes."""
-        return self.parser.css_first(query=query, default=None, strict=False)
+        """Performs CSS selector against current node and its child nodes."""
+        results = self.css(query)
+        n_results = len(results)
+
+        if n_results > 0:
+
+            if strict and n_results > 1:
+                raise ValueError("Expected 1 match, but found %s matches" % n_results)
+
+            return results[0]
+
+        return default
 
     def decompose(self, recursive=True):
         """Remove an element from the tree.

@@ -26,9 +26,9 @@ cdef class Node:
         attributes = dict()
 
         while attr:
-            key = attr.key.data.decode('UTF-8')
+            key = attr.key.data.decode('UTF-8', self.parser.decode_errors)
             if attr.value.data:
-                value = attr.value.data.decode('UTF-8')
+                value = attr.value.data.decode('UTF-8', self.parser.decode_errors)
             else:
                 value = None
             attributes[key] = value
@@ -62,7 +62,8 @@ cdef class Node:
                 if node.tag_id == MyHTML_TAG__TEXT:
                     c_text = myhtml_node_text(node, NULL)
                     if c_text != NULL:
-                        text = append_text(text, c_text, separator, strip)
+                        node_text = c_text.decode('utf-8', self.parser.decode_errors)
+                        text = append_text(text, node_text, separator, strip)
                 node = node.next
         else:
             return self._text_deep(node, separator=separator, strip=strip)
@@ -76,7 +77,8 @@ cdef class Node:
             if node.tag_id == MyHTML_TAG__TEXT:
                 c_text = myhtml_node_text(node, NULL)
                 if c_text != NULL:
-                    text = append_text(text, c_text, separator, strip)
+                    node_text = c_text.decode('utf-8', self.parser.decode_errors)
+                    text = append_text(text, node_text, separator, strip)
 
             if node.child is not NULL:
                 text += self._text_deep(node.child, separator=separator, strip=strip)
@@ -115,7 +117,7 @@ cdef class Node:
         c_text = myhtml_tag_name_by_id(self.node.tree, self.node.tag_id, NULL)
         text = None
         if c_text:
-            text = c_text.decode("utf-8")
+            text = c_text.decode("utf-8", self.parser.decode_errors)
         return text
 
     @property
@@ -215,8 +217,7 @@ cdef class Node:
     def __repr__(self):
         return '<Node %s>' % self.tag
 
-cdef inline str append_text(str text, const char* c_text, str separator='', bint strip=False):
-        node_text = c_text.decode('utf-8')
+cdef inline str append_text(str text, str node_text, str separator='', bint strip=False):
 
         if strip:
             text += node_text.strip() + separator

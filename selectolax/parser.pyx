@@ -16,17 +16,19 @@ cdef class HTMLParser:
         If `True` and html type is `bytes` then encoding will be detected automatically.
     use_meta_tags : bool, default True
         Whether to use meta tags in encoding detection process.
-
+    decode_errors : str, default 'ignore'
+        Same as in builtin's str.decode, i.e 'strict', 'ignore' or 'replace'.
     """
-    def __init__(self, html, detect_encoding=True, use_meta_tags=True):
+    def __init__(self, html, detect_encoding=True, use_meta_tags=True, decode_errors = 'ignore'):
 
         self.detect_encoding = detect_encoding
         self.use_meta_tags = use_meta_tags
+        self._encoding = MyENCODING_UTF_8
+        self.decode_errors = decode_errors
 
         if isinstance(html, (str, unicode)):
             pybyte_html = html.encode('UTF-8')
             self.c_html = pybyte_html
-            self._encoding = MyENCODING_UTF_8
         elif isinstance(html, bytes):
             self.c_html = <char *> html
             if detect_encoding:

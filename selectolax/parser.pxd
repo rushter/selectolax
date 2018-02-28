@@ -533,6 +533,7 @@ cdef class HTMLParser:
     cdef bint detect_encoding
     cdef bint use_meta_tags
     cdef myencoding_t _encoding
+    cdef unicode decode_errors
 
     # cpdef css(self, str query)
     cpdef _detect_encoding(self)

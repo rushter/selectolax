@@ -193,11 +193,11 @@ cdef class Node:
 
     def css(self, str selector):
         """Perform CSS selector against current node and its child nodes."""
-        return HTMLParser(self.html).css(selector)
+        return self.parser.css(selector)
 
     def css_first(self, str query, default=None, strict=False):
         """Perform CSS selector against current node and its child nodes."""
-        return HTMLParser(self.html).css_first(query=query, default=None, strict=False)
+        return self.parser.css_first(query=query, default=None, strict=False)
 
     def decompose(self, recursive=True):
         """Remove an element from the tree.

@@ -155,7 +155,7 @@ cdef class HTMLParser:
     @property
     def body(self):
         """Returns document body."""
-        cdef myhtml_tree_node_t*body
+        cdef myhtml_tree_node_t* body
         body = myhtml_tree_get_node_body(self.html_tree)
 
         if body != NULL:

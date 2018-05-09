@@ -28,15 +28,14 @@ cdef class HTMLParser:
 
         if isinstance(html, (str, unicode)):
             pybyte_html = html.encode('UTF-8')
-            self.c_html = pybyte_html
+            self.bytes_html = pybyte_html
         elif isinstance(html, bytes):
-            self.c_html = <char *> html
+            self.bytes_html = html
             if detect_encoding:
                 self._detect_encoding()
         else:
             raise TypeError("Expected a string, but %s found" % type(html).__name__)
-
-        self._parse_html(self.c_html, len(self.c_html))
+        self._parse_html()
 
     def css(self, str query):
         """A CSS selector.
@@ -77,26 +76,26 @@ cdef class HTMLParser:
         selector : `Node` object
         
         """
+
         node = Node()
         node._init(self.html_tree.node_html, self)
         return node.css_first(query, default, strict)
 
     cpdef _detect_encoding(self):
         cdef myencoding_t encoding = MyENCODING_DEFAULT;
-
         if self.use_meta_tags:
-            encoding = myencoding_prescan_stream_to_determine_encoding(self.c_html, len(self.c_html))
+            encoding = myencoding_prescan_stream_to_determine_encoding(self.bytes_html, len(self.bytes_html))
             if encoding != MyENCODING_DEFAULT and encoding != MyENCODING_NOT_DETERMINED:
                 self._encoding = encoding
                 return
 
-        if not myencoding_detect_bom(self.c_html, len(self.c_html), &encoding):
-            myencoding_detect(self.c_html, len(self.c_html), &encoding)
+        if not myencoding_detect_bom(self.bytes_html, len(self.bytes_html), &encoding):
+            myencoding_detect(self.bytes_html, len(self.bytes_html), &encoding)
 
         self._encoding = encoding
 
-    cdef _parse_html(self, const char *data, size_t data_size):
-        cdef myhtml_t *myhtml = myhtml_create()
+    cdef _parse_html(self):
+        cdef myhtml_t* myhtml = myhtml_create()
         cdef mystatus_t status = myhtml_init(myhtml, MyHTML_OPTIONS_DEFAULT, 1, 0)
 
         if status != 0:
@@ -108,15 +107,18 @@ cdef class HTMLParser:
         if status != 0:
             raise RuntimeError("Can't init MyHTML Tree object.")
 
-        status = myhtml_parse(self.html_tree, self._encoding, data, data_size)
+        status = myhtml_parse(self.html_tree, self._encoding, self.bytes_html, len(self.bytes_html))
 
         if status != 0:
-            raise RuntimeError("Can't parse HTML:\n%s" % data)
+            raise RuntimeError("Can't parse HTML:\n%s" % self.bytes_html)
+
+        assert self.html_tree.node_html != NULL
+
 
 
     @property
     def input_encoding(self):
-        cdef const char*encoding
+        cdef const char* encoding
         encoding = myencoding_name_by_id(self._encoding, NULL)
 
         if encoding != NULL:
@@ -127,7 +129,7 @@ cdef class HTMLParser:
     @property
     def root(self):
         """Returns root node."""
-        cdef myhtml_tree_node_t*root
+        cdef myhtml_tree_node_t* root
         root = myhtml_tree_get_document(self.html_tree)
 
         if root != NULL:
@@ -158,13 +160,12 @@ cdef class HTMLParser:
         name : str (e.g. div)
         
         """
-        cdef myhtml_collection_t*collection = NULL
+        cdef myhtml_collection_t* collection = NULL
         pybyte_name = name.encode('UTF-8')
-        cdef char*c_name = pybyte_name
         cdef mystatus_t status = 0;
 
         result = list()
-        collection = myhtml_get_nodes_by_name(self.html_tree, NULL, c_name, len(c_name), &status)
+        collection = myhtml_get_nodes_by_name(self.html_tree, NULL, pybyte_name, len(pybyte_name), &status)
 
         if collection == NULL:
             return result
@@ -187,12 +188,13 @@ cdef class HTMLParser:
         return self.root.html
 
     def __dealloc__(self):
-        cdef myhtml_t *myhtml
+        cdef myhtml_t* myhtml
 
         if self.html_tree != NULL:
             myhtml = self.html_tree.myhtml
             myhtml_tree_destroy(self.html_tree)
-            myhtml_destroy(myhtml)
+            if myhtml != NULL:
+                myhtml_destroy(myhtml)
 
     def __repr__(self):
-        return '<HTMLParser chars=%s>' % len(self.c_html)
+        return '<HTMLParser chars=%s>' % len(self.bytes_html)

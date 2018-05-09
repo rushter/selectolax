@@ -52,14 +52,14 @@ Examples
 Simple Benchmark
 ----------------
 
-* Average of 5 experiments to parse and retrieve urls from 1000 Google SERP pages.
+* Average of 10 experiments to parse and retrieve URLs from 800 Google SERP pages.
 
 +------------+------------+--------------+
 | Package    | Time       | Memory (peak)|
 +============+============+==============+
-| selectolax | 2.33 sec.  | 20.3 MB      |
+| selectolax | 2.38 sec.  | 768.11 MB    |
 +------------+------------+--------------+
-| lxml       | 19.01 sec. | 18.5 MB      |
+| lxml       | 18.67 sec. | 769.21 MB    |
 +------------+------------+--------------+
 
 Links

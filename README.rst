@@ -69,6 +69,7 @@ Links
 *  `Detailed overview <https://github.com/rushter/selectolax/blob/master/examples/walkthrough.ipynb>`_
 *  `Modest introduction <https://lexborisov.github.io/Modest/>`_
 *  `Modest benchmark <http://lexborisov.github.io/benchmark-html-persers/>`_
+*  `Python benchmark <https://rushter.com/blog/python-fast-html-parser/>`_
 
 
 License

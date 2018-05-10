@@ -27,15 +27,14 @@ cdef class HTMLParser:
         self.decode_errors = decode_errors
 
         if isinstance(html, (str, unicode)):
-            pybyte_html = html.encode('UTF-8')
-            self.bytes_html = pybyte_html
+            bytes_html = html.encode('UTF-8')
         elif isinstance(html, bytes):
-            self.bytes_html = html
+            bytes_html = html
             if detect_encoding:
-                self._detect_encoding()
+                self._detect_encoding(bytes_html)
         else:
             raise TypeError("Expected a string, but %s found" % type(html).__name__)
-        self._parse_html()
+        self._parse_html(bytes_html)
 
     def css(self, str query):
         """A CSS selector.
@@ -81,20 +80,20 @@ cdef class HTMLParser:
         node._init(self.html_tree.node_html, self)
         return node.css_first(query, default, strict)
 
-    cpdef _detect_encoding(self):
+    cpdef _detect_encoding(self, bytes html):
         cdef myencoding_t encoding = MyENCODING_DEFAULT;
         if self.use_meta_tags:
-            encoding = myencoding_prescan_stream_to_determine_encoding(self.bytes_html, len(self.bytes_html))
+            encoding = myencoding_prescan_stream_to_determine_encoding(html, len(html))
             if encoding != MyENCODING_DEFAULT and encoding != MyENCODING_NOT_DETERMINED:
                 self._encoding = encoding
                 return
 
-        if not myencoding_detect_bom(self.bytes_html, len(self.bytes_html), &encoding):
-            myencoding_detect(self.bytes_html, len(self.bytes_html), &encoding)
+        if not myencoding_detect_bom(html, len(html), &encoding):
+            myencoding_detect(html, len(html), &encoding)
 
         self._encoding = encoding
 
-    cdef _parse_html(self):
+    cdef _parse_html(self, bytes html):
         cdef myhtml_t* myhtml = myhtml_create()
         cdef mystatus_t status = myhtml_init(myhtml, MyHTML_OPTIONS_DEFAULT, 1, 0)
 
@@ -107,10 +106,10 @@ cdef class HTMLParser:
         if status != 0:
             raise RuntimeError("Can't init MyHTML Tree object.")
 
-        status = myhtml_parse(self.html_tree, self._encoding, self.bytes_html, len(self.bytes_html))
+        status = myhtml_parse(self.html_tree, self._encoding, html, len(html))
 
         if status != 0:
-            raise RuntimeError("Can't parse HTML:\n%s" % self.bytes_html)
+            raise RuntimeError("Can't parse HTML:\n%s" % html)
 
         assert self.html_tree.node_html != NULL
 
@@ -197,4 +196,4 @@ cdef class HTMLParser:
                 myhtml_destroy(myhtml)
 
     def __repr__(self):
-        return '<HTMLParser chars=%s>' % len(self.bytes_html)
+        return '<HTMLParser chars=%s>' % len(self.root.html)

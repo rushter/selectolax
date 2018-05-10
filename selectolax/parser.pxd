@@ -528,7 +528,6 @@ cdef extern from "modest/finder/finder.h" nogil:
 
 
 cdef class HTMLParser:
-    cdef bytes bytes_html
     cdef myhtml_tree_t *html_tree
     cdef bint detect_encoding
     cdef bint use_meta_tags
@@ -536,5 +535,5 @@ cdef class HTMLParser:
     cdef unicode decode_errors
 
     # cpdef css(self, str query)
-    cpdef _detect_encoding(self)
-    cdef _parse_html(self)
+    cpdef _detect_encoding(self, bytes html)
+    cdef _parse_html(self, bytes html)

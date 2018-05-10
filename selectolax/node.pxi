@@ -187,7 +187,7 @@ cdef class Node:
         status = myhtml_serialization(self.node, &c_str)
 
         if status == 0 and c_str.data:
-            html = c_str.data.decode('utf-8')
+            html = c_str.data.decode('utf-8').replace('<-undef>', '')
             free(c_str.data)
             return html
 

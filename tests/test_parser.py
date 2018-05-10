@@ -1,6 +1,7 @@
 # coding:utf-8
 import pytest
 from selectolax.parser import HTMLParser, Node
+from difflib import SequenceMatcher
 
 """
 We'are testing only our own code.
@@ -36,8 +37,12 @@ def test_parser():
 
 
 def test_nodes():
-    html = "<div><p id=p1><p id=p2><p id=p3><a>link</a><p id=p4><p id=p5>text<p id=p6></div>"
-    html = HTMLParser(html)
+    html = """<div><p id="p1"></p><p id="p2"></p><p id="p3"><a>link</a></p><p id="p4"></p><p id="p5">text</p><p 
+    id="p6"></p></div> """
+    htmlp = HTMLParser(html)
 
-    assert isinstance(html.root, Node)
-    assert isinstance(html.body, Node)
+    assert isinstance(htmlp.root, Node)
+    assert isinstance(htmlp.body, Node)
+    html_output = htmlp.html
+    assert len(html_output) >= len(html)
+    assert SequenceMatcher(None, html, html_output).ratio() > 0.8

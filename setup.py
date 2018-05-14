@@ -17,6 +17,7 @@ PLATFORM = 'windows_nt' if platform.system() == 'Windows' else 'posix'
 
 try:
     from Cython.Build import cythonize
+
     HAS_CYTHON = True
 except ImportError as err:
     HAS_CYTHON = False
@@ -54,7 +55,6 @@ def find_modest_files(modest_path="modest/source"):
 
 
 def make_extensions():
-
     if USE_CYTHON:
         files_to_compile = ["selectolax/parser.pyx"]
     else:
@@ -66,22 +66,31 @@ def make_extensions():
         files_to_compile.extend(find_modest_files())
         extra_objects = []
 
+    compile_arguments = [
+        "-DMODEST_BUILD_OS=%s" % platform.system(),
+        "-DMyCORE_OS_%s" % platform.system(),
+        "-DMODEST_PORT_NAME=%s" % PLATFORM,
+        "-DMyCORE_BUILD_WITHOUT_THREADS=YES",
+        "-DMyCORE_BUILD_DEBUG=NO",
+        "-O2",
+
+    ]
+
+    if PLATFORM == 'posix':
+        compile_arguments.extend([
+            "-pedantic", "-fPIC",
+            "-Wno-unused-variable",
+            "-Wno-unused-function",
+            "-std=c99"
+
+        ])
+
     extension = Extension("selectolax.parser",
                           files_to_compile,
                           language='c',
                           include_dirs=['modest/include/', ],
                           extra_objects=extra_objects,
-                          extra_compile_args=[
-                              "-pedantic", "-fPIC",
-                              "-DMODEST_BUILD_OS=%s" % platform.system(),
-                              "-DMyCORE_OS_%s" % platform.system(),
-                              "-DMODEST_PORT_NAME=%s" % PLATFORM,
-                              "-DMyCORE_BUILD_WITHOUT_THREADS=YES",
-                              "-DMyCORE_BUILD_DEBUG=NO",
-                              "-O2", "-Wno-unused-variable",
-                              "-Wno-unused-function",
-                              "-std=c99"
-                          ]
+                          extra_compile_args=compile_arguments,
                           )
 
     extensions = ([extension, ])

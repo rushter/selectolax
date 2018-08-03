@@ -37,8 +37,8 @@ cdef class HTMLParser:
         else:
             raise TypeError("Expected a string, but %s found" % type(html).__name__)
 
-        html_len = len(html)
-        html_chars = <char*>html
+        html_len = len(bytes_html)
+        html_chars = <char*>bytes_html
 
 
         if detect_encoding:
@@ -127,7 +127,7 @@ cdef class HTMLParser:
             status = myhtml_parse(self.html_tree, self._encoding, html, html_len)
 
         if status != 0:
-            raise RuntimeError("Can't parse HTML:\n%s" % html)
+            raise RuntimeError("Can't parse HTML:\n%s" % str(html))
 
         assert self.html_tree.node_html != NULL
 

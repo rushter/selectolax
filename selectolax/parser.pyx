@@ -21,6 +21,9 @@ cdef class HTMLParser:
     """
     def __init__(self, html, detect_encoding=True, use_meta_tags=True, decode_errors = 'ignore'):
 
+        cdef size_t html_len
+        cdef char* html_chars
+
         self.detect_encoding = detect_encoding
         self.use_meta_tags = use_meta_tags
         self._encoding = MyENCODING_UTF_8
@@ -28,13 +31,21 @@ cdef class HTMLParser:
 
         if isinstance(html, (str, unicode)):
             bytes_html = html.encode('UTF-8')
+            detect_encoding = False
         elif isinstance(html, bytes):
             bytes_html = html
-            if detect_encoding:
-                self._detect_encoding(bytes_html)
         else:
             raise TypeError("Expected a string, but %s found" % type(html).__name__)
-        self._parse_html(bytes_html)
+
+        html_len = len(html)
+        html_chars = <char*>html
+
+
+        if detect_encoding:
+            self._detect_encoding(html_chars, html_len)
+
+        self._parse_html(html_chars, html_len)
+
 
     def css(self, str query):
         """A CSS selector.
@@ -80,33 +91,40 @@ cdef class HTMLParser:
         node._init(self.html_tree.node_html, self)
         return node.css_first(query, default, strict)
 
-    cpdef _detect_encoding(self, bytes html):
+    cdef void _detect_encoding(self, char* html, size_t html_len) nogil:
         cdef myencoding_t encoding = MyENCODING_DEFAULT;
+
         if self.use_meta_tags:
-            encoding = myencoding_prescan_stream_to_determine_encoding(html, len(html))
+            encoding = myencoding_prescan_stream_to_determine_encoding(html, html_len)
             if encoding != MyENCODING_DEFAULT and encoding != MyENCODING_NOT_DETERMINED:
                 self._encoding = encoding
                 return
 
-        if not myencoding_detect_bom(html, len(html), &encoding):
-            myencoding_detect(html, len(html), &encoding)
+        if not myencoding_detect_bom(html, html_len, &encoding):
+            myencoding_detect(html, html_len, &encoding)
 
         self._encoding = encoding
 
-    cdef _parse_html(self, bytes html):
-        cdef myhtml_t* myhtml = myhtml_create()
-        cdef mystatus_t status = myhtml_init(myhtml, MyHTML_OPTIONS_DEFAULT, 1, 0)
+    cdef _parse_html(self, char* html, size_t html_len):
+        cdef myhtml_t* myhtml
+        cdef mystatus_t status
+
+        with nogil:
+            myhtml = myhtml_create()
+            status = myhtml_init(myhtml, MyHTML_OPTIONS_DEFAULT, 1, 0)
 
         if status != 0:
             raise RuntimeError("Can't init MyHTML object.")
 
-        self.html_tree = myhtml_tree_create()
-        status = myhtml_tree_init(self.html_tree, myhtml)
+        with nogil:
+            self.html_tree = myhtml_tree_create()
+            status = myhtml_tree_init(self.html_tree, myhtml)
 
         if status != 0:
             raise RuntimeError("Can't init MyHTML Tree object.")
 
-        status = myhtml_parse(self.html_tree, self._encoding, html, len(html))
+        with nogil:
+            status = myhtml_parse(self.html_tree, self._encoding, html, html_len)
 
         if status != 0:
             raise RuntimeError("Can't parse HTML:\n%s" % html)

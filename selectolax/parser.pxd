@@ -535,5 +535,5 @@ cdef class HTMLParser:
     cdef unicode decode_errors
 
     # cpdef css(self, str query)
-    cpdef _detect_encoding(self, bytes html)
-    cdef _parse_html(self, bytes html)
+    cdef void _detect_encoding(self, char* html, size_t html_len) nogil
+    cdef _parse_html(self, char* html, size_t html_len)

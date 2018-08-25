@@ -1,7 +1,8 @@
 # coding:utf-8
+from difflib import SequenceMatcher
+
 import pytest
 from selectolax.parser import HTMLParser, Node
-from difflib import SequenceMatcher
 
 """
 We'are testing only our own code.
@@ -46,3 +47,4 @@ def test_nodes():
     html_output = htmlp.html
     assert len(html_output) >= len(html)
     assert SequenceMatcher(None, html, html_output).ratio() > 0.8
+

@@ -26,4 +26,4 @@ install:
 
 
 script:
-  - py.test
+  - pytest

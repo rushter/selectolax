@@ -36,7 +36,7 @@ cdef class Node:
 
         return attributes
 
-    def text(self, deep=True, separator='', strip=False):
+    def text(self, bool deep=True, str separator='', bool strip=False):
         """Returns the text of the node including text of all child nodes.
 
         Parameters
@@ -210,7 +210,7 @@ cdef class Node:
 
         return result
 
-    def css_first(self, str query, default=None, strict=False):
+    def css_first(self, str query, bool default=None, bool strict=False):
         """Performs CSS selector against current node and its child nodes."""
         results = self.css(query)
         n_results = len(results)
@@ -224,7 +224,7 @@ cdef class Node:
 
         return default
 
-    def decompose(self, recursive=True):
+    def decompose(self, bool recursive=True):
         """Remove an element from the tree.
 
         Parameters

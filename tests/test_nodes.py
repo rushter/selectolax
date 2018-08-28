@@ -65,3 +65,5 @@ def test_strip_tags():
     html_parser.strip_tags(['div', 'script'])
     assert html_parser.html == '<html><head></head><body></body></html>'
 
+    with pytest.raises(TypeError):
+        html_parser.strip_tags(1)

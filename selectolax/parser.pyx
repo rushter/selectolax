@@ -1,4 +1,5 @@
 #cython: boundscheck=False, wraparound=False, nonecheck=False, language_level=3
+from cpython cimport bool
 
 include "selector.pxi"
 include "node.pxi"
@@ -197,7 +198,7 @@ cdef class HTMLParser:
 
         return result
 
-    def text(self, deep=True, separator='', strip=False):
+    def text(self, bool deep=True, str separator='', bool strip=False):
         return self.body.text(deep=deep, separator='', strip=False)
 
     def strip_tags(self, list tags):

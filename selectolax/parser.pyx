@@ -200,6 +200,31 @@ cdef class HTMLParser:
     def text(self, deep=True, separator='', strip=False):
         return self.body.text(deep=deep, separator='', strip=False)
 
+    def strip_tags(self, list tags):
+        """Remove specified tags from the node.
+
+        Parameters
+        ----------
+        tags : list,
+            List of tags to remove.
+
+        Examples
+        --------
+
+        >>> tree = HTMLParser(html)
+        >>> tags = ['style', 'script', 'xmp', 'iframe', 'noembed', 'noframes']
+        >>> tree.strip_tags(tags)
+
+        """
+
+        node = Node()
+        node._init(self.html_tree.node_html, self)
+
+        for tag in tags:
+            for element in node.css(tag):
+                element.decompose()
+        return node
+
     @property
     def html(self):
         return self.root.html

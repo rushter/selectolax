@@ -57,3 +57,11 @@ def test_decompose():
         node.decompose()
 
     assert html_parser.body.child.html == '<div></div>'
+
+
+def test_strip_tags():
+    html = "<body><div></div><script></script></body>"
+    html_parser = HTMLParser(html)
+    html_parser.strip_tags(['div', 'script'])
+    assert html_parser.html == '<html><head></head><body></body></html>'
+

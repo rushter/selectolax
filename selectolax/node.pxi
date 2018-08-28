@@ -1,6 +1,5 @@
 from libc.stdlib cimport free
 
-
 cdef class Node:
     """A class that represents HTML node (element)."""
     cdef myhtml_tree_node_t *node
@@ -38,14 +37,14 @@ cdef class Node:
         return attributes
 
     def text(self, deep=True, separator='', strip=False):
-        """Returns the text of the node including the text of all child nodes.
+        """Returns the text of the node including text of all child nodes.
 
         Parameters
         ----------
         strip : bool, default False
         separator : str, default ''
         deep : bool, default True
-            Whenever to include the text from all child nodes.
+            Whenever to include text from all child nodes.
 
         Returns
         -------
@@ -232,20 +231,49 @@ cdef class Node:
         ----------
         recursive : bool, default True
             Whenever to delete all its child nodes
+
+        Examples
+        --------
+
+        >>> tree = HTMLParser(html)
+        >>> for tag in tree.css('script'):
+        >>>     tag.decompose()
+
         """
         if recursive:
             myhtml_node_delete_recursive(self.node)
         else:
             myhtml_node_delete(self.node)
 
+    def strip_tags(self, list tags):
+        """Remove specified tags from the HTML tree.
+
+        Parameters
+        ----------
+        tags : list,
+            List of tags to remove.
+
+        Examples
+        --------
+
+        >>> tree = HTMLParser(html)
+        >>> tags = ['style', 'script', 'xmp', 'iframe', 'noembed', 'noframes']
+        >>> tree.strip_tags(tags)
+
+        """
+
+        for tag in tags:
+            for element in self.css(tag):
+                element.decompose()
+        return self
+
     def __repr__(self):
         return '<Node %s>' % self.tag
 
 cdef inline str append_text(str text, str node_text, str separator='', bint strip=False):
+    if strip:
+        text += node_text.strip() + separator
+    else:
+        text += node_text + separator
 
-        if strip:
-            text += node_text.strip() + separator
-        else:
-            text += node_text + separator
-
-        return text
+    return text

@@ -68,7 +68,7 @@ cdef class Node:
             return self._text_deep(node, separator=separator, strip=strip)
         return text
 
-    cdef _text_deep(self, myhtml_tree_node_t *node, separator='', strip=False):
+    cdef inline _text_deep(self, myhtml_tree_node_t *node, separator='', strip=False):
         text = ""
 
         # Depth-first left-to-right tree traversal

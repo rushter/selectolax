@@ -210,7 +210,7 @@ cdef class Node:
 
         return result
 
-    def css_first(self, str query, bool default=None, bool strict=False):
+    def css_first(self, str query, default=None, bool strict=False):
         """Performs CSS selector against current node and its child nodes."""
         results = self.css(query)
         n_results = len(results)

@@ -35,6 +35,12 @@ def test_css_one():
         HTMLParser(html).css_first(selector, strict=True)
 
 
+def test_css_first_default():
+    html = "<span></span><div><p class='p3'>text</p><p class='p3'>sd</p></div><p></p>"
+    selector = ".s3"
+    assert HTMLParser(html).css_first(selector, default='lorem ipsum') == 'lorem ipsum'
+
+
 def test_attributes():
     html = "<div><p id='p3'>text</p></div>"
     selector = "p#p3"

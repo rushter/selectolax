@@ -73,3 +73,11 @@ def test_strip_tags():
 
     with pytest.raises(TypeError):
         html_parser.strip_tags(1)
+
+
+def test_malformed_attributes():
+    html = '<div> <meta name="description" content="ÐÐ°Ñ"Ð " /></div>'
+    html_parser = HTMLParser(html)
+
+    for tag in html_parser.tags('meta'):
+        assert tag

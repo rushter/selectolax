@@ -25,6 +25,9 @@ cdef class Node:
         attributes = dict()
 
         while attr:
+            if attr.key.data == NULL:
+                attr = attr.next
+                continue
             key = attr.key.data.decode('UTF-8', self.parser.decode_errors)
             if attr.value.data:
                 value = attr.value.data.decode('UTF-8', self.parser.decode_errors)

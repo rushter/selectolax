@@ -19,6 +19,7 @@ try:
     from Cython.Build import cythonize
 
     HAS_CYTHON = True
+    USE_CYTHON = True
 except ImportError as err:
     HAS_CYTHON = False
 
@@ -33,7 +34,7 @@ if "--cython" in sys.argv:
         raise ImportError("No module named 'Cython'")
     sys.argv.remove("--cython")
 
-# If there is no pretranspiled source files
+# If there are no pretranspiled source files
 if HAS_CYTHON and not os.path.exists("selectolax/parser.c"):
     USE_CYTHON = True
 

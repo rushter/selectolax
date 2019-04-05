@@ -537,3 +537,14 @@ cdef class HTMLParser:
     # cpdef css(self, str query)
     cdef void _detect_encoding(self, char* html, size_t html_len) nogil
     cdef _parse_html(self, char* html, size_t html_len)
+
+
+cdef class Stack:
+    cdef size_t capacity
+    cdef size_t top
+    cdef myhtml_tree_node_t ** _stack
+
+    cdef bint is_empty(self)
+    cdef push(self, myhtml_tree_node_t* res)
+    cdef myhtml_tree_node_t * pop(self)
+    cdef resize(self)

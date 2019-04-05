@@ -1,4 +1,36 @@
 from libc.stdlib cimport free
+from libc.stdlib cimport malloc
+from libc.stdlib cimport realloc
+
+
+cdef class Stack:
+    def __cinit__(self, size_t capacity=25):
+        self.capacity = capacity
+        self.top = 0
+        self._stack = <myhtml_tree_node_t**> malloc(capacity * sizeof(myhtml_tree_node_t))
+
+    def __dealloc__(self):
+        free(self._stack)
+
+    cdef bint is_empty(self):
+        return self.top <= 0
+
+    cdef push(self, myhtml_tree_node_t* res):
+        if self.top >= self.capacity:
+            self.resize()
+        self._stack[self.top] = res
+        self.top += 1
+
+    cdef myhtml_tree_node_t * pop(self):
+        self.top = self.top - 1
+        return self._stack[self.top]
+
+    cdef resize(self):
+        self.capacity *= 2
+        self._stack = <myhtml_tree_node_t**> realloc(
+            <void*> self._stack,
+            self.capacity * sizeof(myhtml_tree_node_t)
+        )
 
 cdef class Node:
     """A class that represents HTML node (element)."""
@@ -46,6 +78,7 @@ cdef class Node:
         ----------
         strip : bool, default False
         separator : str, default ''
+            The separator to use when joining text from different nodes.
         deep : bool, default True
             Whenever to include text from all child nodes.
 
@@ -73,19 +106,30 @@ cdef class Node:
 
     cdef inline _text_deep(self, myhtml_tree_node_t *node, separator='', strip=False):
         text = ""
+        cdef Stack stack = Stack(100)
+        cdef myhtml_tree_node_t* current_node = NULL;
+        
+        if node is NULL:
+            return text
+
+        stack.push(node)
 
         # Depth-first left-to-right tree traversal
-        if node != NULL:
-            if node.tag_id == MyHTML_TAG__TEXT:
-                c_text = myhtml_node_text(node, NULL)
-                if c_text != NULL:
-                    node_text = c_text.decode('utf-8', self.parser.decode_errors)
-                    text = append_text(text, node_text, separator, strip)
+        while not stack.is_empty():
+            current_node = stack.pop()
 
-            if node.child is not NULL:
-                text += self._text_deep(node.child, separator=separator, strip=strip)
-            if node.next is not NULL:
-                text += self._text_deep(node.next, separator=separator, strip=strip)
+            if current_node != NULL:
+                if current_node.tag_id == MyHTML_TAG__TEXT:
+                    c_text = myhtml_node_text(current_node, NULL)
+                    if c_text != NULL:
+                        node_text = c_text.decode('utf-8', self.parser.decode_errors)
+                        text = append_text(text, node_text, separator, strip)
+
+            if current_node.next is not NULL:
+                stack.push(current_node.next)
+
+            if current_node.child is not NULL:
+                stack.push(current_node.child)
 
         return text
 

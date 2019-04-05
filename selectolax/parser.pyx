@@ -199,7 +199,7 @@ cdef class HTMLParser:
         return result
 
     def text(self, bool deep=True, str separator='', bool strip=False):
-        return self.body.text(deep=deep, separator='', strip=False)
+        return self.body.text(deep=deep, separator=separator, strip=False)
 
     def strip_tags(self, list tags):
         """Remove specified tags from the node.

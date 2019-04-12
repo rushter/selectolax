@@ -10,8 +10,6 @@ selectolax
 
 A fast HTML5 parser and CSS selectors using `Modest engine <https://github.com/lexborisov/Modest/>`_.
 
-* Alpha version.
-
 
 Installation
 ------------

@@ -70,7 +70,7 @@ cdef class HTMLParser:
         return node.css(query)
 
     def css_first(self, str query, default=None, strict=False):
-        """Same as `css` but returns only first match.
+        """Same as `css` but returns only the first match.
         
         Parameters
         ----------
@@ -136,6 +136,7 @@ cdef class HTMLParser:
 
     @property
     def input_encoding(self):
+        """Return encoding of the HTML document."""
         cdef const char* encoding
         encoding = myencoding_name_by_id(self._encoding, NULL)
 
@@ -199,6 +200,21 @@ cdef class HTMLParser:
         return result
 
     def text(self, bool deep=True, str separator='', bool strip=False):
+        """Returns the text of the node including text of all its child nodes.
+
+        Parameters
+        ----------
+        strip : bool, default False
+        separator : str, default ''
+            The separator to use when joining text from different nodes.
+        deep : bool, default True
+            If True, includes text from all child nodes.
+
+        Returns
+        -------
+        text : str
+
+        """
         return self.body.text(deep=deep, separator=separator, strip=False)
 
     def strip_tags(self, list tags):
@@ -228,6 +244,7 @@ cdef class HTMLParser:
 
     @property
     def html(self):
+        """Return HTML representation of the page."""
         return self.root.html
 
     def __dealloc__(self):

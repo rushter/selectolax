@@ -47,7 +47,7 @@ cdef class Node:
     def attributes(self):
         """Get all attributes that belong to the current node.
 
-        Note that the value of empty attributes is None.
+        The value of empty attributes is None.
 
         Returns
         -------
@@ -72,7 +72,7 @@ cdef class Node:
         return attributes
 
     def text(self, bool deep=True, str separator='', bool strip=False):
-        """Returns the text of the node including text of all child nodes.
+        """Returns the text of the node including text of all its child nodes.
 
         Parameters
         ----------
@@ -80,7 +80,7 @@ cdef class Node:
         separator : str, default ''
             The separator to use when joining text from different nodes.
         deep : bool, default True
-            Whenever to include text from all child nodes.
+            If True, includes text from all child nodes.
 
         Returns
         -------
@@ -134,11 +134,11 @@ cdef class Node:
         return text
 
     def iter(self):
-        """Iterate over nodes on the current level
+        """Iterate over nodes on the current level.
 
-        Returns
+        Yields
         -------
-        generator
+        node
         """
 
         cdef myhtml_tree_node_t*node = self.node.child
@@ -168,7 +168,7 @@ cdef class Node:
 
     @property
     def child(self):
-        """Return the child of current node."""
+        """Return the child node."""
         cdef Node node
         if self.node.child:
             node = Node()
@@ -178,7 +178,7 @@ cdef class Node:
 
     @property
     def parent(self):
-        """Return the parent of current node."""
+        """Return the parent node."""
         cdef Node node
         if self.node.parent:
             node = Node()
@@ -218,7 +218,7 @@ cdef class Node:
 
     @property
     def html(self):
-        """Return html representation of current node including all its child nodes.
+        """Return HTML representation of the current node including all its child nodes.
 
         Returns
         -------
@@ -240,7 +240,7 @@ cdef class Node:
         return None
 
     def css(self, str query):
-        """Performs CSS selector against current node and its child nodes."""
+        """Evaluate CSS selector against current node and its child nodes."""
         cdef myhtml_collection_t *collection
         cdef Selector selector = Selector(query)
 
@@ -258,7 +258,7 @@ cdef class Node:
         return result
 
     def css_first(self, str query, default=None, bool strict=False):
-        """Performs CSS selector against current node and its child nodes."""
+        """Evaluate CSS selector against current node and its child nodes."""
         results = self.css(query)
         n_results = len(results)
 

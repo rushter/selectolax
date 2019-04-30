@@ -7,7 +7,7 @@ import platform
 import sys
 from setuptools import setup, find_packages, Extension
 
-with open('README.rst') as readme_file:
+with open('README.rst', mode='rt', encoding='utf-8') as readme_file:
     readme = readme_file.read()
 
 # Setup flags

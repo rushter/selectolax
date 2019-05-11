@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+import io
 import os
 import platform
 
 import sys
 from setuptools import setup, find_packages, Extension
 
-with open('README.rst', mode='rt', encoding='utf-8') as readme_file:
+with io.open('README.rst', mode='rt', encoding='utf-8') as readme_file:
     readme = readme_file.read()
 
 # Setup flags

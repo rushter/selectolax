@@ -3,14 +3,13 @@ name: Python package
 on: [push]
 
 jobs:
-  build:
-
-    runs-on: ubuntu-latest
+  test:
     strategy:
       max-parallel: 4
       matrix:
         python-version: [3.5, 3.6, 3.7]
-
+        platform: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.platform }}
     steps:
     - uses: actions/checkout@v1
       with:

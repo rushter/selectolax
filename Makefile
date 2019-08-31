@@ -51,11 +51,7 @@ lint: ## check style with flake8
 	flake8 selectolax tests
 
 test: ## run tests quickly with the default Python
-	py.test
-	
-
-test-all: ## run tests on every Python version with tox
-	tox
+	pytest tests -s
 
 coverage: ## check code coverage quickly with the default Python
 	coverage run --source selectolax -m pytest
@@ -85,3 +81,9 @@ dist: clean ## builds source and wheel package
 
 install: clean ## install the package to the active Python's site-packages
 	python setup.py install
+
+dev:
+	python setup.py build_ext --inplace --cython
+
+dev-static:
+	python setup.py build_ext --inplace --cython --static

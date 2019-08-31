@@ -5,9 +5,6 @@ selectolax
 .. image:: https://img.shields.io/pypi/v/selectolax.svg
         :target: https://pypi.python.org/pypi/selectolax
 
-.. image:: https://img.shields.io/travis/rushter/selectolax.svg
-        :target: https://travis-ci.org/rushter/selectolax
-
 A fast HTML5 parser and CSS selectors using `Modest engine <https://github.com/lexborisov/Modest/>`_.
 
 
@@ -28,6 +25,12 @@ Development version from github:
         pip install -r requirements_dev.txt
         python setup.py install
 
+How to compile selectolax while developing:
+
+.. code-block:: bash
+
+    make clean
+    make dev
 
 Examples
 --------

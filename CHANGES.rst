@@ -4,7 +4,7 @@ selectolax Changelog
 Version 0.2
 -----------
 
-Unreleased
+Released
 
 -   Fix `iter()` does not yield text nodes
 -   Switch from TravisCI to Github Actions

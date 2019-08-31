@@ -299,7 +299,7 @@ cdef class Node:
             node = node.next
 
     def traverse(self):
-        """Iterate over all nodes on starting from the current level.
+        """Iterate over all child and next nodes starting from the current level.
 
         Yields
         -------

@@ -38,8 +38,10 @@ def test_parser():
 
 
 def test_nodes():
-    html = """<div><p id="p1"></p><p id="p2"></p><p id="p3"><a>link</a></p><p id="p4"></p><p id="p5">text</p><p 
-    id="p6"></p></div> """
+    html = (
+        '<div><p id="p1"></p><p id="p2"></p><p id="p3"><a>link</a></p>'
+        '<p id="p4"></p><p id="p5">text</p><p id="p6"></p></div>'
+    )
     htmlp = HTMLParser(html)
 
     assert isinstance(htmlp.root, Node)
@@ -47,4 +49,3 @@ def test_nodes():
     html_output = htmlp.html
     assert len(html_output) >= len(html)
     assert SequenceMatcher(None, html, html_output).ratio() > 0.8
-

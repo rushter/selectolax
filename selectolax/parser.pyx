@@ -1,4 +1,5 @@
-#cython: boundscheck=False, wraparound=False, nonecheck=False, language_level=3
+# cython: boundscheck=False, wraparound=False, nonecheck=False, language_level=3
+
 from cpython cimport bool
 
 include "selector.pxi"
@@ -222,25 +223,40 @@ cdef class HTMLParser:
 
         Parameters
         ----------
-        tags : list,
+        tags : list
             List of tags to remove.
 
         Examples
         --------
 
-        >>> tree = HTMLParser(html)
-        >>> tags = ['style', 'script', 'xmp', 'iframe', 'noembed', 'noframes']
+        >>> tree = HTMLParser('<html><head></head><body><script></script><div>Hello world!</div></body></html>')
+        >>> tags = ['head', 'style', 'script', 'xmp', 'iframe', 'noembed', 'noframes']
         >>> tree.strip_tags(tags)
+        >>> tree.html
+        '<html><body><div>Hello world!</div></body></html>'
 
         """
+        return self.root.strip_tags(tags)
 
-        node = Node()
-        node._init(self.html_tree.node_html, self)
+    def unwrap_tags(self, list tags):
+        """Unwraps specified tags from the HTML tree.
 
-        for tag in tags:
-            for element in node.css(tag):
-                element.decompose()
-        return node
+        Works the same as th `unwrap` method, but applied to a list of tags.
+
+        Parameters
+        ----------
+        tags : list
+            List of tags to remove.
+
+        Examples
+        --------
+
+        >>> tree = HTMLParser("<div><a href="">Hello</a> <i>world</i>!</div>")
+        >>> tree.body.unwrap_tags(['i','a'])
+        >>> tree.body.html
+        '<body><div>Hello world!</div></body>'
+        """
+        self.root.unwrap_tags(tags)
 
     @property
     def html(self):

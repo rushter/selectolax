@@ -81,3 +81,124 @@ def test_malformed_attributes():
 
     for tag in html_parser.tags('meta'):
         assert tag
+
+
+def test_iter():
+    html = """
+    <div id="description">
+        <h1>Title</h1>
+        text
+        <div>foo</div>
+        <img scr="image.jpg">
+    </div>
+    """
+    html_parser = HTMLParser(html)
+    expected_tags = ['-text', 'h1', '-text', 'div', '-text', 'img', '-text']
+    actual_tags = [node.tag for node in html_parser.css_first('#description').iter()]
+    assert expected_tags == actual_tags
+
+
+def test_node_navigation():
+    html = (
+        '<div id="parent"><div id="prev"></div><div id="test_node"><h1 id="child">Title</h1>'
+        '<div>foo</div><img scr="image.jpg"></div><div id="next"></div></div>'
+    )
+    html_parser = HTMLParser(html)
+    main_node = html_parser.css_first('#test_node')
+    assert main_node.prev.id == 'prev'
+    assert main_node.next.id == 'next'
+    assert main_node.parent.id == 'parent'
+    assert main_node.child.id == 'child'
+
+
+@pytest.mark.parametrize("html,expected", [("<div id='my_node'></div>", 'my_node'), ("<div></div>", None)])
+def test_get_node_id(html, expected):
+    html_parser = HTMLParser(html)
+    node = html_parser.css_first('div')
+    assert node.id == expected
+
+
+def test_html_attribute_works_for_text():
+    html = '<div>foo bar</div>'
+    html_parser = HTMLParser(html)
+    node = html_parser.css_first('div').child
+    assert node.html == 'foo bar'
+
+
+def test_text_node_returns_text():
+    html = '<div>foo bar</div>'
+    html_parser = HTMLParser(html)
+    node = html_parser.css_first('div').child
+    assert node.text(deep=False) == 'foo bar'
+
+
+def test_text_node_returns_text_when_deep():
+    html = '<div>foo bar</div>'
+    html_parser = HTMLParser(html)
+    node = html_parser.css_first('div').child
+    assert node.text(deep=True) == 'foo bar'
+
+
+def test_unwrap():
+    html = '<a id="url" href="https://rushter.com/">I linked to <i>rushter.com</i></a>'
+    html_parser = HTMLParser(html)
+    node = html_parser.css_first('i')
+    node.unwrap()
+    assert html_parser.body.child.html == '<a id="url" href="https://rushter.com/">I linked to rushter.com</a>'
+
+
+def test_unwrap_tags():
+    html_parser = HTMLParser("<div><a href="">Hello</a> <i>world</i>!</div>")
+    html_parser.body.unwrap_tags(['i', 'a'])
+    assert html_parser.body.html == '<body><div>Hello world!</div></body>'
+
+
+def test_unwraps_multiple_child_nodes():
+    html = """
+    <div id="test">
+        foo <span>bar <i>Lor<span>ems</span></i> I <span class='p3'>dummy <div>text</div></span></span>
+    </div>
+    """
+    html_parser = HTMLParser(html)
+    html_parser.body.unwrap_tags(['span', 'i'])
+    assert html_parser.body.child.html == '<div id="test">\n        foo bar Lorems I dummy <div>text</div>\n    </div>'
+
+
+def test_replace_with():
+    html_parser = HTMLParser('<div>Get <img src="" alt="Laptop"></div>')
+    img = html_parser.css_first('img')
+    img.replace_with(img.attributes.get('alt', ''))
+    assert html_parser.body.child.html == '<div>Get Laptop</div>'
+
+
+def test_attrs_adds_attribute():
+    html_parser = HTMLParser('<div id="id"></div>')
+    node = html_parser.css_first('div')
+    node.attrs['new_att'] = 'new'
+    assert node.attributes == {'id': 'id', 'new_att': 'new'}
+
+
+def test_attrs_sets_attribute():
+    html_parser = HTMLParser('<div id="id"></div>')
+    node = html_parser.css_first('div')
+    node.attrs['id'] = 'new_id'
+    assert node.attributes == {'id': 'new_id'}
+
+
+def test_attrs_removes_attribute():
+    html_parser = HTMLParser('<div id="id"></div>')
+    node = html_parser.css_first('div')
+    del node.attrs['id']
+    assert node.attributes == {}
+
+
+def test_attrs_test_dict_features():
+    html_parser = HTMLParser('<div id="id" v data-id="foo"></div>')
+    node = html_parser.css_first('div')
+    node.attrs['new_att'] = 'new'
+    assert list(node.attrs.keys()) == ['id', 'v', 'data-id', 'new_att']
+    assert list(node.attrs.values()) == ['id', None, 'foo', 'new']
+    assert len(node.attrs) == 4
+    assert node.attrs.get('unknown_field', 'default_value') == 'default_value'
+    assert 'id' in node.attrs
+    assert 'vid' not in node.attrs

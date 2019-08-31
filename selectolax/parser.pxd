@@ -1,4 +1,4 @@
-
+# cython: boundscheck=False, wraparound=False, nonecheck=False, language_level=3
 
 cdef extern from "myhtml/myhtml.h" nogil:
     ctypedef unsigned int mystatus_t
@@ -346,6 +346,12 @@ cdef extern from "myhtml/myhtml.h" nogil:
         MyHTML_TAG_FIRST_ENTRY         = MyHTML_TAG__TEXT
         MyHTML_TAG_LAST_ENTRY          = 0x0fc
 
+    ctypedef enum myhtml_tree_parse_flags_t:
+        MyHTML_TREE_PARSE_FLAGS_CLEAN = 0x000
+        MyHTML_TREE_PARSE_FLAGS_WITHOUT_BUILD_TREE = 0x001
+        MyHTML_TREE_PARSE_FLAGS_WITHOUT_PROCESS_TOKEN = 0x003
+        MyHTML_TREE_PARSE_FLAGS_SKIP_WHITESPACE_TOKEN = 0x004
+        MyHTML_TREE_PARSE_FLAGS_WITHOUT_DOCTYPE_IN_TREE = 0x008
 
     ctypedef  struct myhtml_token_node_t:
         myhtml_tag_id_t tag_id
@@ -398,6 +404,7 @@ cdef extern from "myhtml/myhtml.h" nogil:
     mystatus_t myhtml_parse(myhtml_tree_t* tree, myencoding_t encoding, const char* html, size_t html_size)
 
     myhtml_tree_attr_t* myhtml_node_attribute_first(myhtml_tree_node_t* node)
+    myhtml_tree_attr_t* myhtml_attribute_by_key(myhtml_tree_node_t *node, const char *key, size_t key_len)
     const char* myhtml_node_text(myhtml_tree_node_t *node, size_t *length)
     mycore_string_t * myhtml_node_string(myhtml_tree_node_t *node)
     const char * myhtml_tag_name_by_id(myhtml_tree_t* tree, myhtml_tag_id_t tag_id, size_t *length)
@@ -414,7 +421,19 @@ cdef extern from "myhtml/myhtml.h" nogil:
 
     void myhtml_node_delete(myhtml_tree_node_t *node)
     void myhtml_node_delete_recursive(myhtml_tree_node_t *node)
+    void myhtml_tree_parse_flags_set(myhtml_tree_t* tree, myhtml_tree_parse_flags_t parse_flags)
+    myhtml_tree_node_t * myhtml_node_insert_before(myhtml_tree_node_t *target, myhtml_tree_node_t *node)
+    myhtml_tree_node_t * myhtml_node_insert_after(myhtml_tree_node_t *target, myhtml_tree_node_t *node)
+    myhtml_tree_node_t * myhtml_node_create(myhtml_tree_t* tree, myhtml_tag_id_t tag_id, myhtml_namespace ns)
+    mycore_string_t * myhtml_node_text_set(myhtml_tree_node_t *node, const char* text, size_t length,
+                                          myencoding_t encoding)
+    myhtml_tree_attr_t * myhtml_attribute_by_key(myhtml_tree_node_t *node, const char *key, size_t key_len)
+    myhtml_tree_attr_t * myhtml_attribute_remove_by_key(myhtml_tree_node_t *node, const char *key, size_t key_len)
+    myhtml_tree_attr_t * myhtml_attribute_add(myhtml_tree_node_t *node, const char *key, size_t key_len,
+                                              const char *value, size_t value_len, myencoding_t encoding)
 
+cdef extern from "myhtml/tree.h" nogil:
+    myhtml_tree_node_t * myhtml_tree_node_clone(myhtml_tree_node_t* node)
 
 cdef extern from "myhtml/serialization.h" nogil:
     mystatus_t myhtml_serialization(myhtml_tree_node_t* scope_node, mycore_string_raw_t* str)

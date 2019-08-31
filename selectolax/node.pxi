@@ -2,6 +2,8 @@ from libc.stdlib cimport free
 from libc.stdlib cimport malloc
 from libc.stdlib cimport realloc
 
+DEF _STACK_SIZE = 100
+DEF _ENCODING = 'UTF-8'
 
 cdef class Stack:
     def __cinit__(self, size_t capacity=25):
@@ -27,10 +29,91 @@ cdef class Stack:
 
     cdef resize(self):
         self.capacity *= 2
-        self._stack = <myhtml_tree_node_t**> realloc(
-            <void*> self._stack,
-            self.capacity * sizeof(myhtml_tree_node_t)
-        )
+        self._stack = <myhtml_tree_node_t**> realloc(<void*> self._stack, self.capacity * sizeof(myhtml_tree_node_t))
+
+
+cdef class _Attributes:
+    """A dict-like object that represents attributes."""
+    cdef myhtml_tree_node_t * node
+    cdef unicode decode_errors
+
+    @staticmethod
+    cdef _Attributes create(myhtml_tree_node_t *node, unicode decode_errors):
+        obj = <_Attributes>_Attributes.__new__(_Attributes)
+        obj.node = node
+        obj.decode_errors = decode_errors
+        return obj
+
+    def __iter__(self):
+        cdef myhtml_tree_attr_t *attr = myhtml_node_attribute_first(self.node)
+        while attr:
+            if attr.key.data == NULL:
+                attr = attr.next
+                continue
+            key = attr.key.data.decode(_ENCODING, self.decode_errors)
+            attr = attr.next
+            yield key
+
+    def __setitem__(self, str key, value):
+        value = str(value)
+        bytes_key = key.encode(_ENCODING)
+        bytes_value = value.encode(_ENCODING)
+        myhtml_attribute_remove_by_key(self.node, <char*>bytes_key, len(bytes_key))
+        myhtml_attribute_add(self.node, <char*>bytes_key, len(bytes_key), <char*>bytes_value, len(bytes_value),
+                             MyENCODING_UTF_8)
+
+    def __delitem__(self, key):
+        try:
+            self.__getitem__(key)
+        except KeyError:
+            raise KeyError(key)
+        bytes_key = key.encode(_ENCODING)
+        myhtml_attribute_remove_by_key(self.node, <char*>bytes_key, len(bytes_key))
+
+    def __getitem__(self, str key):
+        bytes_key = key.encode(_ENCODING)
+        cdef myhtml_tree_attr_t * attr =  myhtml_attribute_by_key(self.node, <char*>bytes_key, len(bytes_key))
+        if attr != NULL:
+            if attr.value.data != NULL:
+                return attr.value.data.decode(_ENCODING, self.decode_errors)
+            elif attr.key.data != NULL:
+                return None
+        raise KeyError(key)
+
+    def __len__(self):
+        return len(list(self.__iter__()))
+
+    def keys(self):
+        return self.__iter__()
+
+    def items(self):
+        for key in self.__iter__():
+            yield (key, self(key))
+
+    def values(self):
+        for key in self.__iter__():
+            yield self[key]
+
+    def get(self, key, default=None):
+        try:
+            return self[key]
+        except KeyError:
+            return default
+
+    def __contains__(self, key):
+        try:
+            self[key]
+        except KeyError:
+            return False
+        else:
+            return True
+
+    def __repr__(self):
+        cdef const char *c_text
+        c_text = myhtml_tag_name_by_id(self.node.tree, self.node.tag_id, NULL)
+        tag_name = c_text.decode(_ENCODING, 'ignore')
+        return "<%s attributes, %s items>" % (tag_name, len(self))
+
 
 cdef class Node:
     """A class that represents HTML node (element)."""
@@ -52,6 +135,14 @@ cdef class Node:
         Returns
         -------
         attributes : dictionary of all attributes.
+
+        Examples
+        --------
+
+        >>> tree = HTMLParser("<div data id='my_id'></div>")
+        >>> node = tree.css_first('div')
+        >>> node.attributes
+        {'data': None, 'id': 'my_id'}
         """
         cdef myhtml_tree_attr_t *attr = myhtml_node_attribute_first(self.node)
         attributes = dict()
@@ -60,9 +151,9 @@ cdef class Node:
             if attr.key.data == NULL:
                 attr = attr.next
                 continue
-            key = attr.key.data.decode('UTF-8', self.parser.decode_errors)
+            key = attr.key.data.decode(_ENCODING, self.parser.decode_errors)
             if attr.value.data:
-                value = attr.value.data.decode('UTF-8', self.parser.decode_errors)
+                value = attr.value.data.decode(_ENCODING, self.parser.decode_errors)
             else:
                 value = None
             attributes[key] = value
@@ -70,6 +161,51 @@ cdef class Node:
             attr = attr.next
 
         return attributes
+
+    @property
+    def attrs(self):
+        """A dict-like object that is similar to the ``attributes`` property, but operates directly on the Node data.
+
+        .. warning:: Use ``attributes`` instead, if you don't want to modify Node attributes.
+
+        Returns
+        -------
+        attributes : Attributes mapping object..
+
+        Examples
+        --------
+
+        >>> tree = HTMLParser("<div id='a'></div>")
+        >>> node = tree.css_first('div')
+        >>> node.attrs
+        <div attributes, 1 items>
+        >>> node.attrs['id']
+        'a'
+        >>> node.attrs['foo'] = 'bar'
+        >>> del node.attrs['id']
+        >>> node.attributes
+        {'foo': 'bar'}
+        >>> node.attrs['id'] = 'new_id'
+        >>> node.html
+        '<div foo="bar" id="new_id"></div>'
+        """
+        cdef _Attributes attributes = _Attributes.create(self.node, self.parser.decode_errors)
+        return attributes
+
+    @property
+    def id(self):
+        """Get the id attribute of the node.
+
+        Returns None if id does not set.
+
+        Returns
+        -------
+        text : str
+        """
+        cdef char* key = 'id'
+        cdef myhtml_tree_attr_t *attr
+        attr = myhtml_attribute_by_key(self.node, key, 2)
+        return None if attr == NULL else attr.value.data.decode(_ENCODING, self.parser.decode_errors)
 
     def text(self, bool deep=True, str separator='', bool strip=False):
         """Returns the text of the node including text of all its child nodes.
@@ -89,30 +225,42 @@ cdef class Node:
         """
         text = ""
         cdef const char* c_text
-        cdef myhtml_tree_node_t*node = self.node.child
+        cdef myhtml_tree_node_t *node = self.node.child
 
         if not deep:
-            texts = []
+            if self.node.tag_id == MyHTML_TAG__TEXT:
+                c_text = myhtml_node_text(self.node, NULL)
+                if c_text != NULL:
+                    node_text = c_text.decode(_ENCODING, self.parser.decode_errors)
+                    text = append_text(text, node_text, separator, strip)
+
             while node != NULL:
                 if node.tag_id == MyHTML_TAG__TEXT:
                     c_text = myhtml_node_text(node, NULL)
                     if c_text != NULL:
-                        node_text = c_text.decode('utf-8', self.parser.decode_errors)
+                        node_text = c_text.decode(_ENCODING, self.parser.decode_errors)
                         text = append_text(text, node_text, separator, strip)
                 node = node.next
         else:
-            return self._text_deep(node, separator=separator, strip=strip)
+            return self._text_deep(self.node, separator=separator, strip=strip)
         return text
 
     cdef inline _text_deep(self, myhtml_tree_node_t *node, separator='', strip=False):
         text = ""
-        cdef Stack stack = Stack(100)
+        cdef Stack stack = Stack(_STACK_SIZE)
         cdef myhtml_tree_node_t* current_node = NULL;
-        
-        if node is NULL:
+
+        if node.tag_id == MyHTML_TAG__TEXT and node.next == NULL and node.child == NULL:
+            c_text = myhtml_node_text(node, NULL)
+            if c_text != NULL:
+                node_text = c_text.decode(_ENCODING, self.parser.decode_errors)
+                text = append_text(text, node_text, separator, strip)
             return text
 
-        stack.push(node)
+        if node.child == NULL:
+            return ""
+
+        stack.push(node.child)
 
         # Depth-first left-to-right tree traversal
         while not stack.is_empty():
@@ -122,7 +270,7 @@ cdef class Node:
                 if current_node.tag_id == MyHTML_TAG__TEXT:
                     c_text = myhtml_node_text(current_node, NULL)
                     if c_text != NULL:
-                        node_text = c_text.decode('utf-8', self.parser.decode_errors)
+                        node_text = c_text.decode(_ENCODING, self.parser.decode_errors)
                         text = append_text(text, node_text, separator, strip)
 
             if current_node.next is not NULL:
@@ -143,13 +291,40 @@ cdef class Node:
 
         cdef myhtml_tree_node_t*node = self.node.child
         cdef Node next_node
+
         while node != NULL:
-            if node.tag_id != MyHTML_TAG__TEXT:
+            next_node = Node()
+            next_node._init(node, self.parser)
+            yield next_node
+            node = node.next
+
+    def traverse(self):
+        """Iterate over all nodes on starting from the current level.
+
+        Yields
+        -------
+        node
+        """
+        text = ""
+        cdef Stack stack = Stack(_STACK_SIZE)
+        cdef myhtml_tree_node_t* current_node = NULL;
+        cdef Node next_node;
+
+        stack.push(self.node)
+
+        while not stack.is_empty():
+            current_node = stack.pop()
+
+            if current_node != NULL:
                 next_node = Node()
-                next_node._init(node, self.parser)
+                next_node._init(current_node, self.parser)
                 yield next_node
 
-            node = node.next
+            if current_node.next is not NULL:
+                stack.push(current_node.next)
+
+            if current_node.child is not NULL:
+                stack.push(current_node.child)
 
     @property
     def tag(self):
@@ -163,7 +338,7 @@ cdef class Node:
         c_text = myhtml_tag_name_by_id(self.node.tree, self.node.tag_id, NULL)
         text = None
         if c_text:
-            text = c_text.decode("utf-8", self.parser.decode_errors)
+            text = c_text.decode(_ENCODING, self.parser.decode_errors)
         return text
 
     @property
@@ -233,7 +408,7 @@ cdef class Node:
         status = myhtml_serialization(self.node, &c_str)
 
         if status == 0 and c_str.data:
-            html = c_str.data.decode('utf-8').replace('<-undef>', '')
+            html = c_str.data.decode(_ENCODING).replace('<-undef>', '')
             free(c_str.data)
             return html
 
@@ -272,7 +447,7 @@ cdef class Node:
         return default
 
     def decompose(self, bool recursive=True):
-        """Remove an element from the tree.
+        """Remove a Node from the tree.
 
         Parameters
         ----------
@@ -292,27 +467,115 @@ cdef class Node:
         else:
             myhtml_node_delete(self.node)
 
+    def remove(self, bool recursive=True):
+        """An alias for the decompose method."""
+        self.decompose(recursive)
+
+    def unwrap(self):
+        """Replace node with whatever is inside this node.
+
+        Examples
+        --------
+
+        >>>  tree = HTMLParser("<div>Hello <i>world</i>!</div>")
+        >>>  tree.css_first('i').unwrap()
+        >>>  tree.html
+        '<html><head></head><body><div>Hello world!</div></body></html>'
+
+        """
+        if self.node.child == NULL:
+            return
+        cdef myhtml_tree_node_t* next_node;
+        cdef myhtml_tree_node_t* current_node;
+
+        if self.node.child.next != NULL:
+            current_node = self.node.child
+            next_node = current_node.next
+
+            while next_node != NULL:
+                next_node = current_node.next
+                myhtml_node_insert_before(self.node, current_node)
+                current_node = next_node
+        else:
+            myhtml_node_insert_before(self.node, self.node.child)
+        myhtml_node_delete(self.node)
+
     def strip_tags(self, list tags):
         """Remove specified tags from the HTML tree.
 
         Parameters
         ----------
-        tags : list,
+        tags : list
             List of tags to remove.
 
         Examples
         --------
 
-        >>> tree = HTMLParser(html)
-        >>> tags = ['style', 'script', 'xmp', 'iframe', 'noembed', 'noframes']
+        >>> tree = HTMLParser('<html><head></head><body><script></script><div>Hello world!</div></body></html>')
+        >>> tags = ['head', 'style', 'script', 'xmp', 'iframe', 'noembed', 'noframes']
         >>> tree.strip_tags(tags)
+        >>> tree.html
+        '<html><body><div>Hello world!</div></body></html>'
 
+        """
+        for tag in tags:
+            for element in self.css(tag):
+                element.decompose()
+
+    def unwrap_tags(self, list tags):
+        """Unwraps specified tags from the HTML tree.
+
+        Works the same as th ``unwrap`` method, but applied to a list of tags.
+
+        Parameters
+        ----------
+        tags : list
+            List of tags to remove.
+
+        Examples
+        --------
+
+        >>> tree = HTMLParser("<div><a href="">Hello</a> <i>world</i>!</div>")
+        >>> tree.body.unwrap_tags(['i','a'])
+        >>> tree.body.html
+        '<body><div>Hello world!</div></body>'
         """
 
         for tag in tags:
             for element in self.css(tag):
-                element.decompose()
-        return self
+                element.unwrap()
+
+    def replace_with(self, str value):
+        """Replace current Node with specified value.
+
+        Currently, limited to plain-text strings only.
+
+        Parameters
+        ----------
+        value : str
+            The text to replace the Node with.
+
+        Examples
+        --------
+
+        >>> tree = HTMLParser('<div>Get <img src="" alt="Laptop"></div>')
+        >>> img = tree.css_first('img')
+        >>> img.replace_with(img.attributes.get('alt', ''))
+        >>> tree.body.child.html
+        '<div>Get Laptop</div>'
+        """
+        cdef myhtml_tree_node_t* text_node
+        if isinstance(value, (str, unicode)):
+            bytes_val = value.encode(_ENCODING)
+        elif isinstance(value, bytes):
+            bytes_val = value
+        else:
+            raise TypeError("Expected a string, but %s found" % type(value).__name__)
+
+        text_node = myhtml_node_create(self.parser.html_tree, MyHTML_TAG__TEXT, MyHTML_NAMESPACE_HTML)
+        myhtml_node_text_set(text_node, <char*> bytes_val, len(bytes_val), MyENCODING_UTF_8)
+        myhtml_node_insert_before(self.node, text_node)
+        myhtml_node_delete(self.node)
 
     def __repr__(self):
         return '<Node %s>' % self.tag

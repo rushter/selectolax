@@ -51,7 +51,7 @@ lint: ## check style with flake8
 	flake8 selectolax tests
 
 test: ## run tests quickly with the default Python
-	pytest tests -s
+	pytest tests -s -v
 
 coverage: ## check code coverage quickly with the default Python
 	coverage run --source selectolax -m pytest

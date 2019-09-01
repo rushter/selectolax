@@ -83,7 +83,7 @@ def test_malformed_attributes():
         assert tag
 
 
-def test_iter():
+def test_iter_with_text():
     html = """
     <div id="description">
         <h1>Title</h1>
@@ -94,7 +94,22 @@ def test_iter():
     """
     html_parser = HTMLParser(html)
     expected_tags = ['-text', 'h1', '-text', 'div', '-text', 'img', '-text']
-    actual_tags = [node.tag for node in html_parser.css_first('#description').iter()]
+    actual_tags = [node.tag for node in html_parser.css_first('#description').iter(include_text=True)]
+    assert expected_tags == actual_tags
+
+
+def test_iter_no_text():
+    html = """
+    <div id="description">
+        <h1>Title</h1>
+        text
+        <div>foo</div>
+        <img scr="image.jpg">
+    </div>
+    """
+    html_parser = HTMLParser(html)
+    expected_tags = ['h1', 'div','img']
+    actual_tags = [node.tag for node in html_parser.css_first('#description').iter(include_text=False)]
     assert expected_tags == actual_tags
 
 
@@ -171,6 +186,13 @@ def test_replace_with():
     assert html_parser.body.child.html == '<div>Get Laptop</div>'
 
 
+def test_replace_with_multiple_nodes():
+    html_parser = HTMLParser('<div>Get <span alt="Laptop"><img src="/jpg"> <div>/div></span></div>')
+    img = html_parser.css_first('span')
+    img.replace_with(img.attributes.get('alt', ''))
+    assert html_parser.body.child.html == '<div>Get Laptop</div>'
+
+
 def test_attrs_adds_attribute():
     html_parser = HTMLParser('<div id="id"></div>')
     node = html_parser.css_first('div')
@@ -202,3 +224,25 @@ def test_attrs_test_dict_features():
     assert node.attrs.get('unknown_field', 'default_value') == 'default_value'
     assert 'id' in node.attrs
     assert 'vid' not in node.attrs
+
+
+def test_traverse():
+    html = (
+        '<div id="parent"><div id="prev"></div><div id="test_node"><h1 id="child">Title</h1>'
+        '<div>foo</div><img scr="image.jpg"></div><div id="next"></div></div>'
+    )
+    html_parser = HTMLParser(html)
+    actual = [node.tag for node in html_parser.root.traverse()]
+    expected = ['-undef', 'html', 'head', 'body', 'div', 'div', 'div', 'h1', 'div', 'img', 'div']
+    assert actual == expected
+
+
+def test_traverse_with_text():
+    html = (
+        '<div id="parent"><div id="prev"></div><div id="test_node"><h1 id="child">Title</h1>'
+        '<div>foo</div><img scr="image.jpg"></div><div id="next"></div></div>'
+    )
+    html_parser = HTMLParser(html)
+    actual = [node.tag for node in html_parser.root.traverse(include_text=True)]
+    expected = ['-undef', 'html', 'head', 'body', 'div', 'div', 'div', 'h1', '-text', 'div', '-text', 'img', 'div']
+    assert actual == expected

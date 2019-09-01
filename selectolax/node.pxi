@@ -281,8 +281,13 @@ cdef class Node:
 
         return text
 
-    def iter(self):
+    def iter(self, include_text=False):
         """Iterate over nodes on the current level.
+
+        Parameters
+        ----------
+        include_text : bool
+            If True, includes text nodes as well.
 
         Yields
         -------
@@ -293,13 +298,23 @@ cdef class Node:
         cdef Node next_node
 
         while node != NULL:
+            if node.tag_id == MyHTML_TAG__TEXT and not include_text:
+                node = node.next
+                continue
+
             next_node = Node()
             next_node._init(node, self.parser)
             yield next_node
             node = node.next
 
-    def traverse(self):
+
+    def traverse(self, include_text=False):
         """Iterate over all child and next nodes starting from the current level.
+
+        Parameters
+        ----------
+        include_text : bool
+            If True, includes text nodes as well.
 
         Yields
         -------
@@ -314,8 +329,7 @@ cdef class Node:
 
         while not stack.is_empty():
             current_node = stack.pop()
-
-            if current_node != NULL:
+            if current_node != NULL and not (current_node.tag_id == MyHTML_TAG__TEXT and not include_text):
                 next_node = Node()
                 next_node._init(current_node, self.parser)
                 yield next_node

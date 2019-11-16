@@ -594,6 +594,14 @@ cdef class Node:
     def __repr__(self):
         return '<Node %s>' % self.tag
 
+    def __eq__(self, other):
+        if isinstance(other, str):
+            return self.html == other
+        if not isinstance(other, Node):
+            return False
+        return self.html == other.html
+
+
 cdef inline str append_text(str text, str node_text, str separator='', bint strip=False):
     if strip:
         text += node_text.strip() + separator

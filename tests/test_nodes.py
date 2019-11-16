@@ -246,3 +246,32 @@ def test_traverse_with_text():
     actual = [node.tag for node in html_parser.root.traverse(include_text=True)]
     expected = ['-undef', 'html', 'head', 'body', 'div', 'div', 'div', 'h1', '-text', 'div', '-text', 'img', 'div']
     assert actual == expected
+
+
+def test_node_comparison():
+    html = """
+        <div>H3ll0</div><div id='tt'><p id='stext'>Lorem ipsum dolor sit amet, ea quo modus meliore platonem.</p></div>
+    """
+    html_parser = HTMLParser(html)
+    nodes = [node for node in html_parser.root.traverse(include_text=False)]
+    same_node_path_one = nodes[-1].parent
+    same_node_path_two = nodes[-2]
+    same_node_path_three = html_parser.css_first('#tt')
+    assert same_node_path_one == same_node_path_two == same_node_path_three
+
+
+def test_node_comprassion_with_strings():
+    html = """<div id="test"></div>"""
+    html_parser = HTMLParser(html)
+    node = html_parser.css_first('#test')
+    assert node == '<div id="test"></div>'
+
+
+def test_node_comparison_fails():
+    html = """<div id="test"></div>"""
+    html_parser = HTMLParser(html)
+    node = html_parser.css_first('#test')
+
+    assert node != None
+    assert node != 123
+    assert node != object

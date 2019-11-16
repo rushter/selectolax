@@ -1,6 +1,10 @@
 selectolax Changelog
 ====================
 
+Unreleased
+
+-   Fix node comparison
+
 Version 0.2.1
 -----------
 

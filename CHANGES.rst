@@ -1,19 +1,22 @@
 selectolax Changelog
 ====================
 
-Unreleased
+Version 0.2.2
+-------------
+
+Released
 
 -   Fix node comparison
 
 Version 0.2.1
------------
+-------------
 
 Released
 
 -   Add optional `include_text` parameter for the `iter` and `traverse` methods
 
 Version 0.2.0
------------
+-------------
 
 Released
 

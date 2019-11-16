@@ -1,6 +1,14 @@
 selectolax Changelog
 ====================
 
+Version 0.2.3
+-------------
+
+Released
+
+-   Rebuild PyPi wheels to support Python 3.8 and manylinux2010
+
+
 Version 0.2.2
 -------------
 

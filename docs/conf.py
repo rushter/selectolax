@@ -65,7 +65,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'selectolax'
-copyright = u"2019, Artem Golubin"
+copyright = u"2018-2020, Artem Golubin"
 
 # The version info for the project you're documenting, acts as replacement
 # for |version| and |release|, also used in various other places throughout

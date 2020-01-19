@@ -1,6 +1,8 @@
 selectolax Changelog
 ====================
 
+-   Set maximum input size to 80MB
+
 Version 0.2.3
 -------------
 

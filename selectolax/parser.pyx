@@ -5,6 +5,8 @@ from cpython cimport bool
 include "selector.pxi"
 include "node.pxi"
 
+MAX_HTML_INPUT_SIZE = 8e+7
+
 cdef class HTMLParser:
     """The HTML parser.
 
@@ -40,6 +42,10 @@ cdef class HTMLParser:
             raise TypeError("Expected a string, but %s found" % type(html).__name__)
 
         html_len = len(bytes_html)
+
+        if html_len > MAX_HTML_INPUT_SIZE:
+            raise ValueError("The specified HTML input is too large to be processed (%d bytes)" % html_len)
+
         html_chars = <char*>bytes_html
 
 

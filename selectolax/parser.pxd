@@ -1,4 +1,4 @@
-# cython: boundscheck=False, wraparound=False, nonecheck=False, language_level=3
+# cython: boundscheck=False, wraparound=False, nonecheck=False, language_level=3, embedsignature=True
 
 cdef extern from "myhtml/myhtml.h" nogil:
     ctypedef unsigned int mystatus_t

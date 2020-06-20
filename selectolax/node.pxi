@@ -591,6 +591,93 @@ cdef class Node:
         myhtml_node_insert_before(self.node, text_node)
         myhtml_node_delete(self.node)
 
+    def insert_before(self, str value):
+        """
+        Insert a node before the current Node.
+
+        Currently, limited to plain-text strings only.
+
+        Parameters
+        ----------
+        value : str
+            The text to insert before the Node.
+
+        Examples
+        --------
+
+        >>> tree = HTMLParser('<div>Get <img src="" alt="Laptop"></div>')
+        >>> img = tree.css_first('img')
+        >>> img.insert_before(img.attributes.get('alt', ''))
+        >>> tree.body.child.html
+        '<div>Get Laptop<img src="" alt="Laptop"></div>'
+        """
+        cdef myhtml_tree_node_t* text_node
+        if isinstance(value, (str, unicode)):
+            bytes_val = value.encode(_ENCODING)
+        elif isinstance(value, bytes):
+            bytes_val = value
+        else:
+            raise TypeError("Expected a string, but %s found" % type(value).__name__)
+
+        text_node = myhtml_node_create(self.parser.html_tree, MyHTML_TAG__TEXT, MyHTML_NAMESPACE_HTML)
+        myhtml_node_text_set(text_node, <char*> bytes_val, len(bytes_val), MyENCODING_UTF_8)
+        myhtml_node_insert_before(self.node, text_node)
+
+    def insert_after(self, str value):
+        """
+        Insert a node after the current Node.
+
+        Currently, limited to plain-text strings only.
+
+        Parameters
+        ----------
+        value : str
+            The text to after before the Node.
+
+        Examples
+        --------
+
+        >>> tree = HTMLParser('<div>Get <img src="" alt="Laptop"></div>')
+        >>> img = tree.css_first('img')
+        >>> img.insert_after(img.attributes.get('alt', ''))
+        >>> tree.body.child.html
+        '<div>Get <img src="" alt="Laptop">Laptop</div>'
+        """
+        cdef myhtml_tree_node_t* text_node
+        if isinstance(value, (str, unicode)):
+            bytes_val = value.encode(_ENCODING)
+        elif isinstance(value, bytes):
+            bytes_val = value
+        else:
+            raise TypeError("Expected a string, but %s found" % type(value).__name__)
+
+        text_node = myhtml_node_create(self.parser.html_tree, MyHTML_TAG__TEXT, MyHTML_NAMESPACE_HTML)
+        myhtml_node_text_set(text_node, <char*> bytes_val, len(bytes_val), MyENCODING_UTF_8)
+        myhtml_node_insert_after(self.node, text_node)
+
+    def unwrap_tags(self, list tags):
+        """Unwraps specified tags from the HTML tree.
+
+        Works the same as th ``unwrap`` method, but applied to a list of tags.
+
+        Parameters
+        ----------
+        tags : list
+            List of tags to remove.
+
+        Examples
+        --------
+
+        >>> tree = HTMLParser("<div><a href="">Hello</a> <i>world</i>!</div>")
+        >>> tree.body.unwrap_tags(['i','a'])
+        >>> tree.body.html
+        '<body><div>Hello world!</div></body>'
+        """
+
+        for tag in tags:
+            for element in self.css(tag):
+                element.unwrap()
+
     def __repr__(self):
         return '<Node %s>' % self.tag
 

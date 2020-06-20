@@ -192,6 +192,18 @@ def test_replace_with_multiple_nodes():
     img.replace_with(img.attributes.get('alt', ''))
     assert html_parser.body.child.html == '<div>Get Laptop</div>'
 
+def test_insert_before():
+    html_parser = HTMLParser('<div>Get <img src="" alt="Laptop"></div>')
+    img = html_parser.css_first('img')
+    img.insert_before(img.attributes.get('alt', ''))
+    assert html_parser.body.child.html == '<div>Get Laptop<img src="" alt="Laptop"></div>'
+
+def test_insert_after():
+    html_parser = HTMLParser('<div>Get <img src="" alt="Laptop"></div>')
+    img = html_parser.css_first('img')
+    img.insert_after(img.attributes.get('alt', ''))
+    assert html_parser.body.child.html == '<div>Get <img src="" alt="Laptop">Laptop</div>'
+
 
 def test_attrs_adds_attribute():
     html_parser = HTMLParser('<div id="id"></div>')

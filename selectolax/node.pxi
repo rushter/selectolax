@@ -632,7 +632,7 @@ cdef class Node:
         Parameters
         ----------
         value : str
-            The text to after before the Node.
+            The text to insert after the Node.
 
         Examples
         --------
@@ -654,6 +654,79 @@ cdef class Node:
         text_node = myhtml_node_create(self.parser.html_tree, MyHTML_TAG__TEXT, MyHTML_NAMESPACE_HTML)
         myhtml_node_text_set(text_node, <char*> bytes_val, len(bytes_val), MyENCODING_UTF_8)
         myhtml_node_insert_after(self.node, text_node)
+
+    def node_replace_with(self, Node value):
+        """Replace current Node with specified node.
+
+        Parameters
+        ----------
+        value : None
+            The Node to replace current Node with.
+
+        Examples
+        --------
+
+        >>> html_parser = HTMLParser(u'<div>Get <span alt="Laptop"><img src="/jpg"> <div></div></span></div>')
+        >>> html_parser2 = HTMLParser(u'<div>Test</div>')
+        >>> node = html_parser.css_first(u'img')
+        >>> node.node_replace_with(html_parser2.body.child)
+        >>> html_parser.body.child.html
+        >>> '<div>Get <span alt="Laptop"><div>Test</div> <div></div></span></div>'
+        """
+        if not isinstance(value, Node):
+            raise TypeError("Expected a Node, but %s found" % type(value).__name__)
+
+        cdef myhtml_tree_node_t *node = value.node
+        myhtml_node_insert_before(self.node, node)
+        myhtml_node_delete(self.node)
+
+    def node_insert_before(self, Node value):
+        """
+        Insert a node before the current Node.
+
+        Parameters
+        ----------
+        value : Node
+            The Node to insert before the Node.
+
+        Examples
+        --------
+
+        >>> html_parser = HTMLParser('<div>Get <span alt="Laptop"><img src="/jpg"> <div></div></span></div>')
+        >>> html_parser2 = HTMLParser('<div>Test</div>')
+        >>> img_node = html_parser.css_first('img')
+        >>> img_node.node_insert_before(html_parser2.body.child)
+        '<div>Get <span alt="Laptop"><div>Test</div><img src="/jpg"> <div></div></span></div>'
+        """
+        if not isinstance(value, Node):
+            raise TypeError("Expected a Node, but %s found" % type(value).__name__)
+
+        cdef myhtml_tree_node_t *node = value.node
+        myhtml_node_insert_before(self.node, node)
+
+    def node_insert_after(self, Node value):
+        """
+        Insert a node after the current Node.
+
+        Parameters
+        ----------
+        value : Node
+            The Node to insert after the Node.
+
+        Examples
+        --------
+
+        >>> html_parser = HTMLParser('<div>Get <span alt="Laptop"><img src="/jpg"> <div></div></span></div>')
+        >>> html_parser2 = HTMLParser('<div>Test</div>')
+        >>> img_node = html_parser.css_first('img')
+        >>> img_node.node_insert_after(html_parser2.body.child)
+        '<div>Get <span alt="Laptop"><img src="/jpg"><div>Test</div> <div></div></span></div>'
+        """
+        if not isinstance(value, Node):
+            raise TypeError("Expected a Node, but %s found" % type(value).__name__)
+
+        cdef myhtml_tree_node_t *node = value.node
+        myhtml_node_insert_after(self.node, node)
 
     def unwrap_tags(self, list tags):
         """Unwraps specified tags from the HTML tree.

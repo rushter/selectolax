@@ -116,7 +116,8 @@ cdef class _Attributes:
 
 
 ctypedef fused str_or_Node:
-    str
+    basestring
+    bytes
     Node
 
 
@@ -570,8 +571,10 @@ cdef class Node:
 
         Parameters
         ----------
-        value : str|Node
+        value : str, bytes or Node
             The text or Node instance to replace the Node with.
+            When a text string is passed, it's treated as text. All HTML tags will be escaped.
+            Convert and pass the ``Node`` object when you want to work with HTML.
 
         Examples
         --------
@@ -581,6 +584,12 @@ cdef class Node:
         >>> img.replace_with(img.attributes.get('alt', ''))
         >>> tree.body.child.html
         '<div>Get Laptop</div>'
+
+        >>> html_parser = HTMLParser('<div>Get <span alt="Laptop"><img src="/jpg"> <div></div></span></div>')
+        >>> html_parser2 = HTMLParser('<div>Test</div>')
+        >>> img_node = html_parser.css_first('img')
+        >>> img_node.replace_with(html_parser2.body.child)
+        '<div>Get <span alt="Laptop"><div>Test</div> <div></div></span></div>'
         """
         cdef myhtml_tree_node_t *node
         if isinstance(value, (str, bytes, unicode)):
@@ -606,8 +615,10 @@ cdef class Node:
 
         Parameters
         ----------
-        value : str|Node
+        value : str, bytes or Node
             The text or Node instance to insert before the Node.
+            When a text string is passed, it's treated as text. All HTML tags will be escaped.
+            Convert and pass the ``Node`` object when you want to work with HTML.
 
         Examples
         --------
@@ -617,6 +628,12 @@ cdef class Node:
         >>> img.insert_before(img.attributes.get('alt', ''))
         >>> tree.body.child.html
         '<div>Get Laptop<img src="" alt="Laptop"></div>'
+
+        >>> html_parser = HTMLParser('<div>Get <span alt="Laptop"><img src="/jpg"> <div></div></span></div>')
+        >>> html_parser2 = HTMLParser('<div>Test</div>')
+        >>> img_node = html_parser.css_first('img')
+        >>> img_node.insert_before(html_parser2.body.child)
+        <div>Get <span alt="Laptop"><div>Test</div><img src="/jpg"> <div></div></span></div>'
         """
         cdef myhtml_tree_node_t *node
         if isinstance(value, (str, bytes, unicode)):
@@ -640,8 +657,10 @@ cdef class Node:
 
         Parameters
         ----------
-        value : str|Node
+        value : str, bytes or Node
             The text or Node instance to insert after the Node.
+            When a text string is passed, it's treated as text. All HTML tags will be escaped.
+            Convert and pass the ``Node`` object when you want to work with HTML.
 
         Examples
         --------
@@ -651,6 +670,12 @@ cdef class Node:
         >>> img.insert_after(img.attributes.get('alt', ''))
         >>> tree.body.child.html
         '<div>Get <img src="" alt="Laptop">Laptop</div>'
+
+        >>> html_parser = HTMLParser('<div>Get <span alt="Laptop"><img src="/jpg"> <div></div></span></div>')
+        >>> html_parser2 = HTMLParser('<div>Test</div>')
+        >>> img_node = html_parser.css_first('img')
+        >>> img_node.insert_after(html_parser2.body.child)
+        <div>Get <span alt="Laptop"><img src="/jpg"><div>Test</div> <div></div></span></div>'
         """
         cdef myhtml_tree_node_t *node
         if isinstance(value, (str, bytes, unicode)):

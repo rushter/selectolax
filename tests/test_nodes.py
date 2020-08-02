@@ -204,8 +204,8 @@ def test_node_replace_with():
 def test_replace_with_invalid_value_passed_exception():
     html_parser = HTMLParser('<div>Get <img src="" alt="Laptop"></div>')
     img = html_parser.css_first('img')
-    img.replace_with(None)
-    assert html_parser.body.child.html == '<div>Get Laptop</div>'
+    img.replace_with('')
+    assert html_parser.body.child.html == '<div>Get </div>'
 
 
 def test_insert_before():

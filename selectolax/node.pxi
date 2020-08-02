@@ -594,7 +594,7 @@ cdef class Node:
             myhtml_node_insert_before(self.node, node)
             myhtml_node_delete(self.node)
         elif isinstance(value, Node):
-            node = value.node
+            node = <myhtml_tree_node_t*> value.node
             myhtml_node_insert_before(self.node, node)
             myhtml_node_delete(self.node)
         else:
@@ -629,12 +629,12 @@ cdef class Node:
             myhtml_node_text_set(node, <char*> bytes_val, len(bytes_val), MyENCODING_UTF_8)
             myhtml_node_insert_before(self.node, node)
         elif isinstance(value, Node):
-            node = value.node
+            node = <myhtml_tree_node_t*> value.node
             myhtml_node_insert_before(self.node, node)
         else:
             raise TypeError("Expected a string or Node instance, but %s found" % type(value).__name__)
 
-    def insert_after(self, Node value):
+    def insert_after(self, str_or_Node value):
         """
         Insert a node after the current Node.
 
@@ -652,7 +652,7 @@ cdef class Node:
         >>> tree.body.child.html
         '<div>Get <img src="" alt="Laptop">Laptop</div>'
         """
-        cdef myhtml_tree_node_t* node = value.node
+        cdef myhtml_tree_node_t *node
         if isinstance(value, (str, bytes, unicode)):
             if isinstance(value, (str, unicode)):
                 bytes_val = value.encode(_ENCODING)
@@ -663,6 +663,7 @@ cdef class Node:
             myhtml_node_text_set(node, <char*> bytes_val, len(bytes_val), MyENCODING_UTF_8)
             myhtml_node_insert_after(self.node, node)
         elif isinstance(value, Node):
+            node = <myhtml_tree_node_t*> value.node
             myhtml_node_insert_after(self.node, node)
         else:
             raise TypeError("Expected a string or Node instance, but %s found" % type(value).__name__)

@@ -5,7 +5,7 @@ Version 0.2.5
 -------------
 
 -   Allow to pass Node instances to `replace_with`, `insert_before` and `insert_after` methods
--   Add `insert_before` and `insert_after` methods
+-   Added `insert_before` and `insert_after` methods
 
 Version 0.2.4
 -------------

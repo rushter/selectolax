@@ -4,7 +4,7 @@ selectolax Changelog
 Version 0.2.5
 -------------
 
--   Add `node_replace_with`, `node_insert_before` and `node_insert_after` methods
+-   Allow to pass Node instances to `replace_with`, `insert_before` and `insert_after` methods
 -   Add `insert_before` and `insert_after` methods
 
 Version 0.2.4

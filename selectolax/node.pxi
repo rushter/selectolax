@@ -115,10 +115,16 @@ cdef class _Attributes:
         return "<%s attributes, %s items>" % (tag_name, len(self))
 
 
+ctypedef fused str_or_Node:
+    str
+    Node
+
+
 cdef class Node:
     """A class that represents HTML node (element)."""
     cdef myhtml_tree_node_t *node
     cdef HTMLParser parser
+
 
     cdef _init(self, myhtml_tree_node_t *node, HTMLParser parser):
         # custom init, because __cinit__ doesn't accept C types
@@ -559,15 +565,13 @@ cdef class Node:
             for element in self.css(tag):
                 element.unwrap()
 
-    def replace_with(self, str value):
+    def replace_with(self, str_or_Node value):
         """Replace current Node with specified value.
-
-        Currently, limited to plain-text strings only.
 
         Parameters
         ----------
-        value : str
-            The text to replace the Node with.
+        value : str|Node
+            The text or Node instance to replace the Node with.
 
         Examples
         --------
@@ -578,29 +582,32 @@ cdef class Node:
         >>> tree.body.child.html
         '<div>Get Laptop</div>'
         """
-        cdef myhtml_tree_node_t* text_node
-        if isinstance(value, (str, unicode)):
-            bytes_val = value.encode(_ENCODING)
-        elif isinstance(value, bytes):
-            bytes_val = value
+        cdef myhtml_tree_node_t *node
+        if isinstance(value, (str, bytes, unicode)):
+            if isinstance(value, (str, unicode)):
+                bytes_val = value.encode(_ENCODING)
+            elif isinstance(value, bytes):
+                bytes_val = value
+
+            node = myhtml_node_create(self.parser.html_tree, MyHTML_TAG__TEXT, MyHTML_NAMESPACE_HTML)
+            myhtml_node_text_set(node, <char*> bytes_val, len(bytes_val), MyENCODING_UTF_8)
+            myhtml_node_insert_before(self.node, node)
+            myhtml_node_delete(self.node)
+        elif isinstance(value, Node):
+            node = value.node
+            myhtml_node_insert_before(self.node, node)
+            myhtml_node_delete(self.node)
         else:
-            raise TypeError("Expected a string, but %s found" % type(value).__name__)
+            raise TypeError("Expected a string or Node instance, but %s found" % type(value).__name__)
 
-        text_node = myhtml_node_create(self.parser.html_tree, MyHTML_TAG__TEXT, MyHTML_NAMESPACE_HTML)
-        myhtml_node_text_set(text_node, <char*> bytes_val, len(bytes_val), MyENCODING_UTF_8)
-        myhtml_node_insert_before(self.node, text_node)
-        myhtml_node_delete(self.node)
-
-    def insert_before(self, str value):
+    def insert_before(self, str_or_Node value):
         """
         Insert a node before the current Node.
 
-        Currently, limited to plain-text strings only.
-
         Parameters
         ----------
-        value : str
-            The text to insert before the Node.
+        value : str|Node
+            The text or Node instance to insert before the Node.
 
         Examples
         --------
@@ -611,28 +618,30 @@ cdef class Node:
         >>> tree.body.child.html
         '<div>Get Laptop<img src="" alt="Laptop"></div>'
         """
-        cdef myhtml_tree_node_t* text_node
-        if isinstance(value, (str, unicode)):
-            bytes_val = value.encode(_ENCODING)
-        elif isinstance(value, bytes):
-            bytes_val = value
+        cdef myhtml_tree_node_t *node
+        if isinstance(value, (str, bytes, unicode)):
+            if isinstance(value, (str, unicode)):
+                bytes_val = value.encode(_ENCODING)
+            elif isinstance(value, bytes):
+                bytes_val = value
+
+            node = myhtml_node_create(self.parser.html_tree, MyHTML_TAG__TEXT, MyHTML_NAMESPACE_HTML)
+            myhtml_node_text_set(node, <char*> bytes_val, len(bytes_val), MyENCODING_UTF_8)
+            myhtml_node_insert_before(self.node, node)
+        elif isinstance(value, Node):
+            node = value.node
+            myhtml_node_insert_before(self.node, node)
         else:
-            raise TypeError("Expected a string, but %s found" % type(value).__name__)
+            raise TypeError("Expected a string or Node instance, but %s found" % type(value).__name__)
 
-        text_node = myhtml_node_create(self.parser.html_tree, MyHTML_TAG__TEXT, MyHTML_NAMESPACE_HTML)
-        myhtml_node_text_set(text_node, <char*> bytes_val, len(bytes_val), MyENCODING_UTF_8)
-        myhtml_node_insert_before(self.node, text_node)
-
-    def insert_after(self, str value):
+    def insert_after(self, Node value):
         """
         Insert a node after the current Node.
 
-        Currently, limited to plain-text strings only.
-
         Parameters
         ----------
-        value : str
-            The text to insert after the Node.
+        value : str|Node
+            The text or Node instance to insert after the Node.
 
         Examples
         --------
@@ -643,90 +652,20 @@ cdef class Node:
         >>> tree.body.child.html
         '<div>Get <img src="" alt="Laptop">Laptop</div>'
         """
-        cdef myhtml_tree_node_t* text_node
-        if isinstance(value, (str, unicode)):
-            bytes_val = value.encode(_ENCODING)
-        elif isinstance(value, bytes):
-            bytes_val = value
+        cdef myhtml_tree_node_t* node = value.node
+        if isinstance(value, (str, bytes, unicode)):
+            if isinstance(value, (str, unicode)):
+                bytes_val = value.encode(_ENCODING)
+            elif isinstance(value, bytes):
+                bytes_val = value
+
+            node = myhtml_node_create(self.parser.html_tree, MyHTML_TAG__TEXT, MyHTML_NAMESPACE_HTML)
+            myhtml_node_text_set(node, <char*> bytes_val, len(bytes_val), MyENCODING_UTF_8)
+            myhtml_node_insert_after(self.node, node)
+        elif isinstance(value, Node):
+            myhtml_node_insert_after(self.node, node)
         else:
-            raise TypeError("Expected a string, but %s found" % type(value).__name__)
-
-        text_node = myhtml_node_create(self.parser.html_tree, MyHTML_TAG__TEXT, MyHTML_NAMESPACE_HTML)
-        myhtml_node_text_set(text_node, <char*> bytes_val, len(bytes_val), MyENCODING_UTF_8)
-        myhtml_node_insert_after(self.node, text_node)
-
-    def node_replace_with(self, Node value):
-        """Replace current Node with specified node.
-
-        Parameters
-        ----------
-        value : None
-            The Node to replace current Node with.
-
-        Examples
-        --------
-
-        >>> html_parser = HTMLParser(u'<div>Get <span alt="Laptop"><img src="/jpg"> <div></div></span></div>')
-        >>> html_parser2 = HTMLParser(u'<div>Test</div>')
-        >>> node = html_parser.css_first(u'img')
-        >>> node.node_replace_with(html_parser2.body.child)
-        >>> html_parser.body.child.html
-        >>> '<div>Get <span alt="Laptop"><div>Test</div> <div></div></span></div>'
-        """
-        if not isinstance(value, Node):
-            raise TypeError("Expected a Node, but %s found" % type(value).__name__)
-
-        cdef myhtml_tree_node_t *node = value.node
-        myhtml_node_insert_before(self.node, node)
-        myhtml_node_delete(self.node)
-
-    def node_insert_before(self, Node value):
-        """
-        Insert a node before the current Node.
-
-        Parameters
-        ----------
-        value : Node
-            The Node to insert before the Node.
-
-        Examples
-        --------
-
-        >>> html_parser = HTMLParser('<div>Get <span alt="Laptop"><img src="/jpg"> <div></div></span></div>')
-        >>> html_parser2 = HTMLParser('<div>Test</div>')
-        >>> img_node = html_parser.css_first('img')
-        >>> img_node.node_insert_before(html_parser2.body.child)
-        '<div>Get <span alt="Laptop"><div>Test</div><img src="/jpg"> <div></div></span></div>'
-        """
-        if not isinstance(value, Node):
-            raise TypeError("Expected a Node, but %s found" % type(value).__name__)
-
-        cdef myhtml_tree_node_t *node = value.node
-        myhtml_node_insert_before(self.node, node)
-
-    def node_insert_after(self, Node value):
-        """
-        Insert a node after the current Node.
-
-        Parameters
-        ----------
-        value : Node
-            The Node to insert after the Node.
-
-        Examples
-        --------
-
-        >>> html_parser = HTMLParser('<div>Get <span alt="Laptop"><img src="/jpg"> <div></div></span></div>')
-        >>> html_parser2 = HTMLParser('<div>Test</div>')
-        >>> img_node = html_parser.css_first('img')
-        >>> img_node.node_insert_after(html_parser2.body.child)
-        '<div>Get <span alt="Laptop"><img src="/jpg"><div>Test</div> <div></div></span></div>'
-        """
-        if not isinstance(value, Node):
-            raise TypeError("Expected a Node, but %s found" % type(value).__name__)
-
-        cdef myhtml_tree_node_t *node = value.node
-        myhtml_node_insert_after(self.node, node)
+            raise TypeError("Expected a string or Node instance, but %s found" % type(value).__name__)
 
     def unwrap_tags(self, list tags):
         """Unwraps specified tags from the HTML tree.

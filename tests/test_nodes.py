@@ -193,11 +193,34 @@ def test_replace_with_multiple_nodes():
     assert html_parser.body.child.html == '<div>Get Laptop</div>'
 
 
+def test_node_replace_with():
+    html_parser = HTMLParser('<div>Get <span alt="Laptop"><img src="/jpg"> <div></div></span></div>')
+    html_parser2 = HTMLParser('<div>Test</div>')
+    img_node = html_parser.css_first('img')
+    img_node.replace_with(html_parser2.body.child)
+    assert html_parser.body.child.html == '<div>Get <span alt="Laptop"><div>Test</div> <div></div></span></div>'
+
+
+def test_replace_with_invalid_value_passed_exception():
+    html_parser = HTMLParser('<div>Get <img src="" alt="Laptop"></div>')
+    img = html_parser.css_first('img')
+    img.replace_with(None)
+    assert html_parser.body.child.html == '<div>Get Laptop</div>'
+
+
 def test_insert_before():
     html_parser = HTMLParser('<div>Get <img src="" alt="Laptop"></div>')
     img = html_parser.css_first('img')
     img.insert_before(img.attributes.get('alt', ''))
     assert html_parser.body.child.html == '<div>Get Laptop<img src="" alt="Laptop"></div>'
+
+
+def test_node_insert_before():
+    html_parser = HTMLParser('<div>Get <span alt="Laptop"><img src="/jpg"> <div></div></span></div>')
+    html_parser2 = HTMLParser('<div>Test</div>')
+    img_node = html_parser.css_first('img')
+    img_node.insert_before(html_parser2.body.child)
+    assert html_parser.body.child.html == '<div>Get <span alt="Laptop"><div>Test</div><img src="/jpg"> <div></div></span></div>'
 
 
 def test_insert_after():
@@ -207,27 +230,11 @@ def test_insert_after():
     assert html_parser.body.child.html == '<div>Get <img src="" alt="Laptop">Laptop</div>'
 
 
-def test_node_replace_with():
+def test_node_insert_after():
     html_parser = HTMLParser('<div>Get <span alt="Laptop"><img src="/jpg"> <div></div></span></div>')
     html_parser2 = HTMLParser('<div>Test</div>')
     img_node = html_parser.css_first('img')
-    img_node.node_replace_with(html_parser2.body.child)
-    assert html_parser.body.child.html == '<div>Get <span alt="Laptop"><div>Test</div> <div></div></span></div>'
-
-
-def test_node_insert_before():
-    html_parser = HTMLParser('<div>Get <span alt="Laptop"><img src="/jpg"> <div></div></span></div>')
-    html_parser2 = HTMLParser('<div>Test</div>')
-    img_node = html_parser.css_first('img')
-    img_node.node_insert_before(html_parser2.body.child)
-    assert html_parser.body.child.html == '<div>Get <span alt="Laptop"><div>Test</div><img src="/jpg"> <div></div></span></div>'
-
-
-def test_insert_after():
-    html_parser = HTMLParser('<div>Get <span alt="Laptop"><img src="/jpg"> <div></div></span></div>')
-    html_parser2 = HTMLParser('<div>Test</div>')
-    img_node = html_parser.css_first('img')
-    img_node.node_insert_after(html_parser2.body.child)
+    img_node.insert_after(html_parser2.body.child)
     assert html_parser.body.child.html == '<div>Get <span alt="Laptop"><img src="/jpg"><div>Test</div> <div></div></span></div>'
 
 

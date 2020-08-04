@@ -32,6 +32,7 @@ cdef class HTMLParser:
         self.use_meta_tags = use_meta_tags
         self._encoding = MyENCODING_UTF_8
         self.decode_errors = decode_errors
+        self.depends_on = list()
 
         if isinstance(html, (str, unicode)):
             bytes_html = html.encode('UTF-8')

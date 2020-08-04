@@ -425,6 +425,8 @@ cdef extern from "myhtml/myhtml.h" nogil:
     myhtml_tree_node_t * myhtml_node_insert_before(myhtml_tree_node_t *target, myhtml_tree_node_t *node)
     myhtml_tree_node_t * myhtml_node_insert_after(myhtml_tree_node_t *target, myhtml_tree_node_t *node)
     myhtml_tree_node_t * myhtml_node_create(myhtml_tree_t* tree, myhtml_tag_id_t tag_id, myhtml_namespace ns)
+    myhtml_tree_node_t * myhtml_node_clone(myhtml_tree_node_t* node)
+
     mycore_string_t * myhtml_node_text_set(myhtml_tree_node_t *node, const char* text, size_t length,
                                           myencoding_t encoding)
     myhtml_tree_attr_t * myhtml_attribute_by_key(myhtml_tree_node_t *node, const char *key, size_t key_len)
@@ -552,6 +554,7 @@ cdef class HTMLParser:
     cdef bint use_meta_tags
     cdef myencoding_t _encoding
     cdef unicode decode_errors
+    cdef list depends_on
 
     # cpdef css(self, str query)
     cdef void _detect_encoding(self, char* html, size_t html_len) nogil

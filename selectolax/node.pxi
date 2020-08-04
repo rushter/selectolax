@@ -575,6 +575,8 @@ cdef class Node:
             The text or Node instance to replace the Node with.
             When a text string is passed, it's treated as text. All HTML tags will be escaped.
             Convert and pass the ``Node`` object when you want to work with HTML.
+            Does not clone the ``Node`` object.
+            All future changes to the passed ``Node`` object will also be taken into account.
 
         Examples
         --------
@@ -593,16 +595,13 @@ cdef class Node:
         """
         cdef myhtml_tree_node_t *node
         if isinstance(value, (str, bytes, unicode)):
-            if isinstance(value, (str, unicode)):
-                bytes_val = value.encode(_ENCODING)
-            elif isinstance(value, bytes):
-                bytes_val = value
-
+            bytes_val = to_bytes(value)
             node = myhtml_node_create(self.parser.html_tree, MyHTML_TAG__TEXT, MyHTML_NAMESPACE_HTML)
             myhtml_node_text_set(node, <char*> bytes_val, len(bytes_val), MyENCODING_UTF_8)
             myhtml_node_insert_before(self.node, node)
             myhtml_node_delete(self.node)
         elif isinstance(value, Node):
+            self.parser.depends_on.append(value.parser)
             node = <myhtml_tree_node_t*> value.node
             myhtml_node_insert_before(self.node, node)
             myhtml_node_delete(self.node)
@@ -619,6 +618,8 @@ cdef class Node:
             The text or Node instance to insert before the Node.
             When a text string is passed, it's treated as text. All HTML tags will be escaped.
             Convert and pass the ``Node`` object when you want to work with HTML.
+            Does not clone the ``Node`` object.
+            All future changes to the passed ``Node`` object will also be taken into account.
 
         Examples
         --------
@@ -637,15 +638,12 @@ cdef class Node:
         """
         cdef myhtml_tree_node_t *node
         if isinstance(value, (str, bytes, unicode)):
-            if isinstance(value, (str, unicode)):
-                bytes_val = value.encode(_ENCODING)
-            elif isinstance(value, bytes):
-                bytes_val = value
-
+            bytes_val =  to_bytes(value)
             node = myhtml_node_create(self.parser.html_tree, MyHTML_TAG__TEXT, MyHTML_NAMESPACE_HTML)
             myhtml_node_text_set(node, <char*> bytes_val, len(bytes_val), MyENCODING_UTF_8)
             myhtml_node_insert_before(self.node, node)
         elif isinstance(value, Node):
+            self.parser.depends_on.append(value.parser)
             node = <myhtml_tree_node_t*> value.node
             myhtml_node_insert_before(self.node, node)
         else:
@@ -661,6 +659,8 @@ cdef class Node:
             The text or Node instance to insert after the Node.
             When a text string is passed, it's treated as text. All HTML tags will be escaped.
             Convert and pass the ``Node`` object when you want to work with HTML.
+            Does not clone the ``Node`` object.
+            All future changes to the passed ``Node`` object will also be taken into account.
 
         Examples
         --------
@@ -679,15 +679,12 @@ cdef class Node:
         """
         cdef myhtml_tree_node_t *node
         if isinstance(value, (str, bytes, unicode)):
-            if isinstance(value, (str, unicode)):
-                bytes_val = value.encode(_ENCODING)
-            elif isinstance(value, bytes):
-                bytes_val = value
-
+            bytes_val = to_bytes(value)
             node = myhtml_node_create(self.parser.html_tree, MyHTML_TAG__TEXT, MyHTML_NAMESPACE_HTML)
             myhtml_node_text_set(node, <char*> bytes_val, len(bytes_val), MyENCODING_UTF_8)
             myhtml_node_insert_after(self.node, node)
         elif isinstance(value, Node):
+            self.parser.depends_on.append(value.parser)
             node = <myhtml_tree_node_t*> value.node
             myhtml_node_insert_after(self.node, node)
         else:
@@ -734,3 +731,12 @@ cdef inline str append_text(str text, str node_text, str separator='', bint stri
         text += node_text + separator
 
     return text
+
+
+cdef inline bytes to_bytes(str_or_Node value):
+    cdef bytes bytes_val
+    if isinstance(value, (str, unicode)):
+        bytes_val = value.encode(_ENCODING)
+    elif isinstance(value, bytes):
+        bytes_val =  <char*> value
+    return bytes_val

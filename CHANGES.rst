@@ -1,6 +1,11 @@
 selectolax Changelog
 ====================
 
+Version 0.2.6
+-------------
+
+-   Fix dependency on the source `Node` when inserting to or modifying destination `Node`
+
 Version 0.2.5
 -------------
 

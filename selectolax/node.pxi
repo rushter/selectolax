@@ -601,8 +601,7 @@ cdef class Node:
             myhtml_node_insert_before(self.node, node)
             myhtml_node_delete(self.node)
         elif isinstance(value, Node):
-            self.parser.depends_on.append(value.parser)
-            node = <myhtml_tree_node_t*> value.node
+            node = myhtml_node_clone_deep(self.parser.html_tree, <myhtml_tree_node_t *> value.node)
             myhtml_node_insert_before(self.node, node)
             myhtml_node_delete(self.node)
         else:
@@ -643,8 +642,7 @@ cdef class Node:
             myhtml_node_text_set(node, <char*> bytes_val, len(bytes_val), MyENCODING_UTF_8)
             myhtml_node_insert_before(self.node, node)
         elif isinstance(value, Node):
-            self.parser.depends_on.append(value.parser)
-            node = <myhtml_tree_node_t*> value.node
+            node = myhtml_node_clone_deep(self.parser.html_tree, <myhtml_tree_node_t *> value.node)
             myhtml_node_insert_before(self.node, node)
         else:
             raise TypeError("Expected a string or Node instance, but %s found" % type(value).__name__)
@@ -684,8 +682,7 @@ cdef class Node:
             myhtml_node_text_set(node, <char*> bytes_val, len(bytes_val), MyENCODING_UTF_8)
             myhtml_node_insert_after(self.node, node)
         elif isinstance(value, Node):
-            self.parser.depends_on.append(value.parser)
-            node = <myhtml_tree_node_t*> value.node
+            node = myhtml_node_clone_deep(self.parser.html_tree, <myhtml_tree_node_t *> value.node)
             myhtml_node_insert_after(self.node, node)
         else:
             raise TypeError("Expected a string or Node instance, but %s found" % type(value).__name__)

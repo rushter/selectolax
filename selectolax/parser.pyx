@@ -32,7 +32,6 @@ cdef class HTMLParser:
         self.use_meta_tags = use_meta_tags
         self._encoding = MyENCODING_UTF_8
         self.decode_errors = decode_errors
-        self.depends_on = list()
 
         if isinstance(html, (str, unicode)):
             bytes_html = html.encode('UTF-8')
@@ -70,7 +69,7 @@ cdef class HTMLParser:
         Returns
         -------
         selector : list of `Node` objects
-    
+
         """
 
         node = Node()
@@ -79,21 +78,21 @@ cdef class HTMLParser:
 
     def css_first(self, str query, default=None, strict=False):
         """Same as `css` but returns only the first match.
-        
+
         Parameters
         ----------
-        
+
         query : str
         default : bool, default None
             Default value to return if there is no match.
         strict: bool, default True
             Set to True if you want to check if there is strictly only one match in the document.
-            
+
 
         Returns
         -------
         selector : `Node` object
-        
+
         """
 
         node = Node()
@@ -185,7 +184,7 @@ cdef class HTMLParser:
         Parameters
         ----------
         name : str (e.g. div)
-        
+
         """
         cdef myhtml_collection_t* collection = NULL
         pybyte_name = name.encode('UTF-8')

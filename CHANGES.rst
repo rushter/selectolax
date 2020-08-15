@@ -1,13 +1,27 @@
 selectolax Changelog
 ====================
 
+Version 0.2.7
+-------------
+
+Released
+
+- Add `raw_value` attribute for `Node` objects  (`#22`_ )
+- Improve node modification operations
+
+.. _#22: https://github.com/rushter/selectolax/issues/22
+
 Version 0.2.6
 -------------
+
+Released
 
 -   Fix dependency on the source `Node` when inserting to or modifying destination `Node`
 
 Version 0.2.5
 -------------
+
+Released
 
 -   Allow to pass Node instances to `replace_with`, `insert_before` and `insert_after` methods
 -   Added `insert_before` and `insert_after` methods

@@ -728,7 +728,7 @@ cdef class Node:
         >>> selector = html_parser.css_first('div')
         >>> selector.child.html
         '&lt;test&gt;'
-        >>> selector.child.html
+        >>> selector.child.raw_value
         b'&#x3C;test&#x3E;'
         """
         cdef int begin = self.node.token.element_begin

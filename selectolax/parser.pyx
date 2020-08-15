@@ -53,6 +53,7 @@ cdef class HTMLParser:
             self._detect_encoding(html_chars, html_len)
 
         self._parse_html(html_chars, html_len)
+        self.raw_html = bytes_html
 
 
     def css(self, str query):

@@ -554,6 +554,7 @@ cdef class HTMLParser:
     cdef bint use_meta_tags
     cdef myencoding_t _encoding
     cdef unicode decode_errors
+    cdef bytes raw_html
 
     # cpdef css(self, str query)
     cdef void _detect_encoding(self, char* html, size_t html_len) nogil

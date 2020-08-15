@@ -710,6 +710,34 @@ cdef class Node:
             for element in self.css(tag):
                 element.unwrap()
 
+    @property
+    def raw_value(self):
+        """Return the raw (unparsed, original) value of a node.
+
+        Currently, works on text nodes only.
+
+        Returns
+        -------
+
+        raw_value : bytes
+
+        Examples
+        --------
+
+        >>> html_parser = HTMLParser('<div>&#x3C;test&#x3E;</div>')
+        >>> selector = html_parser.css_first('div')
+        >>> selector.child.html
+        '&lt;test&gt;'
+        >>> selector.child.html
+        b'&#x3C;test&#x3E;'
+        """
+        cdef int begin = self.node.token.element_begin
+        cdef int length = self.node.token.element_length
+        if self.node.tag_id != MyHTML_TAG__TEXT:
+            raise ValueError("Can't obtain raw value for non-text node.")
+        return self.parser.raw_html[begin:begin + length]
+
+
     def __repr__(self):
         return '<Node %s>' % self.tag
 

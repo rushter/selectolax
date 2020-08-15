@@ -328,3 +328,10 @@ def test_node_comparison_fails():
     assert node != None
     assert node != 123
     assert node != object
+
+
+def test_raw_value():
+    html_parser = HTMLParser('<div>&#x3C;test&#x3E;</div>')
+    selector = html_parser.css_first('div')
+    assert selector.child.raw_value == b'&#x3C;test&#x3E;'
+    assert selector.child.html == '&lt;test&gt;'

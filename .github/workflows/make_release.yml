@@ -1,8 +1,6 @@
 name: Build and upload to PyPI
 
 on:
- push:
- pull_request:
  release:
    types:
      - published

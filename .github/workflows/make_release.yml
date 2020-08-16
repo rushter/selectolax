@@ -1,12 +1,11 @@
 name: Build and upload to PyPI
 
-# Build on every branch push, tag push, and pull request change:
- on:
-   push:
-   pull_request:
-   release:
-     types:
-       - published
+on:
+ push:
+ pull_request:
+ release:
+   types:
+     - published
 
 jobs:
   build_wheels:
@@ -57,7 +56,10 @@ jobs:
           python-version: '3.8'
 
       - name: Build sdist
-        run: python setup.py sdist
+        run: |
+          pip install -U cython
+          python setup.py build_ext --inplace --cython
+          python setup.py sdist
 
       - uses: actions/upload-artifact@v2
         with:

@@ -1,6 +1,13 @@
 selectolax Changelog
 ====================
 
+Version 0.2.9
+-------------
+
+Released
+
+- Fix README for PyPI
+
 Version 0.2.8
 -------------
 

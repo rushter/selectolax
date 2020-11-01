@@ -8,9 +8,6 @@
 A fast HTML5 parser with CSS selectors using `Modest engine <https://github.com/lexborisov/Modest/>`_.
 
 
-
-
-
 Installation
 ------------
 From PyPI using pip:

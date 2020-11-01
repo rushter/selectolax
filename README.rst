@@ -46,8 +46,6 @@ Basic examples
        ...: """
        ...: tree = HTMLParser(html)
 
-    In [2]:
-
     In [2]: tree.css_first('h1#title').text()
     Out[2]: 'Hi there'
 
@@ -61,15 +59,20 @@ Basic examples
 
 .. code:: python
 
-        from selectolax.parser import HTMLParser
-
-        html = "<div><p id=p1><p id=p2><p id=p3><a>link</a><p id=p4><p id=p5>text<p id=p6></div>"
-        selector = "div > :nth-child(2n+1):not(:has(a))"
-
-        for node in HTMLParser(html).css(selector):
-            print(node.attributes, node.text(), node.tag)
-            print(node.parent.tag)
-            print(node.html)
+    In [5]: html = "<div><p id=p1><p id=p2><p id=p3><a>link</a><p id=p4><p id=p5>text<p id=p6></div>"
+       ...: selector = "div > :nth-child(2n+1):not(:has(a))"
+       ...:
+       ...: for node in HTMLParser(html).css(selector):
+       ...:     print(node.attributes, node.text(), node.tag)
+       ...:     print(node.parent.tag)
+       ...:     print(node.html)
+       ...:
+    {'id': 'p1'}  p
+    div
+    <p id="p1"></p>
+    {'id': 'p5'} text p
+    div
+    <p id="p5">text</p>
 
 
 * `Detailed overview <https://github.com/rushter/selectolax/blob/master/examples/walkthrough.ipynb>`_

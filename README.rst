@@ -1,5 +1,5 @@
 .. image:: docs/logo.png
-  :alt: selecolax logo
+  :alt: selectolax logo
 -------------------------
 
 .. image:: https://img.shields.io/pypi/v/selectolax.svg

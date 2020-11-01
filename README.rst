@@ -1,11 +1,14 @@
-==========
-selectolax
-==========
+.. image:: docs/logo.png
+  :alt: selecolax logo
+-------------------------
 
 .. image:: https://img.shields.io/pypi/v/selectolax.svg
         :target: https://pypi.python.org/pypi/selectolax
 
 A fast HTML5 parser with CSS selectors using `Modest engine <https://github.com/lexborisov/Modest/>`_.
+
+
+
 
 
 Installation

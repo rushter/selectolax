@@ -32,8 +32,32 @@ How to compile selectolax while developing:
     make clean
     make dev
 
-Examples
---------
+Basic examples
+--------------
+
+.. code:: python
+
+    In [1]: from selectolax.parser import HTMLParser
+       ...:
+       ...: html = """
+       ...: <h1 id="title" data-updated="20201101">Hi there</h1>
+       ...: <div class="post">Lorem Ipsum is simply dummy text of the printing and typesetting industry. </div>
+       ...: <div class="post">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</div>
+       ...: """
+       ...: tree = HTMLParser(html)
+
+    In [2]:
+
+    In [2]: tree.css_first('h1#title').text()
+    Out[2]: 'Hi there'
+
+    In [3]: tree.css_first('h1#title').attributes
+    Out[3]: {'id': 'title', 'data-updated': '20201101'}
+
+    In [4]: [node.text() for node in tree.css('.post')]
+    Out[4]:
+    ['Lorem Ipsum is simply dummy text of the printing and typesetting industry. ',
+     'Lorem ipsum dolor sit amet, consectetur adipiscing elit.']
 
 .. code:: python
 
@@ -56,11 +80,11 @@ Simple Benchmark
 * Average of 10 experiments to parse and retrieve URLs from 800 Google SERP pages.
 
 +------------+------------+--------------+
-| Package    | Time       | Memory (peak)|
+| Package    | Time       | Memory (peak)|
 +============+============+==============+
 | selectolax | 2.38 sec.  | 768.11 MB    |
 +------------+------------+--------------+
-| lxml       | 18.67 sec. | 769.21 MB    |
+| lxml       | 18.67 sec. | 769.21 MB    |
 +------------+------------+--------------+
 
 Links

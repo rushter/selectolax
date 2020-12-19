@@ -156,14 +156,10 @@ cdef class HTMLParser:
     @property
     def root(self):
         """Returns root node."""
-        cdef myhtml_tree_node_t* root
-        root = myhtml_tree_get_document(self.html_tree)
-
-        if root != NULL:
+        if self.html_tree and self.html_tree.node_html:
             node = Node()
-            node._init(root, self)
+            node._init(self.html_tree.node_html, self)
             return node
-
         return None
 
     @property

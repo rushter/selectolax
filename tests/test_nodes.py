@@ -286,7 +286,7 @@ def test_traverse():
     )
     html_parser = HTMLParser(html)
     actual = [node.tag for node in html_parser.root.traverse()]
-    expected = ['-undef', 'html', 'head', 'body', 'div', 'div', 'div', 'h1', 'div', 'img', 'div']
+    expected = ['html', 'head', 'body', 'div', 'div', 'div', 'h1', 'div', 'img', 'div']
     assert actual == expected
 
 
@@ -297,7 +297,7 @@ def test_traverse_with_text():
     )
     html_parser = HTMLParser(html)
     actual = [node.tag for node in html_parser.root.traverse(include_text=True)]
-    expected = ['-undef', 'html', 'head', 'body', 'div', 'div', 'div', 'h1', '-text', 'div', '-text', 'img', 'div']
+    expected = ['html', 'head', 'body', 'div', 'div', 'div', 'h1', '-text', 'div', '-text', 'img', 'div']
     assert actual == expected
 
 

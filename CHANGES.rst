@@ -1,6 +1,15 @@
 selectolax Changelog
 ====================
 
+Version 0.2.10
+--------------
+
+Released
+
+- Fix root node property (`#32`_ ). The `root` property now points to the html tag.
+
+.. _#32: https://github.com/rushter/selectolax/issues/32
+
 Version 0.2.9
 -------------
 

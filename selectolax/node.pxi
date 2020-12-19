@@ -546,7 +546,7 @@ cdef class Node:
     def unwrap_tags(self, list tags):
         """Unwraps specified tags from the HTML tree.
 
-        Works the same as th ``unwrap`` method, but applied to a list of tags.
+        Works the same as the ``unwrap`` method, but applied to a list of tags.
 
         Parameters
         ----------

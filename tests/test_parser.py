@@ -49,3 +49,8 @@ def test_nodes():
     html_output = htmlp.html
     assert len(html_output) >= len(html)
     assert SequenceMatcher(None, html, html_output).ratio() > 0.8
+
+
+def test_root_css():
+    tree = HTMLParser('test')
+    assert len(tree.root.css('data')) == 0

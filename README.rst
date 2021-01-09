@@ -99,7 +99,7 @@ Links
 *  `Modest introduction <https://lexborisov.github.io/Modest/>`_
 *  `Modest benchmark <http://lexborisov.github.io/benchmark-html-persers/>`_
 *  `Python benchmark <https://rushter.com/blog/python-fast-html-parser/>`_
-
+*  `Another Python benchmark <https://www.peterbe.com/plog/selectolax-or-pyquery>`_
 
 License
 -------

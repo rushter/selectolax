@@ -1,6 +1,11 @@
 selectolax Changelog
 ====================
 
+- Fix CSS parser hangs on a bad CSS selector (`#36`_ ).
+
+.. _#36: https://github.com/rushter/selectolax/issues/36
+
+
 Version 0.2.10
 --------------
 

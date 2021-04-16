@@ -1,9 +1,16 @@
 selectolax Changelog
 ====================
 
-- Fix CSS parser hangs on a bad CSS selector (`#36`_ ).
+Version 0.2.11
+--------------
+
+Released
+
+- Fix strip argument is ignored for the root node (`#35`_).
+- Fix CSS parser hangs on a bad CSS selector (`#36`_).
 
 .. _#36: https://github.com/rushter/selectolax/issues/36
+.. _#35: https://github.com/rushter/selectolax/issues/35
 
 
 Version 0.2.10

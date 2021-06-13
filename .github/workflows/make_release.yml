@@ -15,7 +15,7 @@ jobs:
       CIBW_BEFORE_BUILD: "pip install cython"
     strategy:
       matrix:
-        os: [ubuntu-18.04, windows-latest, macos-latest]
+        os: [ubuntu-20.04, windows-latest, macos-latest]
 
     steps:
       - uses: actions/checkout@v2

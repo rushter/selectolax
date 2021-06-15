@@ -112,7 +112,7 @@ setup(
     url='https://github.com/rushter/selectolax',
     packages=find_packages(include=['selectolax']),
     include_package_data=True,
-    install_requires=[],
+    install_requires=['Cython>=0.29.23', ],
     license="MIT license",
     zip_safe=False,
     keywords='selectolax',

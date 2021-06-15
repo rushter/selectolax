@@ -11,5 +11,5 @@ sphinxcontrib-websupport>=1.1.0
 numpydoc==0.8.0
 pytest>=3.7.2
 pytest-runner>=4.2
-Cython>=0.28.5
+Cython==0.29.23
 pluggy>=0.7.1

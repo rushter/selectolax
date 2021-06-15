@@ -1,6 +1,13 @@
 selectolax Changelog
 ====================
 
+Version 0.2.12
+--------------
+
+Released
+
+- Build wheels Apple Silicon
+
 Version 0.2.11
 --------------
 

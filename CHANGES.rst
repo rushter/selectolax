@@ -1,6 +1,17 @@
 selectolax Changelog
 ====================
 
+Version 0.2.13
+--------------
+
+Released
+
+- Don't throw exception when encoding text as UTF-8 bytes fails (`#40`_).
+- Fix Node.attrs.items() causes (`#39`_).
+
+.. _#40: https://github.com/rushter/selectolax/issues/40
+.. _#39: https://github.com/rushter/selectolax/issues/39
+
 Version 0.2.12
 --------------
 

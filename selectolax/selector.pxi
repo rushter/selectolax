@@ -1,5 +1,5 @@
 
-cdef class Selector:
+cdef class CSSSelector:
 
     cdef char *c_selector
     cdef mycss_entry_t *css_entry

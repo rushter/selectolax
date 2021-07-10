@@ -335,3 +335,14 @@ def test_raw_value():
     selector = html_parser.css_first('div')
     assert selector.child.raw_value == b'&#x3C;test&#x3E;'
     assert selector.child.html == '&lt;test&gt;'
+
+
+def test_adavanced_selector():
+    html_parser = HTMLParser("""
+    <script>
+     var super_value = 100;
+    </script>
+    
+    """)
+    selector = html_parser.select('script').text_contains("super_value")
+    assert selector.any_matches

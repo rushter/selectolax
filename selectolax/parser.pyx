@@ -266,6 +266,32 @@ cdef class HTMLParser:
         """Return HTML representation of the page."""
         return self.root.html
 
+    def select(self, query=None):
+        """Select nodes give a CSS selector.
+
+        Works similarly to the the ``css`` method, but supports chained filtering and extra features.
+
+        Parameters
+        ----------
+        query : str or None
+            The CSS selector to use when searching for nodes.
+
+        Returns
+        -------
+        selector : The `Selector` class.
+        """
+        cdef Node node
+        node = self.root
+        if node:
+            return Selector(node, query)
+
+    def any_css_matches(self, list selectors):
+        """Returns True if any of the specified CSS selectors matches a node."""
+        return self.root.any_css_matches(selectors)
+
+    def css_matches(self, str selector):
+        return self.root.css_matches(selector)
+
     def __dealloc__(self):
         cdef myhtml_t* myhtml
 

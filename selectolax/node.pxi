@@ -114,6 +114,95 @@ cdef class _Attributes:
         tag_name = c_text.decode(_ENCODING, 'ignore') if c_text != NULL else 'unknown'
         return "<%s attributes, %s items>" % (tag_name, len(self))
 
+cdef _find_nodes(HTMLParser parser, myhtml_tree_node_t *node, str query):
+    cdef myhtml_collection_t *collection
+    cdef CSSSelector selector = CSSSelector(query)
+
+    result = list()
+    collection = selector.find(node)
+
+    if collection == NULL:
+        return result
+
+    for i in range(collection.length):
+        n = Node()
+        n._init(collection.list[i], parser)
+        result.append(n)
+    myhtml_collection_destroy(collection)
+    return result
+
+cdef bool _find_matches(HTMLParser parser, myhtml_tree_node_t *node, list selectors):
+    cdef myhtml_collection_t *collection
+    cdef CSSSelector selector
+    cpdef int collection_size
+
+    for query in selectors:
+        selector = CSSSelector(query)
+        collection_size = 0
+        collection = NULL
+
+        collection = selector.find(node)
+        if collection == NULL:
+            continue
+
+        collection_size = collection.length
+        myhtml_collection_destroy(collection)
+        if collection.length > 0:
+            return True
+    return False
+
+
+cdef class Selector:
+    """An advanced CSS selector that supports additional operations.
+
+    Please note, this is an experimental feature that can change in the future.
+    """
+    cdef Node node
+    cdef list nodes
+
+    def __init__(self, Node node, query):
+        """custom init, because __cinit__ doesn't accept C types"""
+        self.node = node
+        self.nodes = _find_nodes(node.parser, node.node, query) if query else [node, ]
+
+
+    def css(self, str query):
+        """Evaluate CSS selector against current scope."""
+        nodes = list()
+        for node in self.nodes:
+            nodes.extend(_find_nodes(self.node.parser, self.node.node, query))
+        self.nodes = nodes
+        return self
+
+    @property
+    def matches(self):
+        """Returns all possible matches"""
+        return self.nodes
+
+    @property
+    def any_matches(self):
+        """Returns True if there are any matches"""
+        return bool(self.nodes)
+
+    def text_contains(self, str text, bool deep=True, str separator='', bool strip=False):
+        """Filter all current matches given text."""
+        nodes = []
+        for node in self.nodes:
+            node_text = node.text(deep=deep, separator=separator, strip=strip)
+            if node_text and text in node_text:
+                nodes.append(node)
+        self.nodes = nodes
+        return self
+
+    def any_text_contains(self, str text, bool deep=True, str separator='', bool strip=False):
+        """Returns True if any node in the current search scope contains specified text"""
+        nodes = []
+        for node in self.nodes:
+            node_text = node.text(deep=deep, separator=separator, strip=strip)
+            if node_text and text in node_text:
+                return True
+        return False
+
 
 ctypedef fused str_or_Node:
     basestring
@@ -437,21 +526,15 @@ cdef class Node:
 
     def css(self, str query):
         """Evaluate CSS selector against current node and its child nodes."""
-        cdef myhtml_collection_t *collection
-        cdef Selector selector = Selector(query)
+        return _find_nodes(self.parser, self.node, query)
 
-        result = list()
-        collection = selector.find(self.node)
+    def any_css_matches(self, list selectors):
+        """Returns True if any of CSS selectors matches a node"""
+        return _find_matches(self.parser, self.node, selectors)
 
-        if collection != NULL:
-            for i in range(collection.length):
-                node = Node()
-                node._init(collection.list[i], self.parser)
-                result.append(node)
-
-            myhtml_collection_destroy(collection)
-
-        return result
+    def css_matches(self, str selector):
+        """Returns True if CSS selector matches a node."""
+        return _find_matches(self.parser, self.node, [selector, ])
 
     def css_first(self, str query, default=None, bool strict=False):
         """Evaluate CSS selector against current node and its child nodes."""
@@ -737,6 +820,21 @@ cdef class Node:
             raise ValueError("Can't obtain raw value for non-text node.")
         return self.parser.raw_html[begin:begin + length]
 
+    def select(self, query=None):
+        """Select nodes give a CSS selector.
+
+        Works similarly to the the ``css`` method, but supports chained filtering and extra features.
+
+        Parameters
+        ----------
+        query : str or None
+            The CSS selector to use when searching for nodes.
+
+        Returns
+        -------
+        selector : The `Selector` class.
+        """
+        return Selector(self, query)
 
     def __repr__(self):
         return '<Node %s>' % self.tag

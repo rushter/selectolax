@@ -88,7 +88,7 @@ cdef class _Attributes:
 
     def items(self):
         for key in self.__iter__():
-            yield (key, self(key))
+            yield key, self[key]
 
     def values(self):
         for key in self.__iter__():
@@ -111,7 +111,7 @@ cdef class _Attributes:
     def __repr__(self):
         cdef const char *c_text
         c_text = myhtml_tag_name_by_id(self.node.tree, self.node.tag_id, NULL)
-        tag_name = c_text.decode(_ENCODING, 'ignore')
+        tag_name = c_text.decode(_ENCODING, 'ignore') if c_text != NULL else 'unknown'
         return "<%s attributes, %s items>" % (tag_name, len(self))
 
 

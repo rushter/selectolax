@@ -34,7 +34,7 @@ cdef class HTMLParser:
         self.decode_errors = decode_errors
 
         if isinstance(html, (str, unicode)):
-            bytes_html = html.encode('UTF-8')
+            bytes_html = html.encode('UTF-8', errors=decode_errors)
             detect_encoding = False
         elif isinstance(html, bytes):
             bytes_html = html

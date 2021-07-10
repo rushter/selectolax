@@ -25,6 +25,21 @@ def test_encoding():
     html_utf = '<head><meta charset="WINDOWS-1251"></head>'.encode('utf-8')
     assert HTMLParser(html_utf, detect_encoding=True, use_meta_tags=True).input_encoding == 'WINDOWS-1251'
 
+    # UTF-16 not ASCII-readable
+    html_utf = '<head><meta charset="WINDOWS-1251"></head>'.encode('utf-16le')
+    assert HTMLParser(html_utf, detect_encoding=True, use_meta_tags=True).input_encoding == 'UTF-16LE'
+
+    # Unencodable characters in string, should not throw an exception by default
+    html_unencodable = b'<div>Roboto+Condensed</div>'.decode('utf-7', errors='ignore')
+    assert HTMLParser(html_unencodable).input_encoding == 'UTF-8'
+
+    # decode_errrors='strict' should error out
+    try:
+        HTMLParser(html_unencodable, decode_errors='strict')
+        assert False
+    except Exception as e:
+        assert type(e) is UnicodeEncodeError
+
 
 def test_parser():
     html = HTMLParser("")

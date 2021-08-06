@@ -6,6 +6,7 @@ include "selector.pxi"
 include "node.pxi"
 
 MAX_HTML_INPUT_SIZE = 8e+7
+_ENABLE_PARSING = True
 
 cdef class HTMLParser:
     """The HTML parser.
@@ -52,7 +53,9 @@ cdef class HTMLParser:
         if detect_encoding:
             self._detect_encoding(html_chars, html_len)
 
-        self._parse_html(html_chars, html_len)
+        if _ENABLE_PARSING:
+            self._parse_html(html_chars, html_len)
+
         self.raw_html = bytes_html
         self.cached_script_texts = None
         self.cached_script_srcs = None
@@ -340,6 +343,40 @@ cdef class HTMLParser:
 
     def css_matches(self, str selector):
         return self.root.css_matches(selector)
+
+    def clone(self):
+        """Clone the current tree."""
+        global _ENABLE_PARSING
+        cdef myhtml_t* myhtml
+        cdef mystatus_t status
+        cdef myhtml_tree_t* html_tree
+        cdef myhtml_tree_node_t* node
+
+        with nogil:
+            myhtml = myhtml_create()
+            status = myhtml_init(myhtml, MyHTML_OPTIONS_DEFAULT, 1, 0)
+
+        if status != 0:
+            raise RuntimeError("Can't init MyHTML object.")
+
+        with nogil:
+            html_tree = myhtml_tree_create()
+            status = myhtml_tree_init(html_tree, myhtml)
+
+        if status != 0:
+            raise RuntimeError("Can't init MyHTML Tree object.")
+
+        node = myhtml_node_clone_deep(html_tree, self.html_tree.node_html)
+        myhtml_tree_node_insert_root(html_tree, NULL, MyHTML_NAMESPACE_HTML)
+        myhtml_node_append_child(html_tree.node_html, node)
+
+        _ENABLE_PARSING = False
+        cls = HTMLParser(self.raw_html, self.detect_encoding, self.use_meta_tags, self.decode_errors)
+        cls.html_tree = html_tree
+        cls._encoding = self._encoding
+        cls.html_tree = html_tree
+        _ENABLE_PARSING = True
+        return cls
 
     def __dealloc__(self):
         cdef myhtml_t* myhtml

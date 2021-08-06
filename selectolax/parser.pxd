@@ -8,6 +8,7 @@ cdef extern from "myhtml/myhtml.h" nogil:
     ctypedef struct myhtml_tree_t:
         # not completed struct
         myhtml_t* myhtml
+        myhtml_tree_node_t*   document
         myhtml_tree_node_t*   node_html
 
     ctypedef struct mchar_async_t
@@ -426,6 +427,7 @@ cdef extern from "myhtml/myhtml.h" nogil:
     myhtml_tree_node_t * myhtml_node_insert_after(myhtml_tree_node_t *target, myhtml_tree_node_t *node)
     myhtml_tree_node_t * myhtml_node_create(myhtml_tree_t* tree, myhtml_tag_id_t tag_id, myhtml_namespace ns)
     myhtml_tree_node_t * myhtml_node_clone_deep(myhtml_tree_t* dest_tree, myhtml_tree_node_t* src)
+    myhtml_tree_node_t * myhtml_node_append_child(myhtml_tree_node_t* target, myhtml_tree_node_t* node)
 
     mycore_string_t * myhtml_node_text_set(myhtml_tree_node_t *node, const char* text, size_t length,
                                           myencoding_t encoding)
@@ -436,6 +438,8 @@ cdef extern from "myhtml/myhtml.h" nogil:
 
 cdef extern from "myhtml/tree.h" nogil:
     myhtml_tree_node_t * myhtml_tree_node_clone(myhtml_tree_node_t* node)
+    myhtml_tree_node_t * myhtml_tree_node_insert_root(myhtml_tree_t* tree, myhtml_token_node_t* token,
+                                                      myhtml_namespace ns)
 
 cdef extern from "myhtml/serialization.h" nogil:
     mystatus_t myhtml_serialization(myhtml_tree_node_t* scope_node, mycore_string_raw_t* str)

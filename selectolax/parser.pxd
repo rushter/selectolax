@@ -555,8 +555,9 @@ cdef class HTMLParser:
     cdef myencoding_t _encoding
     cdef unicode decode_errors
     cdef bytes raw_html
+    cdef object cached_script_texts
+    cdef object cached_script_srcs
 
-    # cpdef css(self, str query)
     cdef void _detect_encoding(self, char* html, size_t html_len) nogil
     cdef _parse_html(self, char* html, size_t html_len)
 

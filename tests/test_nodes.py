@@ -346,3 +346,18 @@ def test_adavanced_selector():
     """)
     selector = html_parser.select('script').text_contains("super_value")
     assert selector.any_matches
+
+
+def test_script_contain():
+    html_parser = HTMLParser("""
+    <script>
+     var super_value = 100;
+    </script>
+    
+    """)
+    assert html_parser.scripts_contain('super_value')
+
+
+def test_srcs_contain():
+    html_parser = HTMLParser("""<script src="http://google.com/analytics.js"></script>""")
+    assert html_parser.script_srcs_contain(('analytics.js', ))

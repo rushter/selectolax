@@ -1,4 +1,4 @@
-# cython: boundscheck=False, wraparound=False, nonecheck=False, language_level=3, embedsignature=True
+# cython: boundscheck=False, wraparound=False, nonecheck=False, language_level=3, embedsignature=False
 
 from cpython cimport bool
 
@@ -54,6 +54,8 @@ cdef class HTMLParser:
 
         self._parse_html(html_chars, html_len)
         self.raw_html = bytes_html
+        self.cached_script_texts = None
+        self.cached_script_srcs = None
 
 
     def css(self, str query):
@@ -285,9 +287,34 @@ cdef class HTMLParser:
         if node:
             return Selector(node, query)
 
-    def any_css_matches(self, list selectors):
+    def any_css_matches(self, tuple selectors):
         """Returns True if any of the specified CSS selectors matches a node."""
         return self.root.any_css_matches(selectors)
+
+    def scripts_contain(self, str query):
+        """Returns True if any of the script tags contain specified text.
+
+        Caches script tags on the first call to improve performance.
+
+        Parameters
+        ----------
+        query : str
+            The query to check.
+
+        """
+        return self.root.scripts_contain(query)
+
+    def script_srcs_contain(self, tuple queries):
+        """Returns True if any of the script SRCs attributes contain on of the specified text.
+
+        Caches values on the first call to improve performance.
+
+        Parameters
+        ----------
+        queries : tuple of str
+
+        """
+        return self.root.script_srcs_contain(queries)
 
     def css_matches(self, str selector):
         return self.root.css_matches(selector)

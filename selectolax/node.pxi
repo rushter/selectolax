@@ -620,14 +620,15 @@ cdef class Node:
             myhtml_node_insert_before(self.node, self.node.child)
         myhtml_node_delete(self.node)
 
-    def strip_tags(self, list tags):
+    def strip_tags(self, list tags, bool recursive = False):
         """Remove specified tags from the HTML tree.
 
         Parameters
         ----------
         tags : list
             List of tags to remove.
-
+        recursive : bool, default True
+            Whenever to delete all its child nodes
         Examples
         --------
 
@@ -640,7 +641,7 @@ cdef class Node:
         """
         for tag in tags:
             for element in self.css(tag):
-                element.decompose()
+                element.decompose(recursive=recursive)
 
     def unwrap_tags(self, list tags):
         """Unwraps specified tags from the HTML tree.

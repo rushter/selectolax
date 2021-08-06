@@ -223,14 +223,15 @@ cdef class HTMLParser:
         """
         return self.body.text(deep=deep, separator=separator, strip=strip)
 
-    def strip_tags(self, list tags):
+    def strip_tags(self, list tags, bool recursive = False):
         """Remove specified tags from the node.
 
         Parameters
         ----------
-        tags : list
+        tags : list of str
             List of tags to remove.
-
+        recursive : bool, default True
+            Whenever to delete all its child nodes
         Examples
         --------
 
@@ -241,7 +242,28 @@ cdef class HTMLParser:
         '<html><body><div>Hello world!</div></body></html>'
 
         """
-        return self.root.strip_tags(tags)
+        cdef myhtml_collection_t* collection = NULL
+
+        cdef mystatus_t status = 0;
+
+        for tag in tags:
+            pybyte_name = tag.encode('UTF-8')
+            collection = myhtml_get_nodes_by_name(self.html_tree, NULL, pybyte_name, len(pybyte_name), &status)
+
+            if collection == NULL:
+                continue
+
+            if status != 0:
+                continue
+
+            for i in range(collection.length):
+                if recursive:
+                    myhtml_node_delete_recursive(collection.list[i])
+                else:
+                    myhtml_node_delete(collection.list[i])
+
+            myhtml_collection_destroy(collection)
+
 
     def unwrap_tags(self, list tags):
         """Unwraps specified tags from the HTML tree.

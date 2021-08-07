@@ -2,8 +2,9 @@
 
 from cpython cimport bool
 
-include "selector.pxi"
+include "selection.pxi"
 include "node.pxi"
+include "utils.pxi"
 
 MAX_HTML_INPUT_SIZE = 8e+7
 _ENABLE_PARSING = True
@@ -31,34 +32,23 @@ cdef class HTMLParser:
 
         self.detect_encoding = detect_encoding
         self.use_meta_tags = use_meta_tags
-        self._encoding = MyENCODING_UTF_8
         self.decode_errors = decode_errors
+        self._set_encoding()
 
-        if isinstance(html, (str, unicode)):
-            bytes_html = html.encode('UTF-8', errors=decode_errors)
-            detect_encoding = False
-        elif isinstance(html, bytes):
-            bytes_html = html
-        else:
-            raise TypeError("Expected a string, but %s found" % type(html).__name__)
-
-        html_len = len(bytes_html)
-
-        if html_len > MAX_HTML_INPUT_SIZE:
-            raise ValueError("The specified HTML input is too large to be processed (%d bytes)" % html_len)
-
-        html_chars = <char*>bytes_html
-
+        bytes_html, html_len = preprocess_input(html, decode_errors)
+        html_chars = <char*> bytes_html
 
         if detect_encoding:
             self._detect_encoding(html_chars, html_len)
-
         if _ENABLE_PARSING:
             self._parse_html(html_chars, html_len)
 
         self.raw_html = bytes_html
         self.cached_script_texts = None
         self.cached_script_srcs = None
+
+    cdef void _set_encoding(self):
+        self._encoding = MyENCODING_UTF_8
 
 
     def css(self, str query):
@@ -144,7 +134,6 @@ cdef class HTMLParser:
             raise RuntimeError("Can't parse HTML:\n%s" % str(html))
 
         assert self.html_tree.node_html != NULL
-
 
 
     @property

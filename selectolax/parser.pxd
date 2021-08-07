@@ -87,9 +87,6 @@ cdef extern from "myhtml/myhtml.h" nogil:
         MyHTML_TOKEN_TYPE_COMMENT          = 0x400
         MyHTML_TOKEN_TYPE_NULL             = 0x800
 
-    ctypedef enum mycss_selectors_flags:
-        MyCSS_SELECTORS_FLAGS_UNDEF         = 0x00
-        MyCSS_SELECTORS_FLAGS_SELECTOR_BAD  = 0x01
 
     ctypedef enum myhtml_tags:
         MyHTML_TAG__UNDEF              = 0x000
@@ -498,8 +495,6 @@ cdef extern from "myencoding/encoding.h" nogil:
 
 
 cdef extern from "mycss/mycss.h" nogil:
-    ctypedef unsigned int mystatus_t
-
     ctypedef struct mycss_entry_t:
         # not completed struct
         mycss_t* mycss
@@ -511,9 +506,10 @@ cdef extern from "mycss/mycss.h" nogil:
     ctypedef struct mycss_selectors_entries_list_t
     ctypedef struct mycss_declaration_entry_t
 
-    ctypedef enum mycss_selectors_flags_t:
+    ctypedef enum mycss_selectors_flags:
         MyCSS_SELECTORS_FLAGS_UNDEF         = 0x00
         MyCSS_SELECTORS_FLAGS_SELECTOR_BAD  = 0x01
+    ctypedef mycss_selectors_flags mycss_selectors_flags_t
 
     ctypedef struct mycss_selectors_list_t:
         mycss_selectors_entries_list_t* entries_list;
@@ -564,6 +560,7 @@ cdef class HTMLParser:
 
     cdef void _detect_encoding(self, char* html, size_t html_len) nogil
     cdef _parse_html(self, char* html, size_t html_len)
+    cdef void _set_encoding(self)
 
 
 cdef class Stack:

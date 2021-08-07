@@ -838,7 +838,7 @@ cdef class Node:
         return self.parser.raw_html[begin:begin + length]
 
     def select(self, query=None):
-        """Select nodes give a CSS selector.
+        """Select nodes given a CSS selector.
 
         Works similarly to the the ``css`` method, but supports chained filtering and extra features.
 

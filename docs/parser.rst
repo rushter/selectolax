@@ -15,3 +15,9 @@ Node
 
 .. autoclass:: Node
     :members:
+
+Selector
+--------
+
+.. autoclass:: Selector
+    :members:

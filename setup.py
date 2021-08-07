@@ -38,6 +38,12 @@ if "--cython" in sys.argv:
 if HAS_CYTHON and not os.path.exists("selectolax/parser.c"):
     USE_CYTHON = True
 
+COMPILER_DIRECTIVES = {
+    "language_level": 3,
+    "embedsignature": True,
+    "annotation_typing": False,
+}
+
 
 def find_modest_files(modest_path="modest/source"):
     c_files = []
@@ -97,7 +103,7 @@ def make_extensions():
     extensions = ([extension, ])
 
     if USE_CYTHON:
-        extensions = cythonize(extensions)
+        extensions = cythonize(extensions, compiler_directives=COMPILER_DIRECTIVES)
 
     return extensions
 

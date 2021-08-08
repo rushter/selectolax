@@ -560,7 +560,6 @@ cdef class HTMLParser:
 
     cdef void _detect_encoding(self, char* html, size_t html_len) nogil
     cdef _parse_html(self, char* html, size_t html_len)
-    cdef void _set_encoding(self)
 
 
 cdef class Stack:

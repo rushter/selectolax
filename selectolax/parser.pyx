@@ -33,7 +33,7 @@ cdef class HTMLParser:
         self.detect_encoding = detect_encoding
         self.use_meta_tags = use_meta_tags
         self.decode_errors = decode_errors
-        self._set_encoding()
+        self._encoding = MyENCODING_UTF_8
 
         bytes_html, html_len = preprocess_input(html, decode_errors)
         html_chars = <char*> bytes_html
@@ -46,10 +46,6 @@ cdef class HTMLParser:
         self.raw_html = bytes_html
         self.cached_script_texts = None
         self.cached_script_srcs = None
-
-    cdef void _set_encoding(self):
-        self._encoding = MyENCODING_UTF_8
-
 
     def css(self, str query):
         """A CSS selector.

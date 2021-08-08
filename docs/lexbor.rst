@@ -3,15 +3,15 @@ selectolax.lexbor module
 
 .. automodule:: selectolax.lexbor
 
-HtmlParser
-----------
+LexborHTMLParser
+----------------
 
 .. autoclass:: LexborHTMLParser
     :members:
 
 
-Node
-----
+LexborNode
+----------
 
 .. autoclass:: LexborNode
     :members:

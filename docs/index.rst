@@ -8,6 +8,7 @@ API
    :maxdepth: 2
 
    parser
+   lexbor
 
 
 Indices and tables

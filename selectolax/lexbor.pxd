@@ -202,7 +202,6 @@ cdef extern from "lexbor/html/html.h" nogil:
     # Functions
     lxb_html_document_t * lxb_html_document_create()
     lxb_status_t lxb_html_document_parse(lxb_html_document_t *document,  const lxb_char_t *html, size_t size)
-    lxb_html_document_t * lxb_html_document_destroy(lxb_html_document_t *document)
     lxb_html_body_element_t * lxb_html_document_body_element_noi(lxb_html_document_t *document)
     lxb_dom_element_t * lxb_dom_document_element(lxb_dom_document_t *document)
 
@@ -226,6 +225,13 @@ cdef extern from "lexbor/dom/interfaces/element.h" nogil:
     lxb_status_t lxb_dom_elements_by_tag_name(lxb_dom_element_t *root, lxb_dom_collection_t *collection,
                                               const lxb_char_t *qualified_name, size_t len)
 
+
+cdef extern from "lexbor/dom/interfaces/document.h" nogil:
+    lxb_html_document_t * lxb_html_document_destroy(lxb_html_document_t *document)
+
+
 cdef extern from "lexbor/dom/collection.h" nogil:
     size_t lxb_dom_collection_length_noi(lxb_dom_collection_t *col)
+
     lxb_dom_element_t * lxb_dom_collection_element_noi(lxb_dom_collection_t *col, size_t idx)
+    lxb_dom_collection_t * lxb_dom_collection_destroy(lxb_dom_collection_t *col, bint self_destroy)

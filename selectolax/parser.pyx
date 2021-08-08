@@ -4,6 +4,7 @@ from cpython cimport bool
 
 include "selection.pxi"
 include "node.pxi"
+include "utils.pxi"
 
 MAX_HTML_INPUT_SIZE = 8e+7
 _ENABLE_PARSING = True
@@ -34,8 +35,8 @@ cdef class HTMLParser:
         self.decode_errors = decode_errors
         self._set_encoding()
 
-        bytes_html, html_len = self._preprocess_input(html)
-        html_chars = <char*>bytes_html
+        bytes_html, html_len = preprocess_input(html, decode_errors)
+        html_chars = <char*> bytes_html
 
         if detect_encoding:
             self._detect_encoding(html_chars, html_len)
@@ -48,20 +49,6 @@ cdef class HTMLParser:
 
     cdef void _set_encoding(self):
         self._encoding = MyENCODING_UTF_8
-
-    def _preprocess_input(self, html):
-        if isinstance(html, (str, unicode)):
-            bytes_html = html.encode('UTF-8', errors=self.decode_errors)
-            detect_encoding = False
-        elif isinstance(html, bytes):
-            bytes_html = html
-        else:
-            raise TypeError("Expected a string, but %s found" % type(html).__name__)
-        html_len = len(bytes_html)
-
-        if html_len > MAX_HTML_INPUT_SIZE:
-            raise ValueError("The specified HTML input is too large to be processed (%d bytes)" % html_len)
-        return bytes_html, html_len
 
 
     def css(self, str query):

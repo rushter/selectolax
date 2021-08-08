@@ -14,6 +14,7 @@ with io.open('README.rst', mode='rt', encoding='utf-8') as readme_file:
 USE_STATIC = False
 USE_CYTHON = False
 PLATFORM = 'windows_nt' if platform.system() == 'Windows' else 'posix'
+INCLUDE_LEXBOR = False
 
 try:
     from Cython.Build import cythonize
@@ -26,6 +27,10 @@ except ImportError as err:
 if "--static" in sys.argv:
     USE_STATIC = True
     sys.argv.remove("--static")
+
+if "--lexbor" in sys.argv:
+    INCLUDE_LEXBOR = True
+    sys.argv.remove("--lexbor")
 
 if "--cython" in sys.argv:
     if HAS_CYTHON:
@@ -57,51 +62,72 @@ def find_modest_files(modest_path="modest/source"):
                     if (file_path.find('myport') >= 0) and (not file_path.find(PLATFORM) >= 0):
                         continue
 
+                    if INCLUDE_LEXBOR:
+                        if (file_path.find('ports') >= 0) and (not file_path.find(PLATFORM) >= 0):
+                            continue
                     c_files.append(file_path)
     return c_files
 
 
 def make_extensions():
+    files_to_compile_lxb = []
+    extra_objects_lxb, extra_objects = [], []
+
     if USE_CYTHON:
-        files_to_compile = ["selectolax/parser.pyx"]
+        files_to_compile = ["selectolax/parser.pyx", ]
+        if INCLUDE_LEXBOR:
+            files_to_compile_lxb = ["selectolax/lexbor.pyx", ]
     else:
         files_to_compile = ["selectolax/parser.c"]
+        if INCLUDE_LEXBOR:
+            files_to_compile_lxb = ["selectolax/lexbor.c", ]
 
     if USE_STATIC:
         extra_objects = ["modest/lib/libmodest_static.a"]
+        if INCLUDE_LEXBOR:
+            extra_objects_lxb = ["lexbor/liblexbor_static.a"]
     else:
-        files_to_compile.extend(find_modest_files())
-        extra_objects = []
+        files_to_compile.extend(find_modest_files("modest/source"))
+        if INCLUDE_LEXBOR:
+            files_to_compile_lxb.extend(find_modest_files("lexbor/source"))
 
+    compile_arguments_lxb = []
     compile_arguments = [
         "-DMODEST_BUILD_OS=%s" % platform.system(),
         "-DMyCORE_OS_%s" % platform.system(),
         "-DMODEST_PORT_NAME=%s" % PLATFORM,
         "-DMyCORE_BUILD_WITHOUT_THREADS=YES",
         "-DMyCORE_BUILD_DEBUG=NO",
-        "-O2",
-
     ]
 
     if PLATFORM == 'posix':
-        compile_arguments.extend([
+        args = [
             "-pedantic", "-fPIC",
             "-Wno-unused-variable",
             "-Wno-unused-function",
-            "-std=c99"
+            "-std=c99",
+            "-O2",
+        ]
+        compile_arguments.extend(args)
+        compile_arguments_lxb.extend(args)
 
-        ])
-
-    extension = Extension("selectolax.parser",
-                          files_to_compile,
-                          language='c',
-                          include_dirs=['modest/include/', ],
-                          extra_objects=extra_objects,
-                          extra_compile_args=compile_arguments,
-                          )
-
-    extensions = ([extension, ])
-
+    extensions = [Extension(
+        "selectolax.parser",
+        files_to_compile,
+        language='c',
+        include_dirs=['modest/include/', ],
+        extra_objects=extra_objects,
+        extra_compile_args=compile_arguments,
+    ), ]
+    if INCLUDE_LEXBOR:
+        extensions.append(Extension(
+            "selectolax.lexbor",
+            files_to_compile_lxb,
+            language='c',
+            include_dirs=['lexbor/source/', ],
+            extra_objects=extra_objects_lxb,
+            extra_compile_args=compile_arguments_lxb,
+        ))
     if USE_CYTHON:
         extensions = cythonize(extensions, compiler_directives=COMPILER_DIRECTIVES)
 

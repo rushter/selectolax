@@ -13,6 +13,56 @@ cdef class LexborNode:
         return self
 
     @property
+    def first_child(self):
+        """Return the first child node."""
+        cdef LexborNode node
+        if self.node.first_child:
+            node = LexborNode()
+            node._cinit(<lxb_dom_node_t *> self.node.first_child, self.parser)
+            return node
+        return None
+
+    @property
+    def parent(self):
+        """Return the parent node."""
+        cdef LexborNode node
+        if self.node.parent:
+            node = LexborNode()
+            node._cinit(<lxb_dom_node_t *> self.node.parent, self.parser)
+            return node
+        return None
+
+    @property
+    def next(self):
+        """Return next node."""
+        cdef LexborNode node
+        if self.node.next:
+            node = LexborNode()
+            node._cinit(<lxb_dom_node_t *> self.node.next, self.parser)
+            return node
+        return None
+
+    @property
+    def prev(self):
+        """Return previous node."""
+        cdef LexborNode node
+        if self.node.prev:
+            node = LexborNode()
+            node._cinit(<lxb_dom_node_t *> self.node.prev, self.parser)
+            return node
+        return None
+
+    @property
+    def last_child(self):
+        """Return last child node."""
+        cdef LexborNode node
+        if self.node.last_child:
+            node = LexborNode()
+            node._cinit(<lxb_dom_node_t *> self.node.last_child, self.parser)
+            return node
+        return None
+
+    @property
     def html(self):
         """Return HTML representation of the current node including all its child nodes.
 
@@ -30,3 +80,16 @@ cdef class LexborNode:
             lexbor_str_destroy(lxb_str,  self.node.owner_document.text, True)
             return html
         return None
+
+    def text(self):
+        cdef size_t * str_len
+        cdef lxb_char_t * text
+
+        # TODO: improve
+        text = lxb_dom_node_text_content(self.node, str_len)
+        if <int>str_len == 0:
+            raise RuntimeError("Can't extract text")
+
+        unicode_text = text.decode(_ENCODING)
+        lxb_dom_document_destroy_text_noi(self.node.owner_document, text)
+        return unicode_text

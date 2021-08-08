@@ -83,5 +83,5 @@ cdef class LexborHTMLParser:
                 self
             )
             result.append(node)
-        lxb_dom_collection_destroy(collection, True)
+        lxb_dom_collection_destroy(collection, <bint> True)
         return result

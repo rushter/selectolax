@@ -100,6 +100,16 @@ cdef class _Attributes:
         except KeyError:
             return default
 
+    def sget(self, key, default=None):
+        """Same as get, but returns empty strings instead of None values for empty attibutes."""
+        try:
+            val = self[key]
+            if val is None:
+                val = ""
+            return val
+        except KeyError:
+            return default
+
     def __contains__(self, key):
         try:
             self[key]

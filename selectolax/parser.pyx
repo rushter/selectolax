@@ -153,6 +153,18 @@ cdef class HTMLParser:
         return None
 
     @property
+    def head(self):
+        """Returns head node."""
+        cdef myhtml_tree_node_t* head
+        head = myhtml_tree_get_node_head(self.html_tree)
+
+        if head != NULL:
+            node = Node()
+            node._init(head, self)
+            return node
+        return None
+
+    @property
     def body(self):
         """Returns document body."""
         cdef myhtml_tree_node_t* body

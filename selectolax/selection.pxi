@@ -81,11 +81,13 @@ cdef class Selector:
         self.nodes = find_nodes(node.parser, node.node, query) if query else [node, ]
 
 
-    def css(self, str query):
+    cpdef css(self, str query):
         """Evaluate CSS selector against current scope."""
+        cdef Node current_node
         nodes = list()
         for node in self.nodes:
-            nodes.extend(find_nodes(self.node.parser, self.node.node, query))
+            current_node = node
+            nodes.extend(find_nodes(self.node.parser, current_node.node, query))
         self.nodes = nodes
         return self
 

@@ -135,7 +135,7 @@ ctypedef fused str_or_Node:
 cdef class Node:
     """A class that represents HTML node (element)."""
     cdef myhtml_tree_node_t *node
-    cdef HTMLParser parser
+    cdef public HTMLParser parser
 
 
     cdef _init(self, myhtml_tree_node_t *node, HTMLParser parser):

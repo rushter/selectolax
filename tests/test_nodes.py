@@ -361,3 +361,16 @@ def test_script_contain():
 def test_srcs_contain():
     html_parser = HTMLParser("""<script src="http://google.com/analytics.js"></script>""")
     assert html_parser.script_srcs_contain(('analytics.js', ))
+
+
+def test_css_chaining():
+    html = """
+    <div id="container">
+        <span class="red"></span>
+        <span class="green"></span>
+        <span class="red"></span>
+        <span class="green"></span>
+    </div>
+    """
+    tree = HTMLParser(html)
+    assert len(tree.select('div').css("span").css(".red").matches) == 2

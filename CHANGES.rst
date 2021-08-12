@@ -1,6 +1,18 @@
 selectolax Changelog
 ====================
 
+Version 0.2.14
+--------------
+
+Released
+
+- Added advanced Selector (the ``select`` method)
+- Improved speed of ``strip_tags``
+- Added ``clone`` method for the ``HtmlParser`` object
+- Exposed ``detect_encoding``, ``decode_errors``, ``use_meta_tags``, ``raw_html`` attributes for ``HtmlParser``
+- Added ``sget`` method to the ``attrs`` property
+
+
 Version 0.2.13
 --------------
 

@@ -10,6 +10,14 @@ cdef class LexborHTMLParser:
         bytes_html, html_len = preprocess_input(html)
         self._parse_html(bytes_html, html_len)
         self.raw_html = bytes_html
+        self._selector = None
+
+    @property
+    def selector(self):
+        if self._selector is None:
+            self._selector = LexborCSSSelector()
+        return self._selector
+
 
     cdef _parse_html(self, char *html, size_t html_len):
         cdef lxb_status_t status
@@ -39,7 +47,7 @@ cdef class LexborHTMLParser:
         """Returns root node."""
         if self.document == NULL:
             return None
-        return LexborNode()._cinit(<lxb_dom_node_t *> self.document, self)
+        return LexborNode()._cinit(<lxb_dom_node_t *> lxb_dom_document_root(&self.document.dom_document), self)
 
     @property
     def body(self):
@@ -85,3 +93,8 @@ cdef class LexborHTMLParser:
             result.append(node)
         lxb_dom_collection_destroy(collection, <bint> True)
         return result
+
+    @property
+    def html(self):
+        """Return HTML representation of the page."""
+        return self.root.html

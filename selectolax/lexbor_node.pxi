@@ -4,8 +4,6 @@ _ENCODING = 'UTF-8'
 
 cdef class LexborNode:
     """A class that represents HTML node (element)."""
-    cdef lxb_dom_node_t *node
-    cdef LexborHTMLParser parser
 
     cdef _cinit(self, lxb_dom_node_t *node, LexborHTMLParser parser):
         self.parser = parser
@@ -93,3 +91,88 @@ cdef class LexborNode:
         unicode_text = text.decode(_ENCODING)
         lxb_dom_document_destroy_text_noi(self.node.owner_document, text)
         return unicode_text
+
+    def css(self, str query):
+        """Evaluate CSS selector against current node and its child nodes."""
+        return self.parser.selector.find(query, self)
+
+    def __repr__(self):
+        return '<LexborNode %s>' % self.tag
+
+    @property
+    def tag(self):
+        cdef lxb_char_t *c_text
+        cdef size_t * str_len
+
+        c_text = lxb_dom_element_qualified_name(<lxb_dom_element_t *> self.node, str_len)
+        text = None
+        if c_text:
+            text = c_text.decode(_ENCODING)
+        return text
+
+
+cdef class LexborCSSSelector:
+
+    def __init__(self):
+        self._create_css_parser()
+        self.results = []
+        self.current_node = None
+
+    cdef _create_css_parser(self):
+        cdef lxb_status_t status
+
+
+        self.parser = lxb_css_parser_create()
+        status = lxb_css_parser_init(self.parser, NULL, NULL)
+
+        if status != 0x0000:
+            raise RuntimeError("Can't initialize CSS parser.")
+
+        self.css_selectors = lxb_css_selectors_create()
+        status = lxb_css_selectors_init(self.css_selectors, 32)
+
+        if status != 0x0000:
+            raise RuntimeError("Can't initialize CSS selector.")
+
+        lxb_css_parser_selectors_set(self.parser, self.css_selectors)
+
+        self.selectors = lxb_selectors_create()
+        status = lxb_selectors_init(self.selectors)
+
+        if status != 0x0000:
+            raise RuntimeError("Can't initialize CSS selector.")
+
+
+    cpdef find(self, str query, LexborNode node):
+        cdef lxb_css_selector_list_t* selectors
+        cdef lxb_char_t* c_selector
+        cdef lxb_css_selector_list_t * selectors_list
+
+        bytes_query = query.encode(_ENCODING)
+        selectors_list = lxb_css_selectors_parse(self.parser, <lxb_char_t *> bytes_query, <size_t>len(query))
+
+        if selectors_list == NULL:
+            raise ValueError("Can't parse CSS selector.")
+
+        self.current_node = node
+        status = lxb_selectors_find(self.selectors, node.node, selectors_list,
+                                    <lxb_selectors_cb_f>css_finder_callback, <void*>self)
+        results = list(self.results)
+        self.results = []
+        self.current_node = None
+        return results
+
+    def __dealloc__(self):
+        lxb_selectors_destroy(self.selectors, True)
+        lxb_css_parser_destroy(self.parser, True)
+        lxb_css_selectors_destroy(self.css_selectors, True, True)
+
+
+cdef lxb_status_t css_finder_callback(lxb_dom_node_t *node, lxb_css_selector_specificity_t *spec, void *ctx):
+    cdef LexborNode lxb_node
+    cdef object cls
+    cls = <object> ctx
+    lxb_node = LexborNode()
+    lxb_node._cinit(<lxb_dom_node_t *> node, cls.current_node.parser)
+    cls.results.append(lxb_node)
+

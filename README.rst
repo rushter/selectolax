@@ -18,7 +18,7 @@ From PyPI using pip:
 
         pip install selectolax 
 
-Development version from github:
+Development version from GitHub:
 
 .. code-block:: bash       
 
@@ -87,7 +87,7 @@ Most of the features between backends are almost identical, but there are still 
 
 Currently, the ``Lexbor`` backend is in **beta** and missing some of the features.
 
-To use ``Lexbor`` backend, you need to compile development version of selectolax from github.
+To use ``Lexbor`` backend, you need to compile development version of selectolax from GitHub.
 
 After compilation, just import the parser and use it in the similar way.
 

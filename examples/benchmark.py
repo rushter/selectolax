@@ -79,8 +79,8 @@ def _perform_test(pages, parse_func):
 
 def main():
     #
-    # This file contains 750 main pages from the top internet domains (according to Alexa rank).
-    # That translate to 350MB of HTML data.
+    # This file contains 754 main pages from the top internet domains (according to Alexa rank).
+    # That translates to 324MB of HTML data.
     # Because of potential copyright infringements, I don't publish it.
     #
     html_pages = [json.loads(page) for page in open('pages/pages.json', 'rt')]

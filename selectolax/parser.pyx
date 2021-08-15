@@ -279,8 +279,8 @@ cdef class HTMLParser:
         --------
 
         >>> tree = HTMLParser("<div><a href="">Hello</a> <i>world</i>!</div>")
-        >>> tree.body.unwrap_tags(['i','a'])
-        >>> tree.body.html
+        >>> tree.head.unwrap_tags(['i','a'])
+        >>> tree.head.html
         '<body><div>Hello world!</div></body>'
         """
         self.root.unwrap_tags(tags)

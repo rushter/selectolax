@@ -1,6 +1,8 @@
 include "lexbor_node.pxi"
 include "utils.pxi"
 
+# We don't inherit from HTMLParser here, because it also includes all the C code from Modest.
+
 cdef class LexborHTMLParser:
     def __init__(self, html):
 
@@ -55,7 +57,15 @@ cdef class LexborHTMLParser:
         cdef lxb_html_body_element_t* body
         body = lxb_html_document_body_element_noi(self.document)
         if body == NULL:
-            print('no body')
+            return None
+        return LexborNode()._cinit(<lxb_dom_node_t *> body, self)    @property
+
+    @property
+    def head(self):
+        """Returns document head."""
+        cdef lxb_html_body_element_t* head
+        head = lxb_html_document_head_element_noi(self.document)
+        if body == NULL:
             return None
         return LexborNode()._cinit(<lxb_dom_node_t *> body, self)
 
@@ -98,3 +108,41 @@ cdef class LexborHTMLParser:
     def html(self):
         """Return HTML representation of the page."""
         return self.root.html
+
+    def css(self, str query):
+        """A CSS selector.
+
+        Matches pattern `query` against HTML tree.
+        `CSS selectors reference <https://www.w3schools.com/cssref/css_selectors.asp>`_.
+
+        Parameters
+        ----------
+        query : str
+            CSS selector (e.g. "div > :nth-child(2n+1):not(:has(a))").
+
+        Returns
+        -------
+        selector : list of `Node` objects
+        """
+        node = LexborNode()._cinit(<lxb_dom_node_t*> self.root.node, self)
+        return node.css(query)
+
+    def css_first(self, str query, default=None, strict=False):
+        """Same as `css` but returns only the first match.
+
+        Parameters
+        ----------
+
+        query : str
+        default : bool, default None
+            Default value to return if there is no match.
+        strict: bool, default True
+            Set to True if you want to check if there is strictly only one match in the document.
+
+
+        Returns
+        -------
+        selector : `LexborNode` object
+        """
+        node = LexborNode()._cinit(<lxb_dom_node_t*> self.root.node, self)
+        return node.css_first(query)

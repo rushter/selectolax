@@ -93,14 +93,60 @@ cdef class LexborNode:
         return unicode_text
 
     def css(self, str query):
-        """Evaluate CSS selector against current node and its child nodes."""
+        """Evaluate CSS selector against current node and its child nodes.
+
+        Matches pattern `query` against HTML tree.
+        `CSS selectors reference <https://www.w3schools.com/cssref/css_selectors.asp>`_.
+
+        Parameters
+        ----------
+        query : str
+            CSS selector (e.g. "div > :nth-child(2n+1):not(:has(a))").
+
+        Returns
+        -------
+        selector : list of `Node` objects
+        """
         return self.parser.selector.find(query, self)
+
+    def css_first(self, str query, default=None, bool strict=False):
+        """Same as `css` but returns only the first match.
+
+        Parameters
+        ----------
+
+        query : str
+        default : bool, default None
+            Default value to return if there is no match.
+        strict: bool, default True
+            Set to True if you want to check if there is strictly only one match in the document.
+
+
+        Returns
+        -------
+        selector : `LexborNode` object
+        """
+        results = self.css(query)
+        n_results = len(results)
+        if n_results > 0:
+            if strict and n_results > 1:
+                raise ValueError("Expected 1 match, but found %s matches" % n_results)
+            return results[0]
+        return default
+
 
     def __repr__(self):
         return '<LexborNode %s>' % self.tag
 
     @property
     def tag(self):
+        """Return the name of the current tag (e.g. div, p, img).
+
+        Returns
+        -------
+        text : str
+        """
+
         cdef lxb_char_t *c_text
         cdef size_t * str_len
 
@@ -155,6 +201,7 @@ cdef class LexborCSSSelector:
             raise ValueError("Can't parse CSS selector.")
 
         self.current_node = node
+        self.results = []
         status = lxb_selectors_find(self.selectors, node.node, selectors_list,
                                     <lxb_selectors_cb_f>css_finder_callback, <void*>self)
         results = list(self.results)

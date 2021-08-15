@@ -162,5 +162,8 @@ setup(
     tests_require=[
         'pytest',
     ],
+    project_urls={
+        "Source code": "https://github.com/rushter/selectolax",
+    },
     ext_modules=make_extensions(),
 )

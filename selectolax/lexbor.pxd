@@ -203,6 +203,7 @@ cdef extern from "lexbor/html/html.h" nogil:
     lxb_html_document_t * lxb_html_document_create()
     lxb_status_t lxb_html_document_parse(lxb_html_document_t *document,  const lxb_char_t *html, size_t size)
     lxb_html_body_element_t * lxb_html_document_body_element_noi(lxb_html_document_t *document)
+    lxb_html_head_element_t * lxb_html_document_head_element_noi(lxb_html_document_t *document)
     lxb_dom_element_t * lxb_dom_document_element(lxb_dom_document_t *document)
 
     lxb_status_t lxb_html_serialize_tree_str(lxb_dom_node_t *node, lexbor_str_t *str)

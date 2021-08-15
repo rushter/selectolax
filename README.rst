@@ -78,7 +78,33 @@ Basic examples
 
 
 * `Detailed overview <https://github.com/rushter/selectolax/blob/master/examples/walkthrough.ipynb>`_
- 
+
+Available backends
+------------------
+
+Selectolax supports two backends: ``Modest`` and ``Lexbor``. By default, all examples use the Modest backend.
+Most of the features between backends are almost identical, but there are still some differences.
+
+Currently, the ``Lexbor`` backend is in **beta** and missing some of the features.
+
+To use ``Lexbor`` backend, you need to compile development version of selectolax from github.
+
+After compilation, just import the parser and use it in the similar way.
+
+.. code:: python
+
+    In [1]: from selectolax.lexbor import LexborHTMLParser
+
+    In [2]: html = """
+       ...: <title>Hi there</title>
+       ...: <div id="updated">2021-08-15</div>
+       ...: """
+
+    In [3]: parser = selectolax.lexbor.LexborHTMLParser(html)
+    In [4]: parser.root.css_first("#updated").text()
+    Out[4]: '2021-08-15'
+
+
 Simple Benchmark
 ----------------
 

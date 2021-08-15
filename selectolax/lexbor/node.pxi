@@ -1,7 +1,5 @@
 from libc.stdlib cimport free
 
-_ENCODING = 'UTF-8'
-
 cdef class LexborNode:
     """A class that represents HTML node (element)."""
 
@@ -80,11 +78,11 @@ cdef class LexborNode:
         return None
 
     def text(self):
-        cdef size_t * str_len
+        cdef size_t str_len = 0
         cdef lxb_char_t * text
 
         # TODO: improve
-        text = lxb_dom_node_text_content(self.node, str_len)
+        text = lxb_dom_node_text_content(self.node, &str_len)
         if <int>str_len == 0:
             raise RuntimeError("Can't extract text")
 
@@ -148,9 +146,9 @@ cdef class LexborNode:
         """
 
         cdef lxb_char_t *c_text
-        cdef size_t * str_len
+        cdef size_t str_len = 0
 
-        c_text = lxb_dom_element_qualified_name(<lxb_dom_element_t *> self.node, str_len)
+        c_text = lxb_dom_element_qualified_name(<lxb_dom_element_t *> self.node, &str_len)
         text = None
         if c_text:
             text = c_text.decode(_ENCODING)
@@ -200,7 +198,7 @@ cdef class LexborNode:
         cdef size_t str_len = 0
         attributes = dict()
 
-        while attr:
+        while attr != NULL:
             key = lxb_dom_attr_local_name_noi(attr, &str_len)
             value = lxb_dom_attr_value_noi(attr, &str_len)
 
@@ -211,6 +209,36 @@ cdef class LexborNode:
             attributes[key.decode(_ENCODING)] = py_value
 
             attr = attr.next
+        return attributes
+
+    @property
+    def attrs(self):
+        """A dict-like object that is similar to the ``attributes`` property, but operates directly on the Node data.
+
+        .. warning:: Use ``attributes`` instead, if you don't want to modify Node attributes.
+
+        Returns
+        -------
+        attributes : Attributes mapping object.
+
+        Examples
+        --------
+
+        >>> tree = HTMLParser("<div id='a'></div>")
+        >>> node = tree.css_first('div')
+        >>> node.attrs
+        <div attributes, 1 items>
+        >>> node.attrs['id']
+        'a'
+        >>> node.attrs['foo'] = 'bar'
+        >>> del node.attrs['id']
+        >>> node.attributes
+        {'foo': 'bar'}
+        >>> node.attrs['id'] = 'new_id'
+        >>> node.html
+        '<div foo="bar" id="new_id"></div>'
+        """
+        cdef LexborAttributes attributes = LexborAttributes.create(<lxb_dom_node_t *>self.node)
         return attributes
 
 

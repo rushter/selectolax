@@ -5,6 +5,9 @@ include README.rst
 include CHANGES.rst
 
 include selectolax/*
+include selectolax/lexbor/*
+
+include selectolax/lexbor/*.so
 exclude selectolax/*.so
 
 

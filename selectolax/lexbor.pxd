@@ -261,6 +261,14 @@ cdef extern from "lexbor/dom/dom.h" nogil:
     const lxb_char_t * lxb_dom_attr_local_name_noi(lxb_dom_attr_t *attr, size_t *len);
     const lxb_char_t * lxb_dom_attr_value_noi(lxb_dom_attr_t *attr, size_t *len)
 
+    lxb_dom_attr_t * lxb_dom_element_set_attribute(lxb_dom_element_t *element,
+                                                   const lxb_char_t *qualified_name, size_t qn_len,
+                                                   const lxb_char_t *value, size_t value_len)
+    lxb_status_t lxb_dom_element_remove_attribute(lxb_dom_element_t *element,
+                                                  const lxb_char_t *qualified_name, size_t qn_len)
+    lxb_dom_attr_t * lxb_dom_element_attr_by_name(lxb_dom_element_t *element,
+                                                  const lxb_char_t *qualified_name, size_t length)
+
 cdef extern from "lexbor/dom/interfaces/element.h" nogil:
     lxb_status_t lxb_dom_elements_by_tag_name(lxb_dom_element_t *root, lxb_dom_collection_t *collection,
                                               const lxb_char_t *qualified_name, size_t len)

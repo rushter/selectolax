@@ -130,8 +130,7 @@ cdef class LexborHTMLParser:
         -------
         selector : list of `Node` objects
         """
-        node = LexborNode()._cinit(<lxb_dom_node_t*> self.root.node, self)
-        return node.css(query)
+        return self.root.css(query)
 
     def css_first(self, str query, default=None, strict=False):
         """Same as `css` but returns only the first match.
@@ -150,5 +149,4 @@ cdef class LexborHTMLParser:
         -------
         selector : `LexborNode` object
         """
-        node = LexborNode()._cinit(<lxb_dom_node_t*> self.root.node, self)
-        return node.css_first(query)
+        return self.root.css_first(query, default, strict)

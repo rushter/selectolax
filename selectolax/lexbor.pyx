@@ -1,3 +1,5 @@
+from cpython cimport bool
+
 include "lexbor_node.pxi"
 include "utils.pxi"
 
@@ -63,11 +65,11 @@ cdef class LexborHTMLParser:
     @property
     def head(self):
         """Returns document head."""
-        cdef lxb_html_body_element_t* head
+        cdef lxb_html_head_element_t* head
         head = lxb_html_document_head_element_noi(self.document)
-        if body == NULL:
+        if head == NULL:
             return None
-        return LexborNode()._cinit(<lxb_dom_node_t *> body, self)
+        return LexborNode()._cinit(<lxb_dom_node_t *> head, self)
 
     def tags(self, str name):
         """Returns a list of tags that match specified name.

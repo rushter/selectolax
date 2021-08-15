@@ -230,14 +230,17 @@ cdef class LexborHTMLParser:
 
 
 cdef extern from "lexbor/dom/dom.h" nogil:
+    ctypedef struct lxb_dom_collection_t:
+        lexbor_array_t     array
+        lxb_dom_document_t *document
+
     lxb_dom_collection_t * lxb_dom_collection_make(lxb_dom_document_t *document, size_t start_list_size)
     lxb_char_t * lxb_dom_node_text_content(lxb_dom_node_t *node, size_t *len)
     void * lxb_dom_document_destroy_text_noi(lxb_dom_document_t *document, lxb_char_t *text)
     lxb_dom_node_t *  lxb_dom_document_root(lxb_dom_document_t *document)
     lxb_char_t * lxb_dom_element_qualified_name(lxb_dom_element_t *element, size_t *len)
-    ctypedef struct lxb_dom_collection_t:
-        lexbor_array_t     array
-        lxb_dom_document_t *document
+    lxb_dom_node_t * lxb_dom_node_destroy(lxb_dom_node_t *node)
+    lxb_dom_node_t * lxb_dom_node_destroy_deep(lxb_dom_node_t *root)
 
 
 cdef extern from "lexbor/dom/interfaces/element.h" nogil:

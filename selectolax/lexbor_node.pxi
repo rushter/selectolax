@@ -209,6 +209,27 @@ cdef class LexborCSSSelector:
         self.current_node = None
         return results
 
+    def decompose(self, bool recursive=True):
+        """Remov the current node from the tree.
+
+        Parameters
+        ----------
+        recursive : bool, default True
+            Whenever to delete all its child nodes
+
+        Examples
+        --------
+
+        >>> tree = LexborHTMLParser(html)
+        >>> for tag in tree.css('script'):
+        >>>     tag.decompose()
+
+        """
+        if recursive:
+            lxb_dom_node_destroy(<lxb_dom_node_t *>self.node)
+        else:
+            lxb_dom_node_destroy_deep(<lxb_dom_node_t *>self.node)
+
     def __dealloc__(self):
         lxb_selectors_destroy(self.selectors, True)
         lxb_css_parser_destroy(self.parser, True)

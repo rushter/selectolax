@@ -108,15 +108,16 @@ After compilation, just import the parser and use it in the similar way.
 Simple Benchmark
 ----------------
 
-* Average of 10 experiments to parse and retrieve URLs from 800 Google SERP pages.
+* Extract title, links, script and meta tag from 800 pages. See ``examples/benchmark.py`` for more information.
 
-+------------+------------+--------------+
-| Package    | Time       | Memory (peak)|
-+============+============+==============+
-| selectolax | 2.38 sec.  | 768.11 MB    |
-+------------+------------+--------------+
-| lxml       | 18.67 sec. | 769.21 MB    |
-+------------+------------+--------------+
+============================  ==========
+Package                       Time
+============================  ==========
+Beautiful Soup (html.parser)  59.64 sec.
+lxml                          14.48 sec.
+selectolax (Modest)           2.396 sec.
+selectolax (Lexbor)           2.121 sec.
+============================  ==========
 
 Links
 -----

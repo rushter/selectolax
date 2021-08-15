@@ -1,39 +1,100 @@
 # coding:utf-8
-import glob
-import os
-import shutil
-import timeit
-from statistics import mean
+"""A simple benchmark that measures speed of lxml and selectolax.
+
+How the benchmark works
+-----------------------
+
+For each page, we extract:
+
+1) Title
+2) Number of script tag
+3) The ``href`` attribute from all links
+4) The content of the Meta description tag
+
+"""
+import json
+import functools
+import time
 
 from lxml.html import fromstring
+from bs4 import BeautifulSoup
 from selectolax.parser import HTMLParser
+from selectolax.lexbor import LexborHTMLParser
 
-pages = glob.glob('examples/pages/*.html')
-html_pages = [open(x, encoding='utf-8', errors='ignore').read() for x in pages]
-
-selector_css = "cite.iUh30"
-selector_xpath = '//cite[contains(@class, "iUh30")]'
+bad_urls = []
 
 
-def modest_parser(html_pages, selector):
-    all_links = []
-    for page in html_pages:
-        links = [node.text(deep=False) for node in HTMLParser(page).css(selector)]
-        assert len(links) >= 6
-        all_links.extend(links)
+def bs4_parser(html_content, parser=HTMLParser):
+    soup = BeautifulSoup(html_content, 'html.parser')
+    title_text = soup.title.string
+    assert title_text
 
-    return all_links
+    a_hrefs = [a.attrs.get('href', '') for a in soup.find_all('a')]
+    assert len(a_hrefs) >= 5, 'href'
 
-
-def lxml_parser(html_pages, selector):
-    all_links = []
-    for page in html_pages:
-        h = fromstring(page)
-        links = [e.text for e in h.xpath(selector)]
-        assert len(links) >= 6
-        all_links.extend(links)
-    return all_links
+    num_script_tags = len(soup.find_all('script'))
+    assert num_script_tags > 0, 'script'
+    meta_description = soup.find('meta', attrs={"name": "description"})
+    if meta_description:
+        meta_content = meta_description.get('content')
 
 
-print('modest', mean(timeit.repeat('modest_parser(html_pages, selector_css)', globals=globals(), repeat=10, number=1)))
-print('lxml', mean(timeit.repeat('lxml_parser(html_pages, selector_xpath)', globals=globals(), repeat=10, number=1)))
+def selectolax_parser(html_content, parser=HTMLParser):
+    tree = parser(html_content)
+    title_text = ""
+    title_node = tree.css_first('title')
+    if title_node:
+        title_text = title_node.text()
+    assert title_text
+
+    a_hrefs = [a.attrs.get('href', '') for a in tree.css('a[href]')]
+    assert len(a_hrefs) >= 5, 'href'
+
+    num_script_tags = len(tree.css('script'))
+    assert num_script_tags > 0, 'script'
+    meta_description = tree.css_first('meta[name="description"]')
+    if meta_description:
+        meta_content = meta_description.attrs.sget('content', '')
+
+
+def lxml_parser(html_content):
+    tree = fromstring(html_content)
+    title_text = tree.xpath('//title/text()')
+    assert title_text, 'title'
+
+    a_hrefs = [a.attrib.get('href', '') for a in tree.xpath('//a[@href]')]
+    assert len(a_hrefs) >= 5, 'href'
+
+    num_script_tags = len(tree.xpath('//script'))
+    assert num_script_tags > 0, 'script'
+    meta_description = tree.xpath('meta[@name="description"]')
+    if meta_description:
+        meta_content = meta_description[0].attrib.get('content', '')
+
+
+def _perform_test(pages, parse_func):
+    for page in pages:
+        parse_func(page['html'])
+
+
+def main():
+    #
+    # This file contains 750 main pages from the top internet domains (according to Alexa rank).
+    # That translate to 350MB of HTML data.
+    # Because of potential copyright infringements, I don't publish it.
+    #
+    html_pages = [json.loads(page) for page in open('pages/pages.json', 'rt')]
+    available_parsers = [
+        ('bs4', bs4_parser,),
+        ('lxml', lxml_parser,),
+        ('modest', selectolax_parser,),
+        ('lexbor', functools.partial(selectolax_parser, parser=LexborHTMLParser)),
+    ]
+    for parser_name, parser in available_parsers:
+        start = time.time()
+        _perform_test(html_pages, parser)
+        print('%r: %s' % (parser_name, time.time() - start))
+
+
+if __name__ == '__main__':
+    main()

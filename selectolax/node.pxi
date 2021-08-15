@@ -312,7 +312,7 @@ cdef class Node:
         node
         """
 
-        cdef myhtml_tree_node_t*node = self.node.child
+        cdef myhtml_tree_node_t *node = self.node.child
         cdef Node next_node
 
         while node != NULL:
@@ -338,7 +338,6 @@ cdef class Node:
         -------
         node
         """
-        text = ""
         cdef Stack stack = Stack(_STACK_SIZE)
         cdef myhtml_tree_node_t* current_node = NULL;
         cdef Node next_node;

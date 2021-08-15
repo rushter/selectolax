@@ -1,5 +1,11 @@
 from libc.stdlib cimport free
 
+_TAG_TO_NAME = {
+    0x0005: "_doctype",
+    0x0002: "_text",
+    0x0004: "_comment",
+}
+
 cdef class LexborNode:
     """A class that represents HTML node (element)."""
 
@@ -137,6 +143,11 @@ cdef class LexborNode:
         return '<LexborNode %s>' % self.tag
 
     @property
+    def tag_id(self):
+        cdef lxb_tag_id_t tag_id = lxb_dom_node_tag_id_noi(self.node)
+        return tag_id
+
+    @property
     def tag(self):
         """Return the name of the current tag (e.g. div, p, img).
 
@@ -147,7 +158,8 @@ cdef class LexborNode:
 
         cdef lxb_char_t *c_text
         cdef size_t str_len = 0
-
+        if self.tag_id in [LXB_TAG__EM_DOCTYPE, LXB_TAG__TEXT, LXB_TAG__EM_COMMENT]:
+            return _TAG_TO_NAME[self.tag_id]
         c_text = lxb_dom_element_qualified_name(<lxb_dom_element_t *> self.node, &str_len)
         text = None
         if c_text:
@@ -261,6 +273,64 @@ cdef class LexborNode:
             value = lxb_dom_attr_value_noi(attr, &str_len)
             return value.decode(_ENCODING) if value else None
         return None
+
+    def iter(self, include_text=False):
+        """Iterate over nodes on the current level.
+
+        Parameters
+        ----------
+        include_text : bool
+            If True, includes text nodes as well.
+
+        Yields
+        -------
+        node
+        """
+
+        cdef lxb_dom_node_t *node = self.node.first_child
+        cdef LexborNode next_node
+
+        while node != NULL:
+            if node.type == LXB_DOM_NODE_TYPE_TEXT and not include_text:
+                node = node.next
+                continue
+
+            next_node = LexborNode()
+            next_node._cinit(<lxb_dom_node_t *> node, self.parser)
+            yield next_node
+            node = node.next
+
+    def traverse(self, include_text=False):
+        """Iterate over all child and next nodes starting from the current level.
+
+        Parameters
+        ----------
+        include_text : bool
+            If True, includes text nodes as well.
+
+        Yields
+        -------
+        node
+        """
+        cdef lxb_dom_node_t * root = self.node
+        cdef lxb_dom_node_t * node = root.first_child
+        cdef LexborNode lxb_node
+
+        while node != NULL:
+            if not (not include_text and node.type == LXB_DOM_NODE_TYPE_TEXT):
+                lxb_node = LexborNode()
+                lxb_node._cinit(<lxb_dom_node_t *> node, self.parser)
+                yield lxb_node
+
+            if node.first_child != NULL:
+                node = node.first_child
+            else:
+                while node != root and node.next == NULL:
+                    node = node.parent
+                if node == root:
+                    break
+                node = node.next
+
 
 
 cdef lxb_status_t css_finder_callback(lxb_dom_node_t *node, lxb_css_selector_specificity_t *spec, void *ctx):

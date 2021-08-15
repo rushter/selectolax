@@ -157,6 +157,63 @@ cdef class LexborNode:
         return text
 
 
+    def decompose(self, bool recursive=True):
+        """Remove the current node from the tree.
+
+        Parameters
+        ----------
+        recursive : bool, default True
+            Whenever to delete all its child nodes
+
+        Examples
+        --------
+
+        >>> tree = LexborHTMLParser(html)
+        >>> for tag in tree.css('script'):
+        >>>     tag.decompose()
+
+        """
+        if recursive:
+            lxb_dom_node_destroy(<lxb_dom_node_t *>self.node)
+        else:
+            lxb_dom_node_destroy_deep(<lxb_dom_node_t *>self.node)
+
+    @property
+    def attributes(self):
+        """Get all attributes that belong to the current node.
+
+        The value of empty attributes is None.
+
+        Returns
+        -------
+        attributes : dictionary of all attributes.
+
+        Examples
+        --------
+
+        >>> tree = LexborHTMLParser("<div data id='my_id'></div>")
+        >>> node = tree.css_first('div')
+        >>> node.attributes
+        {'data': None, 'id': 'my_id'}
+        """
+        cdef lxb_dom_attr_t *attr = lxb_dom_element_first_attribute_noi(<lxb_dom_element_t *> self.node)
+        cdef size_t str_len = 0
+        attributes = dict()
+
+        while attr:
+            key = lxb_dom_attr_local_name_noi(attr, &str_len)
+            value = lxb_dom_attr_value_noi(attr, &str_len)
+
+            if value:
+                py_value = value.decode(_ENCODING)
+            else:
+                py_value = None
+            attributes[key.decode(_ENCODING)] = py_value
+
+            attr = attr.next
+        return attributes
+
+
 cdef class LexborCSSSelector:
 
     def __init__(self):
@@ -208,27 +265,6 @@ cdef class LexborCSSSelector:
         self.results = []
         self.current_node = None
         return results
-
-    def decompose(self, bool recursive=True):
-        """Remov the current node from the tree.
-
-        Parameters
-        ----------
-        recursive : bool, default True
-            Whenever to delete all its child nodes
-
-        Examples
-        --------
-
-        >>> tree = LexborHTMLParser(html)
-        >>> for tag in tree.css('script'):
-        >>>     tag.decompose()
-
-        """
-        if recursive:
-            lxb_dom_node_destroy(<lxb_dom_node_t *>self.node)
-        else:
-            lxb_dom_node_destroy_deep(<lxb_dom_node_t *>self.node)
 
     def __dealloc__(self):
         lxb_selectors_destroy(self.selectors, True)

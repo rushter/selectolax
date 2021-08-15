@@ -230,9 +230,24 @@ cdef class LexborHTMLParser:
 
 
 cdef extern from "lexbor/dom/dom.h" nogil:
+    ctypedef uintptr_t lxb_dom_attr_id_t
     ctypedef struct lxb_dom_collection_t:
         lexbor_array_t     array
         lxb_dom_document_t *document
+
+    ctypedef struct lxb_dom_attr_t:
+        lxb_dom_node_t     node
+
+        lxb_dom_attr_id_t  upper_name
+        lxb_dom_attr_id_t  qualified_name
+
+        lexbor_str_t *value
+
+        lxb_dom_element_t *owner
+
+        lxb_dom_attr_t *next
+        lxb_dom_attr_t *prev;
+
 
     lxb_dom_collection_t * lxb_dom_collection_make(lxb_dom_document_t *document, size_t start_list_size)
     lxb_char_t * lxb_dom_node_text_content(lxb_dom_node_t *node, size_t *len)
@@ -241,7 +256,10 @@ cdef extern from "lexbor/dom/dom.h" nogil:
     lxb_char_t * lxb_dom_element_qualified_name(lxb_dom_element_t *element, size_t *len)
     lxb_dom_node_t * lxb_dom_node_destroy(lxb_dom_node_t *node)
     lxb_dom_node_t * lxb_dom_node_destroy_deep(lxb_dom_node_t *root)
+    lxb_dom_attr_t * lxb_dom_element_first_attribute_noi(lxb_dom_element_t *element)
 
+    const lxb_char_t * lxb_dom_attr_local_name_noi(lxb_dom_attr_t *attr, size_t *len);
+    const lxb_char_t * lxb_dom_attr_value_noi(lxb_dom_attr_t *attr, size_t *len)
 
 cdef extern from "lexbor/dom/interfaces/element.h" nogil:
     lxb_status_t lxb_dom_elements_by_tag_name(lxb_dom_element_t *root, lxb_dom_collection_t *collection,

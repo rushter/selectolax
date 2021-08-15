@@ -108,7 +108,7 @@ After compilation, just import the parser and use it in the similar way.
 Simple Benchmark
 ----------------
 
-* Extract title, links, script and meta tag from 800 pages. See ``examples/benchmark.py`` for more information.
+* Extract title, links, scripts and a meta tag from main pages of top 800 domains. See ``examples/benchmark.py`` for more information.
 
 ============================  ==========
 Package                       Time

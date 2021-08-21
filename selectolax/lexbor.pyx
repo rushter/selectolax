@@ -3,12 +3,13 @@ from cpython cimport bool
 _ENCODING = 'UTF-8'
 
 include "base.pxi"
+include "utils.pxi"
 include "lexbor/attrs.pxi"
 include "lexbor/node.pxi"
 include "lexbor/selection.pxi"
-include "utils.pxi"
 
 # We don't inherit from HTMLParser here, because it also includes all the C code from Modest.
+
 cdef class LexborHTMLParser:
     def __init__(self, html):
 
@@ -163,7 +164,7 @@ cdef class LexborHTMLParser:
         Examples
         --------
 
-        >>> tree = HTMLParser('<html><head></head><body><script></script><div>Hello world!</div></body></html>')
+        >>> tree = LexborHTMLParser('<html><head></head><body><script></script><div>Hello world!</div></body></html>')
         >>> tags = ['head', 'style', 'script', 'xmp', 'iframe', 'noembed', 'noframes']
         >>> tree.strip_tags(tags)
         >>> tree.html

@@ -108,7 +108,8 @@ def test_iter_with_text(parser):
     assert expected_tags == actual_tags
 
 
-def test_iter_no_text():
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_iter_no_text(parser):
     html = """
     <div id="description">
         <h1>Title</h1>
@@ -117,18 +118,19 @@ def test_iter_no_text():
         <img scr="image.jpg">
     </div>
     """
-    html_parser = HTMLParser(html)
-    expected_tags = ['h1', 'div','img']
+    html_parser = parser(html)
+    expected_tags = ['h1', 'div', 'img']
     actual_tags = [node.tag for node in html_parser.css_first('#description').iter(include_text=False)]
     assert expected_tags == actual_tags
 
 
-def test_node_navigation():
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_node_navigation(parser):
     html = (
         '<div id="parent"><div id="prev"></div><div id="test_node"><h1 id="child">Title</h1>'
         '<div>foo</div><img scr="image.jpg"></div><div id="next"></div></div>'
     )
-    html_parser = HTMLParser(html)
+    html_parser = parser(html)
     main_node = html_parser.css_first('#test_node')
     assert main_node.prev.id == 'prev'
     assert main_node.next.id == 'next'
@@ -136,25 +138,32 @@ def test_node_navigation():
     assert main_node.child.id == 'child'
 
 
-@pytest.mark.parametrize("html,expected", [("<div id='my_node'></div>", 'my_node'), ("<div></div>", None)])
-def test_get_node_id(html, expected):
-    html_parser = HTMLParser(html)
+@pytest.mark.parametrize("html,expected, parser", [
+    ("<div id='my_node'></div>", 'my_node', HTMLParser),
+    ("<div></div>", None, HTMLParser),
+    ("<div id='my_node'></div>", 'my_node', LexborHTMLParser),
+    ("<div></div>", None, LexborHTMLParser),
+])
+def test_get_node_id(html, expected, parser):
+    html_parser = parser(html)
     node = html_parser.css_first('div')
     assert node.id == expected
 
 
-def test_html_attribute_works_for_text():
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_html_attribute_works_for_text(parser):
     html = '<div>foo bar</div>'
-    html_parser = HTMLParser(html)
+    html_parser = parser(html)
     node = html_parser.css_first('div').child
     assert node.html == 'foo bar'
 
 
-def test_text_node_returns_text():
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_text_node_returns_text(parser):
     html = '<div>foo bar</div>'
-    html_parser = HTMLParser(html)
+    html_parser = parser(html)
     node = html_parser.css_first('div').child
-    assert node.text(deep=False) == 'foo bar'
+    assert node.text() == 'foo bar'
 
 
 def test_text_node_returns_text_when_deep():
@@ -164,48 +173,54 @@ def test_text_node_returns_text_when_deep():
     assert node.text(deep=True) == 'foo bar'
 
 
-def test_unwrap():
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_unwrap(parser):
     html = '<a id="url" href="https://rushter.com/">I linked to <i>rushter.com</i></a>'
-    html_parser = HTMLParser(html)
+    html_parser = parser(html)
     node = html_parser.css_first('i')
     node.unwrap()
     assert html_parser.body.child.html == '<a id="url" href="https://rushter.com/">I linked to rushter.com</a>'
 
 
-def test_unwrap_tags():
-    html_parser = HTMLParser("<div><a href="">Hello</a> <i>world</i>!</div>")
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_unwrap_tags(parser):
+    html_parser = parser("<div><a href="">Hello</a> <i>world</i>!</div>")
     html_parser.body.unwrap_tags(['i', 'a'])
     assert html_parser.body.html == '<body><div>Hello world!</div></body>'
 
 
-def test_unwraps_multiple_child_nodes():
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_unwraps_multiple_child_nodes(parser):
     html = """
     <div id="test">
         foo <span>bar <i>Lor<span>ems</span></i> I <span class='p3'>dummy <div>text</div></span></span>
     </div>
     """
-    html_parser = HTMLParser(html)
+    html_parser = parser(html)
     html_parser.body.unwrap_tags(['span', 'i'])
     assert html_parser.body.child.html == '<div id="test">\n        foo bar Lorems I dummy <div>text</div>\n    </div>'
 
 
-def test_replace_with():
-    html_parser = HTMLParser('<div>Get <img src="" alt="Laptop"></div>')
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_replace_with(parser):
+    html_parser = parser('<div>Get <img src="" alt="Laptop"></div>')
     img = html_parser.css_first('img')
     img.replace_with(img.attributes.get('alt', ''))
     assert html_parser.body.child.html == '<div>Get Laptop</div>'
 
 
-def test_replace_with_multiple_nodes():
-    html_parser = HTMLParser('<div>Get <span alt="Laptop"><img src="/jpg"> <div>/div></span></div>')
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_replace_with_multiple_nodes(parser):
+    html_parser = parser('<div>Get <span alt="Laptop"><img src="/jpg"> <div>/div></span></div>')
     img = html_parser.css_first('span')
     img.replace_with(img.attributes.get('alt', ''))
     assert html_parser.body.child.html == '<div>Get Laptop</div>'
 
 
-def test_node_replace_with():
-    html_parser = HTMLParser('<div>Get <span alt="Laptop"><img src="/jpg"> <div></div></span></div>')
-    html_parser2 = HTMLParser('<div>Test</div>')
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_node_replace_with(parser):
+    html_parser = parser('<div>Get <span alt="Laptop"><img src="/jpg"> <div></div></span></div>')
+    html_parser2 = parser('<div>Test</div>')
     img_node = html_parser.css_first('img')
     img_node.replace_with(html_parser2.body.child)
     assert html_parser.body.child.html == '<div>Get <span alt="Laptop"><div>Test</div> <div></div></span></div>'

@@ -233,6 +233,7 @@ cdef class LexborHTMLParser:
 
 
 cdef extern from "lexbor/dom/dom.h" nogil:
+    ctypedef struct lxb_dom_text_t
     ctypedef uintptr_t lxb_dom_attr_id_t
     ctypedef struct lxb_dom_collection_t:
         lexbor_array_t     array
@@ -276,6 +277,9 @@ cdef extern from "lexbor/dom/dom.h" nogil:
     void lxb_dom_node_insert_after(lxb_dom_node_t *to, lxb_dom_node_t *node)
     lxb_status_t lxb_dom_node_replace_all(lxb_dom_node_t *parent, lxb_dom_node_t *node);
     void lxb_dom_node_insert_child(lxb_dom_node_t *to, lxb_dom_node_t *node)
+    void lxb_dom_node_insert_before(lxb_dom_node_t *to, lxb_dom_node_t *node)
+    lxb_dom_text_t * lxb_dom_document_create_text_node(lxb_dom_document_t *document, const lxb_char_t *data, size_t len)
+
 
 cdef extern from "lexbor/dom/interfaces/element.h" nogil:
     lxb_status_t lxb_dom_elements_by_tag_name(lxb_dom_element_t *root, lxb_dom_collection_t *collection,

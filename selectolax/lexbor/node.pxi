@@ -5,6 +5,19 @@ _TAG_TO_NAME = {
     0x0002: "-text",
     0x0004: "-comment",
 }
+ctypedef fused str_or_LexborNode:
+    basestring
+    bytes
+    LexborNode
+
+cdef inline bytes to_bytes(str_or_LexborNode value):
+    cdef bytes bytes_val
+    if isinstance(value, (str, unicode)):
+        bytes_val = value.encode(_ENCODING)
+    elif isinstance(value, bytes):
+        bytes_val =  <char*> value
+    return bytes_val
+
 
 cdef class LexborNode:
     """A class that represents HTML node (element)."""
@@ -329,6 +342,60 @@ cdef class LexborNode:
             yield next_node
             node = node.next
 
+
+    def unwrap(self):
+        """Replace node with whatever is inside this node.
+
+        Examples
+        --------
+
+        >>>  tree = LexborHTMLParser("<div>Hello <i>world</i>!</div>")
+        >>>  tree.css_first('i').unwrap()
+        >>>  tree.html
+        '<html><head></head><body><div>Hello world!</div></body></html>'
+
+        """
+        if self.node.first_child == NULL:
+            return
+        cdef lxb_dom_node_t* next_node;
+        cdef lxb_dom_node_t* current_node;
+
+        if self.node.first_child.next != NULL:
+            current_node = self.node.first_child
+            next_node = current_node.next
+
+            while next_node != NULL:
+                next_node = current_node.next
+                lxb_dom_node_insert_before(self.node, current_node)
+                current_node = next_node
+        else:
+            lxb_dom_node_insert_before(self.node, self.node.first_child)
+        lxb_dom_node_destroy(<lxb_dom_node_t *> self.node)
+
+    def unwrap_tags(self, list tags):
+        """Unwraps specified tags from the HTML tree.
+
+        Works the same as the ``unwrap`` method, but applied to a list of tags.
+
+        Parameters
+        ----------
+        tags : list
+            List of tags to remove.
+
+        Examples
+        --------
+
+        >>> tree = LexborHTMLParser("<div><a href="">Hello</a> <i>world</i>!</div>")
+        >>> tree.body.unwrap_tags(['i','a'])
+        >>> tree.body.html
+        '<body><div>Hello world!</div></body>'
+        """
+
+        for tag in tags:
+            for element in self.css(tag):
+                element.unwrap()
+
+
     def traverse(self, include_text=False):
         """Iterate over all child and next nodes starting from the current level.
 
@@ -360,6 +427,59 @@ cdef class LexborNode:
                     break
                 node = node.next
 
+    def replace_with(self, str_or_LexborNode value):
+        """Replace current Node with specified value.
+
+        Parameters
+        ----------
+        value : str, bytes or Node
+            The text or Node instance to replace the Node with.
+            When a text string is passed, it's treated as text. All HTML tags will be escaped.
+            Convert and pass the ``Node`` object when you want to work with HTML.
+            Does not clone the ``Node`` object.
+            All future changes to the passed ``Node`` object will also be taken into account.
+
+        Examples
+        --------
+
+        >>> tree = LexborHTMLParser('<div>Get <img src="" alt="Laptop"></div>')
+        >>> img = tree.css_first('img')
+        >>> img.replace_with(img.attributes.get('alt', ''))
+        >>> tree.body.child.html
+        '<div>Get Laptop</div>'
+
+        >>> html_parser = LexborHTMLParser('<div>Get <span alt="Laptop"><img src="/jpg"> <div></div></span></div>')
+        >>> html_parser2 = LexborHTMLParser('<div>Test</div>')
+        >>> img_node = html_parser.css_first('img')
+        >>> img_node.replace_with(html_parser2.body.child)
+        '<div>Get <span alt="Laptop"><div>Test</div> <div></div></span></div>'
+        """
+        cdef lxb_dom_node_t * new_node
+        cdef size_t str_len = 0
+
+        if isinstance(value, (str, bytes, unicode)):
+            bytes_val = to_bytes(value)
+            new_node = <lxb_dom_node_t *> lxb_dom_document_create_text_node(
+                    &self.parser.document.dom_document,
+                    <lxb_char_t *> bytes_val, len(bytes_val)
+            )
+            if new_node == NULL:
+                raise SelectolaxError("Can't create a new node")
+
+            lxb_dom_node_insert_before(self.node,  new_node)
+            lxb_dom_node_destroy(<lxb_dom_node_t *> self.node)
+        elif isinstance(value, LexborNode):
+            new_node = lxb_dom_document_import_node(
+                &self.parser.document.dom_document,
+                <lxb_dom_node_t *> value.node,
+                <bint> True
+            )
+            if new_node == NULL:
+                raise SelectolaxError("Can't create a new node")
+            lxb_dom_node_insert_before(self.node, <lxb_dom_node_t *> new_node)
+            lxb_dom_node_destroy(<lxb_dom_node_t *> self.node)
+        else:
+            raise SelectolaxError("Expected a string or Node instance, but %s found" % type(value).__name__)
 
 
 cdef lxb_status_t css_finder_callback(lxb_dom_node_t *node, lxb_css_selector_specificity_t *spec, void *ctx):

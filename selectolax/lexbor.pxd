@@ -228,6 +228,9 @@ cdef class LexborHTMLParser:
     cdef LexborCSSSelector _selector
     cdef _parse_html(self, char* html, size_t html_len)
 
+    @staticmethod
+    cdef LexborHTMLParser from_document(lxb_html_document_t * document, bytes raw_html)
+
 
 cdef extern from "lexbor/dom/dom.h" nogil:
     ctypedef uintptr_t lxb_dom_attr_id_t
@@ -269,8 +272,10 @@ cdef extern from "lexbor/dom/dom.h" nogil:
     lxb_dom_attr_t * lxb_dom_element_attr_by_name(lxb_dom_element_t *element,
                                                   const lxb_char_t *qualified_name, size_t length)
     lxb_tag_id_t lxb_dom_node_tag_id_noi(lxb_dom_node_t *node)
-
-
+    lxb_dom_node_t * lxb_dom_document_import_node(lxb_dom_document_t *doc, lxb_dom_node_t *node, bint deep)
+    void lxb_dom_node_insert_after(lxb_dom_node_t *to, lxb_dom_node_t *node)
+    lxb_status_t lxb_dom_node_replace_all(lxb_dom_node_t *parent, lxb_dom_node_t *node);
+    void lxb_dom_node_insert_child(lxb_dom_node_t *to, lxb_dom_node_t *node)
 
 cdef extern from "lexbor/dom/interfaces/element.h" nogil:
     lxb_status_t lxb_dom_elements_by_tag_name(lxb_dom_element_t *root, lxb_dom_collection_t *collection,

@@ -150,3 +150,28 @@ cdef class LexborHTMLParser:
         selector : `LexborNode` object
         """
         return self.root.css_first(query, default, strict)
+
+    @staticmethod
+    cdef LexborHTMLParser from_document(lxb_html_document_t *document, bytes raw_html):
+        obj = <LexborHTMLParser> LexborHTMLParser.__new__(LexborHTMLParser)
+        obj.document = document
+        obj.raw_html = raw_html
+        return obj
+
+    def clone(self):
+        """Clone the current tree."""
+        cdef lxb_html_document_t* cloned_document
+        cdef lxb_dom_node_t* cloned_node
+
+        with nogil:
+            cloned_document = lxb_html_document_create()
+            cloned_document.ready_state = LXB_HTML_DOCUMENT_READY_STATE_COMPLETE
+
+            cloned_node = lxb_dom_document_import_node(
+                &self.document.dom_document,
+                <lxb_dom_node_t *> lxb_dom_document_root(&self.document.dom_document),
+                <bint> True
+            )
+            lxb_dom_node_insert_child(<lxb_dom_node_t * > cloned_document, cloned_node)
+        cls = LexborHTMLParser.from_document(cloned_document, self.raw_html)
+        return cls

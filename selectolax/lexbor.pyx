@@ -151,6 +151,52 @@ cdef class LexborHTMLParser:
         """
         return self.root.css_first(query, default, strict)
 
+    def strip_tags(self, list tags, bool recursive = False):
+        """Remove specified tags from the node.
+
+        Parameters
+        ----------
+        tags : list of str
+            List of tags to remove.
+        recursive : bool, default True
+            Whenever to delete all its child nodes
+        Examples
+        --------
+
+        >>> tree = HTMLParser('<html><head></head><body><script></script><div>Hello world!</div></body></html>')
+        >>> tags = ['head', 'style', 'script', 'xmp', 'iframe', 'noembed', 'noframes']
+        >>> tree.strip_tags(tags)
+        >>> tree.html
+        '<html><body><div>Hello world!</div></body></html>'
+
+        """
+        cdef lxb_dom_collection_t* collection = NULL
+        cdef lxb_status_t status
+
+        for tag in tags:
+            pybyte_name = tag.encode('UTF-8')
+
+            collection = lxb_dom_collection_make(&self.document.dom_document, 128)
+
+            if collection == NULL:
+                raise SelectolaxError("Can't initialize DOM collection.")
+
+            status = lxb_dom_elements_by_tag_name(
+                <lxb_dom_element_t *> self.document,
+                collection,
+                <lxb_char_t *> pybyte_name,
+                len(pybyte_name)
+            )
+            if status != 0x0000:
+                raise SelectolaxError("Can't locate elements.")
+
+            for i in range(lxb_dom_collection_length_noi(collection)):
+                if recursive:
+                    lxb_dom_node_destroy( <lxb_dom_node_t*> lxb_dom_collection_element_noi(collection, i))
+                else:
+                    lxb_dom_node_destroy_deep( <lxb_dom_node_t*> lxb_dom_collection_element_noi(collection, i))
+            lxb_dom_collection_destroy(collection, <bint> True)
+
     @staticmethod
     cdef LexborHTMLParser from_document(lxb_html_document_t *document, bytes raw_html):
         obj = <LexborHTMLParser> LexborHTMLParser.__new__(LexborHTMLParser)

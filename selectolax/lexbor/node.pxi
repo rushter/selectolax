@@ -193,6 +193,30 @@ cdef class LexborNode:
         else:
             lxb_dom_node_destroy_deep(<lxb_dom_node_t *>self.node)
 
+    def strip_tags(self, list tags, bool recursive = False):
+        """Remove specified tags from the HTML tree.
+
+        Parameters
+        ----------
+        tags : list
+            List of tags to remove.
+        recursive : bool, default True
+            Whenever to delete all its child nodes
+        Examples
+        --------
+
+        >>> tree = HTMLParser('<html><head></head><body><script></script><div>Hello world!</div></body></html>')
+        >>> tags = ['head', 'style', 'script', 'xmp', 'iframe', 'noembed', 'noframes']
+        >>> tree.strip_tags(tags)
+        >>> tree.html
+        '<html><body><div>Hello world!</div></body></html>'
+
+        """
+        for tag in tags:
+            for element in self.css(tag):
+                element.decompose(recursive=recursive)
+
+
     @property
     def attributes(self):
         """Get all attributes that belong to the current node.

@@ -75,6 +75,17 @@ def test_root_css():
 
 
 @pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_strip_tags_from_root(parser):
+    html = "<body><div></div><script></script></body>"
+    html_parser = parser(html)
+    html_parser.root.strip_tags(['div', 'script'])
+    assert html_parser.html == '<html><head></head><body></body></html>'
+
+    with pytest.raises(TypeError):
+        html_parser.strip_tags(1)
+
+
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
 def test_clone(parser):
     html_parser = parser("""<h1>Welcome</h1>""")
     clone = html_parser.clone()

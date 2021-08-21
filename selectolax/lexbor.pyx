@@ -212,7 +212,7 @@ cdef class LexborHTMLParser:
         with nogil:
             cloned_document = lxb_html_document_create()
 
-        if cloned_node == NULL:
+        if cloned_document == NULL:
             raise SelectolaxError("Can't create a new document")
 
         cloned_document.ready_state = LXB_HTML_DOCUMENT_READY_STATE_COMPLETE

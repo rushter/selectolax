@@ -83,15 +83,17 @@ def test_strip_tags(parser):
         html_parser.strip_tags(1)
 
 
-def test_malformed_attributes():
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_malformed_attributes(parser):
     html = '<div> <meta name="description" content="ÐÐ°Ñ"Ð " /></div>'
-    html_parser = HTMLParser(html)
+    html_parser = parser(html)
 
     for tag in html_parser.tags('meta'):
         assert tag
 
 
-def test_iter_with_text():
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_iter_with_text(parser):
     html = """
     <div id="description">
         <h1>Title</h1>
@@ -100,7 +102,7 @@ def test_iter_with_text():
         <img scr="image.jpg">
     </div>
     """
-    html_parser = HTMLParser(html)
+    html_parser = parser(html)
     expected_tags = ['-text', 'h1', '-text', 'div', '-text', 'img', '-text']
     actual_tags = [node.tag for node in html_parser.css_first('#description').iter(include_text=True)]
     assert expected_tags == actual_tags

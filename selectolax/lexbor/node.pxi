@@ -1,9 +1,9 @@
 from libc.stdlib cimport free
 
 _TAG_TO_NAME = {
-    0x0005: "_doctype",
-    0x0002: "_text",
-    0x0004: "_comment",
+    0x0005: "- doctype",
+    0x0002: "-text",
+    0x0004: "-comment",
 }
 
 cdef class LexborNode:

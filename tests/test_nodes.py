@@ -2,18 +2,22 @@
 # -*- coding: utf-8 -*-
 import pytest
 from selectolax.parser import HTMLParser
+from selectolax.lexbor import LexborHTMLParser
 
 """
 We'are testing only our own code.
 Many functionality are already tested in the Modest engine, so there is no reason to test every case.
 """
 
+_PARSERS_PARAMETRIZER = ("parser", (HTMLParser, LexborHTMLParser),)
 
-def test_selector():
+
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_selector(parser):
     html = "<span></span><div><p id='p3'>text</p></div><p></p>"
     selector = "p#p3"
 
-    for node in HTMLParser(html).css(selector):
+    for node in parser(html).css(selector):
         assert node.text() == 'text'
         assert node.tag == 'p'
         assert node.parent.tag == 'div'
@@ -22,29 +26,32 @@ def test_selector():
         assert node.parent.last_child.attributes['id'] == 'p3'
 
 
-def test_css_one():
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_css_one(parser):
     html = "<span></span><div><p class='p3'>text</p><p class='p3'>sd</p></div><p></p>"
 
     selector = ".s3"
-    assert HTMLParser(html).css_first(selector) is None
+    assert parser(html).css_first(selector) is None
 
     selector = "p.p3"
-    assert HTMLParser(html).css_first(selector).text() == 'text'
+    assert parser(html).css_first(selector).text() == 'text'
 
     with pytest.raises(ValueError):
-        HTMLParser(html).css_first(selector, strict=True)
+        parser(html).css_first(selector, strict=True)
 
 
-def test_css_first_default():
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_css_first_default(parser):
     html = "<span></span><div><p class='p3'>text</p><p class='p3'>sd</p></div><p></p>"
     selector = ".s3"
-    assert HTMLParser(html).css_first(selector, default='lorem ipsum') == 'lorem ipsum'
+    assert parser(html).css_first(selector, default='lorem ipsum') == 'lorem ipsum'
 
 
-def test_attributes():
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_attributes(parser):
     html = "<div><p id='p3'>text</p></div>"
     selector = "p#p3"
-    for node in HTMLParser(html).css(selector):
+    for node in parser(html).css(selector):
         assert 'id' in node.attributes
         assert node.attributes['id'] == 'p3'
 
@@ -55,19 +62,20 @@ def test_attributes():
         assert node.attributes['attr'] is None
 
 
-def test_decompose():
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_decompose(parser):
     html = "<body><div><p id='p3'>text</p></div></body>"
-    html_parser = HTMLParser(html)
+    html_parser = parser(html)
 
     for node in html_parser.tags('p'):
         node.decompose()
-
     assert html_parser.body.child.html == '<div></div>'
 
 
-def test_strip_tags():
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_strip_tags(parser):
     html = "<body><div></div><script></script></body>"
-    html_parser = HTMLParser(html)
+    html_parser = parser(html)
     html_parser.strip_tags(['div', 'script'])
     assert html_parser.html == '<html><head></head><body></body></html>'
 

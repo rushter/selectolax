@@ -365,7 +365,7 @@ cdef class HTMLParser:
 
         node = myhtml_node_clone_deep(html_tree, self.html_tree.node_html)
         myhtml_tree_node_insert_root(html_tree, NULL, MyHTML_NAMESPACE_HTML)
-        myhtml_node_append_child(html_tree.node_html, node)
+        html_tree.node_html = node
 
         _ENABLE_PARSING = False
         cls = HTMLParser(self.raw_html, self.detect_encoding, self.use_meta_tags, self.decode_errors)

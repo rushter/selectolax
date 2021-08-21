@@ -3,11 +3,14 @@ from difflib import SequenceMatcher
 
 import pytest
 from selectolax.parser import HTMLParser, Node
+from selectolax.lexbor import LexborHTMLParser, LexborNode
 
 """
 We'are testing only our own code.
 Many functionality are already tested in the Modest engine, so there is no reason to test every case.
 """
+
+_PARSERS_PARAMETRIZER = ("parser", (HTMLParser, LexborHTMLParser),)
 
 
 def test_encoding():
@@ -69,3 +72,12 @@ def test_nodes():
 def test_root_css():
     tree = HTMLParser('test')
     assert len(tree.root.css('data')) == 0
+
+
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_clone(parser):
+    html_parser = parser("""<h1>Welcome</h1>""")
+    clone = html_parser.clone()
+    html_parser.root.css_first('h1').decompose()
+    del html_parser
+    assert clone.html == '<html><head></head><body><h1>Welcome</h1></body></html>'

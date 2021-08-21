@@ -2,13 +2,13 @@ from cpython cimport bool
 
 _ENCODING = 'UTF-8'
 
+include "base.pxi"
 include "lexbor/attrs.pxi"
 include "lexbor/node.pxi"
 include "lexbor/selection.pxi"
 include "utils.pxi"
 
 # We don't inherit from HTMLParser here, because it also includes all the C code from Modest.
-
 cdef class LexborHTMLParser:
     def __init__(self, html):
 
@@ -34,12 +34,12 @@ cdef class LexborHTMLParser:
             self.document = lxb_html_document_create()
 
         if self.document == NULL:
-            raise RuntimeError("Failed to initialize object for HTML Document.")
+            raise SelectolaxError("Failed to initialize object for HTML Document.")
 
         with nogil:
             status = lxb_html_document_parse(self.document, <lxb_char_t *> html, html_len)
         if status != 0x0000:
-            raise RuntimeError("Can't parse HTML.")
+            raise SelectolaxError("Can't parse HTML.")
 
         assert self.document != NULL
 
@@ -64,7 +64,7 @@ cdef class LexborHTMLParser:
         body = lxb_html_document_body_element_noi(self.document)
         if body == NULL:
             return None
-        return LexborNode()._cinit(<lxb_dom_node_t *> body, self)    @property
+        return LexborNode()._cinit(<lxb_dom_node_t *> body, self)
 
     @property
     def head(self):
@@ -99,7 +99,7 @@ cdef class LexborHTMLParser:
             len(pybyte_name)
         )
         if status != 0x0000:
-            raise RuntimeError("Can't locate elements.")
+            raise SelectolaxError("Can't locate elements.")
 
         for i in range(lxb_dom_collection_length_noi(collection)):
             node = LexborNode()._cinit(
@@ -165,13 +165,24 @@ cdef class LexborHTMLParser:
 
         with nogil:
             cloned_document = lxb_html_document_create()
-            cloned_document.ready_state = LXB_HTML_DOCUMENT_READY_STATE_COMPLETE
 
+        if cloned_node == NULL:
+            raise SelectolaxError("Can't create a new document")
+
+        cloned_document.ready_state = LXB_HTML_DOCUMENT_READY_STATE_COMPLETE
+
+        with nogil:
             cloned_node = lxb_dom_document_import_node(
-                &self.document.dom_document,
+                &cloned_document.dom_document,
                 <lxb_dom_node_t *> lxb_dom_document_root(&self.document.dom_document),
                 <bint> True
             )
+
+        if cloned_node == NULL:
+            raise SelectolaxError("Can't create a new document")
+
+        with nogil:
             lxb_dom_node_insert_child(<lxb_dom_node_t * > cloned_document, cloned_node)
+
         cls = LexborHTMLParser.from_document(cloned_document, self.raw_html)
         return cls

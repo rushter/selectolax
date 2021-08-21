@@ -15,6 +15,11 @@ cdef class LexborNode:
         return self
 
     @property
+    def child(self):
+        """Alias for the `first_child` property."""
+        return self.first_child
+
+    @property
     def first_child(self):
         """Return the first child node."""
         cdef LexborNode node

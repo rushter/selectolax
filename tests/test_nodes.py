@@ -27,6 +27,24 @@ def test_selector(parser):
 
 
 @pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_css_multiple_matches(parser):
+    html = "<div></div><div></div><div></div>"
+    assert len(parser(html).css('div')) == 3
+
+
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_css_matches(parser):
+    html = "<div></div><div></div><div></div>"
+    assert parser(html).css_matches('div')
+
+
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_any_css_matches(parser):
+    html = "<div></div><span></span><div></div>"
+    assert parser(html).any_css_matches(('h1', 'span'))
+
+
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
 def test_css_one(parser):
     html = "<span></span><div><p class='p3'>text</p><p class='p3'>sd</p></div><p></p>"
 
@@ -465,3 +483,18 @@ def test_css_chaining(parser):
     """
     tree = parser(html)
     assert len(tree.select('div').css("span").css(".red").matches) == 2
+
+
+@pytest.mark.parametrize("parser", (HTMLParser, ))
+def test_css_chaining_two(parser):
+    html = """
+    <script  integrity="sha512-DHpNaMnQ8GaECHElNcJkpGhIThksyXA==" type="application/javascript" class="weird_script">
+        var counter = 10;
+    </script>
+    """
+    tree = parser(html)
+    query = (
+        tree.select('script').text_contains('var counter = ').css(".weird_script")
+        .attribute_longer_than("integrity", 25)
+    )
+    assert query

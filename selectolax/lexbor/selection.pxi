@@ -94,11 +94,7 @@ cdef class LexborSelector:
 
     cpdef css(self, str query):
         """Evaluate CSS selector against current scope."""
-        nodes = list()
-        for node in self.nodes:
-            nodes.extend(self.node.parser.selector.find(query, node))
-        self.nodes = nodes
-        return self
+        raise SelectolaxError("This features is not supported by the lexbor backend. Please use Modest backend.")
 
     @property
     def matches(self):

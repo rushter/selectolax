@@ -1,6 +1,14 @@
 selectolax Changelog
 ====================
 
+Version 0.3.1
+--------------
+
+Released
+
+- Fix  ``setup.py`` for Windows
+
+
 Version 0.3.0
 --------------
 

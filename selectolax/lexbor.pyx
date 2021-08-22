@@ -273,6 +273,9 @@ cdef class LexborHTMLParser:
         obj = <LexborHTMLParser> LexborHTMLParser.__new__(LexborHTMLParser)
         obj.document = document
         obj.raw_html = raw_html
+        obj.cached_script_texts = None
+        obj.cached_script_srcs = None
+        obj._selector = None
         return obj
 
     def clone(self):

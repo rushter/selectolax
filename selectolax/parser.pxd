@@ -563,6 +563,11 @@ cdef class HTMLParser:
 
     cdef void _detect_encoding(self, char* html, size_t html_len) nogil
     cdef _parse_html(self, char* html, size_t html_len)
+    @staticmethod
+    cdef HTMLParser from_tree(
+        myhtml_tree_t * tree, bytes raw_html, bint detect_encoding, bint use_meta_tags, str decode_errors,
+        myencoding_t encoding
+    )
 
 
 cdef class Stack:

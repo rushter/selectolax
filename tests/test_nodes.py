@@ -454,12 +454,14 @@ def test_srcs_contain(parser):
 @pytest.mark.parametrize("parser", (HTMLParser, ))
 def test_css_chaining(parser):
     html = """
+    <span class="red"></span>
     <div id="container">
         <span class="red"></span>
         <span class="green"></span>
         <span class="red"></span>
         <span class="green"></span>
     </div>
+    <span class="red"></span>
     """
     tree = parser(html)
     assert len(tree.select('div').css("span").css(".red").matches) == 2

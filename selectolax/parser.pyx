@@ -2,8 +2,8 @@
 
 from cpython cimport bool
 
-include "selection.pxi"
-include "node.pxi"
+include "modest/selection.pxi"
+include "modest/node.pxi"
 include "utils.pxi"
 
 MAX_HTML_INPUT_SIZE = 8e+7

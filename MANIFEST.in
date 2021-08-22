@@ -6,6 +6,7 @@ include CHANGES.rst
 
 include selectolax/*
 include selectolax/lexbor/*
+include selectolax/modest/*
 
 include selectolax/lexbor/*.so
 exclude selectolax/*.so

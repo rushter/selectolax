@@ -14,7 +14,7 @@ with io.open('README.rst', mode='rt', encoding='utf-8') as readme_file:
 USE_STATIC = False
 USE_CYTHON = False
 PLATFORM = 'windows_nt' if platform.system() == 'Windows' else 'posix'
-INCLUDE_LEXBOR = bool(os.environ.get('USE_LEXBOR', False))
+INCLUDE_LEXBOR = bool(os.environ.get('USE_LEXBOR', True))
 
 try:
     from Cython.Build import cythonize

@@ -15,6 +15,7 @@ USE_STATIC = False
 USE_CYTHON = False
 PLATFORM = 'windows_nt' if platform.system() == 'Windows' else 'posix'
 INCLUDE_LEXBOR = bool(os.environ.get('USE_LEXBOR', True))
+ARCH = platform.architecture()[0]
 
 try:
     from Cython.Build import cythonize
@@ -91,7 +92,9 @@ def make_extensions():
         if INCLUDE_LEXBOR:
             files_to_compile_lxb.extend(find_modest_files("lexbor/source"))
 
-    compile_arguments_lxb = []
+    compile_arguments_lxb = [
+        "-DLEXBOR_STATIC",
+    ]
     compile_arguments = [
         "-DMODEST_BUILD_OS=%s" % platform.system(),
         "-DMyCORE_OS_%s" % platform.system(),
@@ -110,6 +113,10 @@ def make_extensions():
         ]
         compile_arguments.extend(args)
         compile_arguments_lxb.extend(args)
+    elif PLATFORM == 'windows_nt':
+        compile_arguments_lxb.extend([
+            '-D_WIN64' if ARCH == '64bit' else '-D_WIN32',
+        ])
 
     extensions = [Extension(
         "selectolax.parser",

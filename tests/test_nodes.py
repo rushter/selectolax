@@ -48,6 +48,18 @@ def test_css_first_default(parser):
 
 
 @pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_id_property(parser):
+    html = "<p id='main_text'>text</p>"
+    assert parser(html).css_first('p').id == 'main_text'
+
+
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_tag_property(parser):
+    html = "<h1>text</h1>"
+    assert parser(html).css_first('h1').tag == 'h1'
+
+
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
 def test_attributes(parser):
     html = "<div><p id='p3'>text</p></div>"
     selector = "p#p3"
@@ -70,6 +82,39 @@ def test_decompose(parser):
     for node in html_parser.tags('p'):
         node.decompose()
     assert html_parser.body.child.html == '<div></div>'
+
+
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_html_property(parser):
+    html = "<body>Hi there</body>"
+    html_parser = parser(html)
+    assert html_parser.body.child.html == 'Hi there'
+
+
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_root_property(parser):
+    html = "<body>Hi there</body>"
+    html_parser = parser(html)
+    assert html_parser.root.html == '<html><head></head><body>Hi there</body></html>'
+
+
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_head_property(parser):
+    html = """
+    <html lang="en">
+        <head><title>rushter.com</title></head>
+        <body></body>
+    </html>
+    """
+    html_parser = parser(html)
+    assert html_parser.head.html == '<head><title>rushter.com</title></head>'
+
+
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_body_property(parser):
+    html = "<body>Hi there</body>"
+    html_parser = parser(html)
+    assert html_parser.body.html == '<body>Hi there</body>'
 
 
 @pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)

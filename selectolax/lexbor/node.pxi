@@ -681,6 +681,10 @@ cdef class LexborNode:
                     return True
         return False
 
+    def remove(self, bool recursive=True):
+        """An alias for the decompose method."""
+        self.decompose(recursive)
+
     def __eq__(self, other):
         if isinstance(other, str):
             return self.html == other

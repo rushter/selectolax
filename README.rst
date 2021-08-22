@@ -87,9 +87,7 @@ Most of the features between backends are almost identical, but there are still 
 
 Currently, the ``Lexbor`` backend is in **beta** and missing some of the features.
 
-To use ``Lexbor`` backend, you need to compile development version of selectolax from GitHub.
-
-After compilation, just import the parser and use it in the similar way.
+To use ``lexbor``, just import the parser and use it in the similar way to the `HTMLParser`.
 
 .. code:: python
 

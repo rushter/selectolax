@@ -107,6 +107,7 @@ cdef class LexborNode:
         Parameters
         ----------
         strip : bool, default False
+            If true, calls str.strip() on each text part to remove extra white spaces.
         separator : str, default ''
             The separator to use when joining text from different nodes.
         deep : bool, default True

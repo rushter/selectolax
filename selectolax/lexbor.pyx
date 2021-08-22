@@ -11,6 +11,17 @@ include "lexbor/selection.pxi"
 # We don't inherit from HTMLParser here, because it also includes all the C code from Modest.
 
 cdef class LexborHTMLParser:
+    """The lexbor HTML parser.
+
+    Use this class to parse raw HTML.
+
+    This parser mimics most of the stuff from ``HTMLParser`` but not inherits in directly.
+
+    Parameters
+    ----------
+
+    html : str (unicode) or bytes
+    """
     def __init__(self, html):
 
         cdef size_t html_len
@@ -117,7 +128,7 @@ cdef class LexborHTMLParser:
         Parameters
         ----------
         strip : bool, default False
-            If true, calls `str.strip()` on each text part to remove extra white spaces.
+            If true, calls ``str.strip()`` on each text part to remove extra white spaces.
         separator : str, default ''
             The separator to use when joining text from different nodes.
         deep : bool, default True
@@ -180,6 +191,7 @@ cdef class LexborHTMLParser:
             List of tags to remove.
         recursive : bool, default True
             Whenever to delete all its child nodes
+
         Examples
         --------
 

@@ -107,7 +107,7 @@ cdef class LexborNode:
         Parameters
         ----------
         strip : bool, default False
-            If true, calls str.strip() on each text part to remove extra white spaces.
+            If true, calls ``str.strip()`` on each text part to remove extra white spaces.
         separator : str, default ''
             The separator to use when joining text from different nodes.
         deep : bool, default True
@@ -242,10 +242,11 @@ cdef class LexborNode:
             List of tags to remove.
         recursive : bool, default True
             Whenever to delete all its child nodes
+
         Examples
         --------
 
-        >>> tree = HTMLParser('<html><head></head><body><script></script><div>Hello world!</div></body></html>')
+        >>> tree = LexborHTMLParser('<html><head></head><body><script></script><div>Hello world!</div></body></html>')
         >>> tags = ['head', 'style', 'script', 'xmp', 'iframe', 'noembed', 'noframes']
         >>> tree.strip_tags(tags)
         >>> tree.html
@@ -305,7 +306,7 @@ cdef class LexborNode:
         Examples
         --------
 
-        >>> tree = HTMLParser("<div id='a'></div>")
+        >>> tree = LexborHTMLParser("<div id='a'></div>")
         >>> node = tree.css_first('div')
         >>> node.attrs
         <div attributes, 1 items>
@@ -623,7 +624,7 @@ cdef class LexborNode:
         Examples
         --------
 
-        >>> html_parser = HTMLParser('<div>&#x3C;test&#x3E;</div>')
+        >>> html_parser = LexborHTMLParser('<div>&#x3C;test&#x3E;</div>')
         >>> selector = html_parser.css_first('div')
         >>> selector.child.html
         '&lt;test&gt;'

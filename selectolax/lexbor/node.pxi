@@ -101,6 +101,23 @@ cdef class LexborNode:
             return html
         return None
 
+    def text_lexbor(self):
+        """Returns the text of the node including text of all its child nodes.
+
+        Uses builtin method from lexbor.
+        """
+
+        cdef size_t str_len = 0
+        cdef lxb_char_t * text
+
+        text = lxb_dom_node_text_content(self.node, &str_len)
+        if <int>str_len == 0:
+            raise RuntimeError("Can't extract text")
+
+        unicode_text = text.decode(_ENCODING)
+        lxb_dom_document_destroy_text_noi(self.node.owner_document, text)
+        return unicode_text
+
     def text(self, bool deep=True, str separator='', bool strip=False):
         """Returns the text of the node including text of all its child nodes.
 
@@ -118,17 +135,38 @@ cdef class LexborNode:
         text : str
 
         """
-        cdef size_t str_len = 0
-        cdef lxb_char_t * text
+        cdef unsigned char * text
+        cdef lxb_dom_node_t* node = <lxb_dom_node_t*> self.node.first_child
 
-        # TODO: improve
-        text = lxb_dom_node_text_content(self.node, &str_len)
-        if <int>str_len == 0:
-            raise RuntimeError("Can't extract text")
+        if not deep:
+            container = TextContainer(separator, strip)
+            if self.node.type == LXB_DOM_NODE_TYPE_TEXT:
+                text = <unsigned char *> lexbor_str_data_noi(&(<lxb_dom_character_data_t *> self.node).data)
+                if text != NULL:
+                    py_text = text.decode(_ENCODING)
+                    container.append(py_text)
 
-        unicode_text = text.decode(_ENCODING)
-        lxb_dom_document_destroy_text_noi(self.node.owner_document, text)
-        return unicode_text
+            while node != NULL:
+                if node.type == LXB_DOM_NODE_TYPE_TEXT:
+                    text = <unsigned char *> lexbor_str_data_noi(&(<lxb_dom_character_data_t *> self.node).data)
+                    if text != NULL:
+                        py_text = text.decode(_ENCODING)
+                        container.append(py_text)
+                node = node.next
+            return container.text
+        else:
+            container = TextContainer(separator, strip)
+            if self.node.type == LXB_DOM_NODE_TYPE_TEXT:
+                text = <unsigned char *> lexbor_str_data_noi(&(<lxb_dom_character_data_t *> self.node).data)
+                if text != NULL:
+                    container.append(text.decode(_ENCODING))
+
+            lxb_dom_node_simple_walk(
+                <lxb_dom_node_t *> self.node,
+                <lxb_dom_node_simple_walker_f>text_callback,
+                <void *>container
+            )
+            return container.text
 
     def css(self, str query):
         """Evaluate CSS selector against current node and its child nodes.
@@ -694,3 +732,34 @@ cdef class LexborNode:
             return False
         return self.html == other.html
 
+cdef class TextContainer:
+    cdef public str text
+    cdef public str separator
+    cdef public bool strip
+
+    def __init__(self, str separator = '', bool strip = False):
+        self.text = ""
+        self.separator = separator
+        self.strip = strip
+
+    def append(self, node_text):
+        if self.strip:
+            self.text += node_text.strip() + self.separator
+        else:
+            self.text += node_text + self.separator
+
+
+cdef lexbor_action_t text_callback(lxb_dom_node_t *node, void *ctx):
+    cdef unsigned char *text;
+    cdef lxb_tag_id_t tag_id = lxb_dom_node_tag_id_noi(node)
+    if tag_id != LXB_TAG__TEXT:
+        return LEXBOR_ACTION_OK
+
+    text = <unsigned char*> lexbor_str_data_noi(&(<lxb_dom_text_t *> node).char_data.data)
+    if not text:
+        return LEXBOR_ACTION_OK
+    py_str = text.decode(_ENCODING)
+    cdef object cls
+    cls = <object> ctx
+    cls.append(py_str)
+    return LEXBOR_ACTION_OK

@@ -226,7 +226,7 @@ def test_text_node_returns_text(parser):
     html = '<div>foo bar</div>'
     html_parser = parser(html)
     node = html_parser.css_first('div').child
-    assert node.text() == 'foo bar'
+    assert node.text(deep=False) == 'foo bar'
 
 
 def test_text_node_returns_text_when_deep():

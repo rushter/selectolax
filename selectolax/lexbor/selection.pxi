@@ -130,6 +130,21 @@ cdef class LexborSelector:
         return False
 
     def attribute_longer_than(self, str attribute, int length, str start  = None):
+        """Filter all current matches by attribute length.
+
+        Similar to `string-length` in XPath.
+        """
+        nodes = []
+        for node in self.nodes:
+            attr = node.attributes.get(attribute)
+            if attr and start and start in attr:
+                attr = attr[attr.find(start) + len(start):]
+            if len(attr) > length:
+                nodes.append(node)
+        self.nodes = nodes
+        return self
+
+    def any_attribute_longer_than(self, str attribute, int length, str start  = None):
         """Returns True any href attribute longer than a specified length.
 
         Similar to `string-length` in XPath.
@@ -143,6 +158,10 @@ cdef class LexborSelector:
                 return True
         return False
 
+    def __bool__(self):
+        return bool(self.nodes)
+
+
 cdef lxb_status_t css_finder_callback(lxb_dom_node_t *node, lxb_css_selector_specificity_t *spec, void *ctx):
     cdef LexborNode lxb_node
     cdef object cls
@@ -150,7 +169,7 @@ cdef lxb_status_t css_finder_callback(lxb_dom_node_t *node, lxb_css_selector_spe
     lxb_node = LexborNode()
     lxb_node._cinit(<lxb_dom_node_t *> node, cls.current_node.parser)
     cls.results.append(lxb_node)
-
+    return LXB_STATUS_OK
 
 cdef lxb_status_t css_matcher_callback(lxb_dom_node_t *node, lxb_css_selector_specificity_t *spec, void *ctx):
     cdef LexborNode lxb_node

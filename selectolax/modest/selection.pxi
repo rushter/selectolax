@@ -121,6 +121,21 @@ cdef class Selector:
         return False
 
     def attribute_longer_than(self, str attribute, int length, str start  = None):
+        """Filter all current matches by attribute length.
+
+        Similar to `string-length` in XPath.
+        """
+        nodes = []
+        for node in self.nodes:
+            attr = node.attributes.get(attribute)
+            if attr and start and start in attr:
+                attr = attr[attr.find(start) + len(start):]
+            if len(attr) > length:
+                nodes.append(node)
+        self.nodes = nodes
+        return self
+
+    def any_attribute_longer_than(self, str attribute, int length, str start  = None):
         """Returns True any href attribute longer than a specified length.
 
         Similar to `string-length` in XPath.
@@ -133,6 +148,9 @@ cdef class Selector:
             if len(attr) > length:
                 return True
         return False
+
+    def __bool__(self):
+        return bool(self.nodes)
 
 cdef find_nodes(HTMLParser parser, myhtml_tree_node_t *node, str query):
     cdef myhtml_collection_t *collection

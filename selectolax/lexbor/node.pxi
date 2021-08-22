@@ -101,7 +101,22 @@ cdef class LexborNode:
             return html
         return None
 
-    def text(self):
+    def text(self, bool deep=True, str separator='', bool strip=False):
+        """Returns the text of the node including text of all its child nodes.
+
+        Parameters
+        ----------
+        strip : bool, default False
+        separator : str, default ''
+            The separator to use when joining text from different nodes.
+        deep : bool, default True
+            If True, includes text from all child nodes.
+
+        Returns
+        -------
+        text : str
+
+        """
         cdef size_t str_len = 0
         cdef lxb_char_t * text
 
@@ -148,6 +163,7 @@ cdef class LexborNode:
         -------
         selector : `LexborNode` object
         """
+        # TODO: This can be improved.
         results = self.css(query)
         n_results = len(results)
         if n_results > 0:
@@ -156,6 +172,16 @@ cdef class LexborNode:
             return results[0]
         return default
 
+    def any_css_matches(self, tuple selectors):
+        """Returns True if any of CSS selectors matches a node"""
+        for selector in selectors:
+            if self.parser.selector.any_matches(selector,  self):
+                return True
+        return False
+
+    def css_matches(self, str selector):
+        """Returns True if CSS selector matches a node."""
+        return self.parser.selector.any_matches(selector, self)
 
     def __repr__(self):
         return '<LexborNode %s>' % self.tag
@@ -605,18 +631,60 @@ cdef class LexborNode:
         """
         raise SelectolaxError("This features is not supported by the lexbor backend. Please use Modest backend.")
 
+    def scripts_contain(self, str query):
+        """Returns True if any of the script tags contain specified text.
+
+        Caches script tags on the first call to improve performance.
+
+        Parameters
+        ----------
+        query : str
+            The query to check.
+
+        """
+        if self.parser.cached_script_texts is None:
+            nodes = self.parser.selector.find('script', self)
+            text_nodes = []
+            for node in nodes:
+                node_text = node.text(deep=True)
+                if node_text:
+                    text_nodes.append(node_text)
+            self.parser.cached_script_texts = text_nodes
+
+        for text in self.parser.cached_script_texts:
+            if query in text:
+                return True
+        return False
+
+    def script_srcs_contain(self, tuple queries):
+        """Returns True if any of the script SRCs attributes contain on of the specified text.
+
+        Caches values on the first call to improve performance.
+
+        Parameters
+        ----------
+        queries : tuple of str
+
+        """
+        if self.parser.cached_script_srcs is None:
+            nodes = self.parser.selector.find('script', self)
+            src_nodes = []
+            for node in nodes:
+                node_src = node.attrs.get('src')
+                if node_src:
+                    src_nodes.append(node_src)
+            self.parser.cached_script_srcs = src_nodes
+
+        for text in self.parser.cached_script_srcs:
+            for query in queries:
+                if query in text:
+                    return True
+        return False
+
     def __eq__(self, other):
         if isinstance(other, str):
             return self.html == other
         if not isinstance(other, LexborNode):
             return False
         return self.html == other.html
-
-cdef lxb_status_t css_finder_callback(lxb_dom_node_t *node, lxb_css_selector_specificity_t *spec, void *ctx):
-    cdef LexborNode lxb_node
-    cdef object cls
-    cls = <object> ctx
-    lxb_node = LexborNode()
-    lxb_node._cinit(<lxb_dom_node_t *> node, cls.current_node.parser)
-    cls.results.append(lxb_node)
 

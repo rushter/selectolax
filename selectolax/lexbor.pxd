@@ -5,6 +5,28 @@ cdef extern from "lexbor/core/core.h" nogil:
     ctypedef uint32_t lxb_codepoint_t
     ctypedef unsigned char lxb_char_t
     ctypedef unsigned int lxb_status_t
+    ctypedef enum lexbor_status_t:
+        LXB_STATUS_OK = 0x0000
+        LXB_STATUS_ERROR = 0x0001
+        LXB_STATUS_ERROR_MEMORY_ALLOCATION
+        LXB_STATUS_ERROR_OBJECT_IS_NULL
+        LXB_STATUS_ERROR_SMALL_BUFFER
+        LXB_STATUS_ERROR_INCOMPLETE_OBJECT
+        LXB_STATUS_ERROR_NO_FREE_SLOT
+        LXB_STATUS_ERROR_TOO_SMALL_SIZE
+        LXB_STATUS_ERROR_NOT_EXISTS
+        LXB_STATUS_ERROR_WRONG_ARGS
+        LXB_STATUS_ERROR_WRONG_STAGE
+        LXB_STATUS_ERROR_UNEXPECTED_RESULT
+        LXB_STATUS_ERROR_UNEXPECTED_DATA
+        LXB_STATUS_ERROR_OVERFLOW
+        LXB_STATUS_CONTINUE
+        LXB_STATUS_SMALL_BUFFER
+        LXB_STATUS_ABORTED
+        LXB_STATUS_STOPPED
+        LXB_STATUS_NEXT
+        LXB_STATUS_STOP
+
     lexbor_str_t* lexbor_str_destroy(lexbor_str_t *str, lexbor_mraw_t *mraw, bint destroy_obj)
     lexbor_str_t* lexbor_str_create()
 
@@ -221,12 +243,15 @@ cdef class LexborCSSSelector:
     cdef public LexborNode current_node
     cdef _create_css_parser(self)
     cpdef find(self, str query, LexborNode node)
+    cpdef any_matches(self, str query, LexborNode node)
 
 cdef class LexborHTMLParser:
     cdef lxb_html_document_t *document
     cdef public bytes raw_html
     cdef LexborCSSSelector _selector
     cdef _parse_html(self, char* html, size_t html_len)
+    cdef object cached_script_texts
+    cdef object cached_script_srcs
 
     @staticmethod
     cdef LexborHTMLParser from_document(lxb_html_document_t * document, bytes raw_html)

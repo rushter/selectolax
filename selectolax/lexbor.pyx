@@ -111,6 +111,24 @@ cdef class LexborHTMLParser:
         lxb_dom_collection_destroy(collection, <bint> True)
         return result
 
+    def text(self, bool deep=True, str separator='', bool strip=False):
+        """Returns the text of the node including text of all its child nodes.
+
+        Parameters
+        ----------
+        strip : bool, default False
+        separator : str, default ''
+            The separator to use when joining text from different nodes.
+        deep : bool, default True
+            If True, includes text from all child nodes.
+
+        Returns
+        -------
+        text : str
+
+        """
+        return self.body.text(deep=deep, separator=separator, strip=strip)
+
     @property
     def html(self):
         """Return HTML representation of the page."""
@@ -197,6 +215,58 @@ cdef class LexborHTMLParser:
                 else:
                     lxb_dom_node_destroy_deep( <lxb_dom_node_t*> lxb_dom_collection_element_noi(collection, i))
             lxb_dom_collection_destroy(collection, <bint> True)
+
+    def select(self, query=None):
+        """Select nodes give a CSS selector.
+
+        Works similarly to the the ``css`` method, but supports chained filtering and extra features.
+
+        Parameters
+        ----------
+        query : str or None
+            The CSS selector to use when searching for nodes.
+
+        Returns
+        -------
+        selector : The `Selector` class.
+        """
+        cdef LexborNode node
+        node = self.root
+        if node:
+            return LexborSelector(node, query)
+
+    def any_css_matches(self, tuple selectors):
+        """Returns True if any of the specified CSS selectors matches a node."""
+        return self.root.any_css_matches(selectors)
+
+    def scripts_contain(self, str query):
+        """Returns True if any of the script tags contain specified text.
+
+        Caches script tags on the first call to improve performance.
+
+        Parameters
+        ----------
+        query : str
+            The query to check.
+
+        """
+        return self.root.scripts_contain(query)
+
+
+    def script_srcs_contain(self, tuple queries):
+        """Returns True if any of the script SRCs attributes contain on of the specified text.
+
+        Caches values on the first call to improve performance.
+
+        Parameters
+        ----------
+        queries : tuple of str
+
+        """
+        return self.root.script_srcs_contain(queries)
+
+    def css_matches(self, str selector):
+        return self.root.css_matches(selector)
 
     @staticmethod
     cdef LexborHTMLParser from_document(lxb_html_document_t *document, bytes raw_html):

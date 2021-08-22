@@ -285,12 +285,12 @@ def test_attrs_adds_attribute(parser):
     assert node.attributes == {'id': 'id', 'new_att': 'new'}
 
 
-# @pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-# def test_attrs_sets_attribute(parser):
-#     html_parser = parser('<div id="id"></div>')
-#     node = html_parser.css_first('div')
-#     node.attrs['id'] = 'new_id'
-#     assert node.attributes == {'id': 'new_id'}
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_attrs_sets_attribute(parser):
+    html_parser = parser('<div id="id"></div>')
+    node = html_parser.css_first('div')
+    node.attrs['id'] = 'new_id'
+    assert node.attributes == {'id': 'new_id'}
 
 
 @pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
@@ -370,16 +370,16 @@ def test_node_comparison_fails(parser):
     assert node != object
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_raw_value(parser):
-    html_parser = parser('<div>&#x3C;test&#x3E;</div>')
+def test_raw_value():
+    html_parser = HTMLParser('<div>&#x3C;test&#x3E;</div>')
     selector = html_parser.css_first('div')
     assert selector.child.raw_value == b'&#x3C;test&#x3E;'
     assert selector.child.html == '&lt;test&gt;'
 
 
-def test_adavanced_selector():
-    html_parser = HTMLParser("""
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_adavanced_selector(parser):
+    html_parser = parser("""
     <script>
      var super_value = 100;
     </script>
@@ -389,8 +389,9 @@ def test_adavanced_selector():
     assert selector.any_matches
 
 
-def test_script_contain():
-    html_parser = HTMLParser("""
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_script_contain(parser):
+    html_parser = parser("""
     <script>
      var super_value = 100;
     </script>
@@ -399,12 +400,14 @@ def test_script_contain():
     assert html_parser.scripts_contain('super_value')
 
 
-def test_srcs_contain():
-    html_parser = HTMLParser("""<script src="http://google.com/analytics.js"></script>""")
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_srcs_contain(parser):
+    html_parser = parser("""<script src="http://google.com/analytics.js"></script>""")
     assert html_parser.script_srcs_contain(('analytics.js', ))
 
 
-def test_css_chaining():
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_css_chaining(parser):
     html = """
     <div id="container">
         <span class="red"></span>
@@ -413,5 +416,5 @@ def test_css_chaining():
         <span class="green"></span>
     </div>
     """
-    tree = HTMLParser(html)
+    tree = parser(html)
     assert len(tree.select('div').css("span").css(".red").matches) == 2

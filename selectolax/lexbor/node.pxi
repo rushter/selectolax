@@ -409,7 +409,7 @@ cdef class LexborNode:
         node
         """
         cdef lxb_dom_node_t * root = self.node
-        cdef lxb_dom_node_t * node = root.first_child
+        cdef lxb_dom_node_t * node = root
         cdef LexborNode lxb_node
 
         while node != NULL:
@@ -455,7 +455,6 @@ cdef class LexborNode:
         '<div>Get <span alt="Laptop"><div>Test</div> <div></div></span></div>'
         """
         cdef lxb_dom_node_t * new_node
-        cdef size_t str_len = 0
 
         if isinstance(value, (str, bytes, unicode)):
             bytes_val = to_bytes(value)
@@ -465,7 +464,6 @@ cdef class LexborNode:
             )
             if new_node == NULL:
                 raise SelectolaxError("Can't create a new node")
-
             lxb_dom_node_insert_before(self.node,  new_node)
             lxb_dom_node_destroy(<lxb_dom_node_t *> self.node)
         elif isinstance(value, LexborNode):
@@ -479,8 +477,140 @@ cdef class LexborNode:
             lxb_dom_node_insert_before(self.node, <lxb_dom_node_t *> new_node)
             lxb_dom_node_destroy(<lxb_dom_node_t *> self.node)
         else:
-            raise SelectolaxError("Expected a string or Node instance, but %s found" % type(value).__name__)
+            raise SelectolaxError("Expected a string or LexborNode instance, but %s found" % type(value).__name__)
 
+
+    def insert_before(self, str_or_LexborNode value):
+        """
+        Insert a node before the current Node.
+
+        Parameters
+        ----------
+        value : str, bytes or Node
+            The text or Node instance to insert before the Node.
+            When a text string is passed, it's treated as text. All HTML tags will be escaped.
+            Convert and pass the ``Node`` object when you want to work with HTML.
+            Does not clone the ``Node`` object.
+            All future changes to the passed ``Node`` object will also be taken into account.
+
+        Examples
+        --------
+
+        >>> tree = LexborHTMLParser('<div>Get <img src="" alt="Laptop"></div>')
+        >>> img = tree.css_first('img')
+        >>> img.insert_before(img.attributes.get('alt', ''))
+        >>> tree.body.child.html
+        '<div>Get Laptop<img src="" alt="Laptop"></div>'
+
+        >>> html_parser = LexborHTMLParser('<div>Get <span alt="Laptop"><img src="/jpg"> <div></div></span></div>')
+        >>> html_parser2 = LexborHTMLParser('<div>Test</div>')
+        >>> img_node = html_parser.css_first('img')
+        >>> img_node.insert_before(html_parser2.body.child)
+        <div>Get <span alt="Laptop"><div>Test</div><img src="/jpg"> <div></div></span></div>'
+        """
+        cdef lxb_dom_node_t * new_node
+
+        if isinstance(value, (str, bytes, unicode)):
+            bytes_val = to_bytes(value)
+            new_node = <lxb_dom_node_t *> lxb_dom_document_create_text_node(
+                    &self.parser.document.dom_document,
+                    <lxb_char_t *> bytes_val, len(bytes_val)
+            )
+            if new_node == NULL:
+                raise SelectolaxError("Can't create a new node")
+            lxb_dom_node_insert_before(self.node,  new_node)
+        elif isinstance(value, LexborNode):
+            new_node = lxb_dom_document_import_node(
+                &self.parser.document.dom_document,
+                <lxb_dom_node_t *> value.node,
+                <bint> True
+            )
+            if new_node == NULL:
+                raise SelectolaxError("Can't create a new node")
+            lxb_dom_node_insert_before(self.node, <lxb_dom_node_t *> new_node)
+        else:
+            raise SelectolaxError("Expected a string or LexborNode instance, but %s found" % type(value).__name__)
+
+    def insert_after(self, str_or_LexborNode value):
+        """
+        Insert a node after the current Node.
+
+        Parameters
+        ----------
+        value : str, bytes or Node
+            The text or Node instance to insert after the Node.
+            When a text string is passed, it's treated as text. All HTML tags will be escaped.
+            Convert and pass the ``Node`` object when you want to work with HTML.
+            Does not clone the ``Node`` object.
+            All future changes to the passed ``Node`` object will also be taken into account.
+
+        Examples
+        --------
+
+        >>> tree = LexborHTMLParser('<div>Get <img src="" alt="Laptop"></div>')
+        >>> img = tree.css_first('img')
+        >>> img.insert_after(img.attributes.get('alt', ''))
+        >>> tree.body.child.html
+        '<div>Get <img src="" alt="Laptop">Laptop</div>'
+
+        >>> html_parser = LexborHTMLParser('<div>Get <span alt="Laptop"><img src="/jpg"> <div></div></span></div>')
+        >>> html_parser2 = LexborHTMLParser('<div>Test</div>')
+        >>> img_node = html_parser.css_first('img')
+        >>> img_node.insert_after(html_parser2.body.child)
+        <div>Get <span alt="Laptop"><img src="/jpg"><div>Test</div> <div></div></span></div>'
+        """
+        cdef lxb_dom_node_t * new_node
+
+        if isinstance(value, (str, bytes, unicode)):
+            bytes_val = to_bytes(value)
+            new_node = <lxb_dom_node_t *> lxb_dom_document_create_text_node(
+                    &self.parser.document.dom_document,
+                    <lxb_char_t *> bytes_val, len(bytes_val)
+            )
+            if new_node == NULL:
+                raise SelectolaxError("Can't create a new node")
+            lxb_dom_node_insert_after(self.node,  new_node)
+        elif isinstance(value, LexborNode):
+            new_node = lxb_dom_document_import_node(
+                &self.parser.document.dom_document,
+                <lxb_dom_node_t *> value.node,
+                <bint> True
+            )
+            if new_node == NULL:
+                raise SelectolaxError("Can't create a new node")
+            lxb_dom_node_insert_after(self.node, <lxb_dom_node_t *> new_node)
+        else:
+            raise SelectolaxError("Expected a string or LexborNode instance, but %s found" % type(value).__name__)
+
+    @property
+    def raw_value(self):
+        """Return the raw (unparsed, original) value of a node.
+
+        Currently, works on text nodes only.
+
+        Returns
+        -------
+
+        raw_value : bytes
+
+        Examples
+        --------
+
+        >>> html_parser = HTMLParser('<div>&#x3C;test&#x3E;</div>')
+        >>> selector = html_parser.css_first('div')
+        >>> selector.child.html
+        '&lt;test&gt;'
+        >>> selector.child.raw_value
+        b'&#x3C;test&#x3E;'
+        """
+        raise SelectolaxError("This features is not supported by the lexbor backend. Please use Modest backend.")
+
+    def __eq__(self, other):
+        if isinstance(other, str):
+            return self.html == other
+        if not isinstance(other, LexborNode):
+            return False
+        return self.html == other.html
 
 cdef lxb_status_t css_finder_callback(lxb_dom_node_t *node, lxb_css_selector_specificity_t *spec, void *ctx):
     cdef LexborNode lxb_node

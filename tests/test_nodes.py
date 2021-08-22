@@ -226,74 +226,84 @@ def test_node_replace_with(parser):
     assert html_parser.body.child.html == '<div>Get <span alt="Laptop"><div>Test</div> <div></div></span></div>'
 
 
-def test_replace_with_empty_string():
-    html_parser = HTMLParser('<div>Get <img src="" alt="Laptop"></div>')
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_replace_with_empty_string(parser):
+    html_parser = parser('<div>Get <img src="" alt="Laptop"></div>')
     img = html_parser.css_first('img')
     img.replace_with('')
     assert html_parser.body.child.html == '<div>Get </div>'
 
 
-def test_replace_with_invalid_value_passed_exception():
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_replace_with_invalid_value_passed_exception(parser):
     with pytest.raises(TypeError) as excinfo:
-        html_parser = HTMLParser('<div>Get <img src="" alt="Laptop"></div>')
+        html_parser = parser('<div>Get <img src="" alt="Laptop"></div>')
         img = html_parser.css_first('img')
         img.replace_with(None)
     assert 'No matching signature found' in str(excinfo.value)
 
 
-def test_insert_before():
-    html_parser = HTMLParser('<div>Get <img src="" alt="Laptop"></div>')
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_insert_before(parser):
+    html_parser = parser('<div>Get <img src="" alt="Laptop"></div>')
     img = html_parser.css_first('img')
     img.insert_before(img.attributes.get('alt', ''))
     assert html_parser.body.child.html == '<div>Get Laptop<img src="" alt="Laptop"></div>'
 
 
-def test_node_insert_before():
-    html_parser = HTMLParser('<div>Get <span alt="Laptop"><img src="/jpg"> <div></div></span></div>')
-    html_parser2 = HTMLParser('<div>Test</div>')
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_node_insert_before(parser):
+    html_parser = parser('<div>Get <span alt="Laptop"><img src="/jpg"> <div></div></span></div>')
+    html_parser2 = parser('<div>Test</div>')
     img_node = html_parser.css_first('img')
     img_node.insert_before(html_parser2.body.child)
     assert html_parser.body.child.html == '<div>Get <span alt="Laptop"><div>Test</div><img src="/jpg"> <div></div></span></div>'
 
 
-def test_insert_after():
-    html_parser = HTMLParser('<div>Get <img src="" alt="Laptop"></div>')
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_insert_after(parser):
+    html_parser = parser('<div>Get <img src="" alt="Laptop"></div>')
     img = html_parser.css_first('img')
     img.insert_after(img.attributes.get('alt', ''))
     assert html_parser.body.child.html == '<div>Get <img src="" alt="Laptop">Laptop</div>'
 
 
-def test_node_insert_after():
-    html_parser = HTMLParser('<div>Get <span alt="Laptop"><img src="/jpg"> <div></div></span></div>')
-    html_parser2 = HTMLParser('<div>Test</div>')
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_node_insert_after(parser):
+    html_parser = parser('<div>Get <span alt="Laptop"><img src="/jpg"> <div></div></span></div>')
+    html_parser2 = parser('<div>Test</div>')
     img_node = html_parser.css_first('img')
     img_node.insert_after(html_parser2.body.child)
     assert html_parser.body.child.html == '<div>Get <span alt="Laptop"><img src="/jpg"><div>Test</div> <div></div></span></div>'
 
 
-def test_attrs_adds_attribute():
-    html_parser = HTMLParser('<div id="id"></div>')
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_attrs_adds_attribute(parser):
+    html_parser = parser('<div id="id"></div>')
     node = html_parser.css_first('div')
     node.attrs['new_att'] = 'new'
     assert node.attributes == {'id': 'id', 'new_att': 'new'}
 
 
-def test_attrs_sets_attribute():
-    html_parser = HTMLParser('<div id="id"></div>')
-    node = html_parser.css_first('div')
-    node.attrs['id'] = 'new_id'
-    assert node.attributes == {'id': 'new_id'}
+# @pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+# def test_attrs_sets_attribute(parser):
+#     html_parser = parser('<div id="id"></div>')
+#     node = html_parser.css_first('div')
+#     node.attrs['id'] = 'new_id'
+#     assert node.attributes == {'id': 'new_id'}
 
 
-def test_attrs_removes_attribute():
-    html_parser = HTMLParser('<div id="id"></div>')
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_attrs_removes_attribute(parser):
+    html_parser = parser('<div id="id"></div>')
     node = html_parser.css_first('div')
     del node.attrs['id']
     assert node.attributes == {}
 
 
-def test_attrs_test_dict_features():
-    html_parser = HTMLParser('<div id="id" v data-id="foo"></div>')
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_attrs_test_dict_features(parser):
+    html_parser = parser('<div id="id" v data-id="foo"></div>')
     node = html_parser.css_first('div')
     node.attrs['new_att'] = 'new'
     assert list(node.attrs.keys()) == ['id', 'v', 'data-id', 'new_att']
@@ -304,33 +314,36 @@ def test_attrs_test_dict_features():
     assert 'vid' not in node.attrs
 
 
-def test_traverse():
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_traverse(parser):
     html = (
         '<div id="parent"><div id="prev"></div><div id="test_node"><h1 id="child">Title</h1>'
         '<div>foo</div><img scr="image.jpg"></div><div id="next"></div></div>'
     )
-    html_parser = HTMLParser(html)
+    html_parser = parser(html)
     actual = [node.tag for node in html_parser.root.traverse()]
     expected = ['html', 'head', 'body', 'div', 'div', 'div', 'h1', 'div', 'img', 'div']
     assert actual == expected
 
 
-def test_traverse_with_text():
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_traverse_with_text(parser):
     html = (
         '<div id="parent"><div id="prev"></div><div id="test_node"><h1 id="child">Title</h1>'
         '<div>foo</div><img scr="image.jpg"></div><div id="next"></div></div>'
     )
-    html_parser = HTMLParser(html)
+    html_parser = parser(html)
     actual = [node.tag for node in html_parser.root.traverse(include_text=True)]
     expected = ['html', 'head', 'body', 'div', 'div', 'div', 'h1', '-text', 'div', '-text', 'img', 'div']
     assert actual == expected
 
 
-def test_node_comparison():
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_node_comparison(parser):
     html = """
         <div>H3ll0</div><div id='tt'><p id='stext'>Lorem ipsum dolor sit amet, ea quo modus meliore platonem.</p></div>
     """
-    html_parser = HTMLParser(html)
+    html_parser = parser(html)
     nodes = [node for node in html_parser.root.traverse(include_text=False)]
     same_node_path_one = nodes[-1].parent
     same_node_path_two = nodes[-2]
@@ -338,16 +351,18 @@ def test_node_comparison():
     assert same_node_path_one == same_node_path_two == same_node_path_three
 
 
-def test_node_comprassion_with_strings():
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_node_comprassion_with_strings(parser):
     html = """<div id="test"></div>"""
-    html_parser = HTMLParser(html)
+    html_parser = parser(html)
     node = html_parser.css_first('#test')
     assert node == '<div id="test"></div>'
 
 
-def test_node_comparison_fails():
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_node_comparison_fails(parser):
     html = """<div id="test"></div>"""
-    html_parser = HTMLParser(html)
+    html_parser = parser(html)
     node = html_parser.css_first('#test')
 
     assert node != None
@@ -355,8 +370,9 @@ def test_node_comparison_fails():
     assert node != object
 
 
-def test_raw_value():
-    html_parser = HTMLParser('<div>&#x3C;test&#x3E;</div>')
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_raw_value(parser):
+    html_parser = parser('<div>&#x3C;test&#x3E;</div>')
     selector = html_parser.css_first('div')
     assert selector.child.raw_value == b'&#x3C;test&#x3E;'
     assert selector.child.html == '&lt;test&gt;'

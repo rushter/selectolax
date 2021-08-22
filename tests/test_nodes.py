@@ -451,7 +451,7 @@ def test_srcs_contain(parser):
     assert html_parser.script_srcs_contain(('analytics.js', ))
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+@pytest.mark.parametrize("parser", (HTMLParser, ))
 def test_css_chaining(parser):
     html = """
     <div id="container">

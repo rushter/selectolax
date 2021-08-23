@@ -725,6 +725,22 @@ cdef class LexborNode:
         """An alias for the decompose method."""
         self.decompose(recursive)
 
+    def select(self, query=None):
+        """Select nodes given a CSS selector.
+
+        Works similarly to the the ``css`` method, but supports chained filtering and extra features.
+
+        Parameters
+        ----------
+        query : str or None
+            The CSS selector to use when searching for nodes.
+
+        Returns
+        -------
+        selector : The `Selector` class.
+        """
+        return LexborSelector(self.node, query)
+
     def __eq__(self, other):
         if isinstance(other, str):
             return self.html == other

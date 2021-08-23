@@ -739,7 +739,7 @@ cdef class LexborNode:
         -------
         selector : The `Selector` class.
         """
-        return LexborSelector(self.node, query)
+        return LexborSelector(<LexborNode>self.node, query)
 
     def __eq__(self, other):
         if isinstance(other, str):

@@ -229,6 +229,14 @@ def test_text_node_returns_text(parser):
     assert node.text(deep=False) == 'foo bar'
 
 
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_text_node_returns_text_parent(parser):
+    html = '<div>foo bar</div>'
+    html_parser = parser(html)
+    node = html_parser.css_first('div')
+    assert node.text(deep=False) == 'foo bar'
+
+
 def test_text_node_returns_text_when_deep():
     html = '<div>foo bar</div>'
     html_parser = HTMLParser(html)

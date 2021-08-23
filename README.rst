@@ -98,7 +98,7 @@ To use ``lexbor``, just import the parser and use it in the similar way to the `
        ...: <div id="updated">2021-08-15</div>
        ...: """
 
-    In [3]: parser = selectolax.lexbor.LexborHTMLParser(html)
+    In [3]: parser = LexborHTMLParser(html)
     In [4]: parser.root.css_first("#updated").text()
     Out[4]: '2021-08-15'
 

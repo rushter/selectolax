@@ -1,6 +1,15 @@
 selectolax Changelog
 ====================
 
+Version 0.3.2
+--------------
+
+Released
+
+- Fix  ``selector`` method for lexbor
+- Improve text extraction for lexbor
+
+
 Version 0.3.1
 --------------
 

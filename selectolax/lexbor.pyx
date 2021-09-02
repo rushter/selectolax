@@ -15,7 +15,7 @@ cdef class LexborHTMLParser:
 
     Use this class to parse raw HTML.
 
-    This parser mimics most of the stuff from ``HTMLParser`` but not inherits in directly.
+    This parser mimics most of the stuff from ``HTMLParser`` but not inherits it directly.
 
     Parameters
     ----------

@@ -267,9 +267,9 @@ cdef class LexborNode:
 
         """
         if recursive:
-            lxb_dom_node_destroy(<lxb_dom_node_t *>self.node)
+            lxb_dom_node_destroy_deep(<lxb_dom_node_t *> self.node)
         else:
-            lxb_dom_node_destroy_deep(<lxb_dom_node_t *>self.node)
+            lxb_dom_node_destroy(<lxb_dom_node_t *> self.node)
 
     def strip_tags(self, list tags, bool recursive = False):
         """Remove specified tags from the HTML tree.

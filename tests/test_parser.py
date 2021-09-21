@@ -108,3 +108,14 @@ def test_tags(parser):
     """)
     assert len(html_parser.tags('div')) == 5
 
+
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_preserves_doctype(parser):
+    html_parser = parser("""
+    <!DOCTYPE html>
+    <html>
+        <head><title>Test</title></head>
+        <body><p>Hello World</p></body>
+    </html>
+    """)
+    assert '<!DOCTYPE html>' in html_parser.html

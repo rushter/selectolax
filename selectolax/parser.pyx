@@ -385,7 +385,7 @@ cdef class HTMLParser:
             raise RuntimeError("Can't init MyHTML Tree object.")
 
         node = myhtml_node_clone_deep(html_tree, self.html_tree.node_html)
-        myhtml_tree_node_insert_root(html_tree, NULL, MyHTML_NAMESPACE_HTML)
+        myhtml_tree_node_add_child(html_tree.document, node)
         html_tree.node_html = node
 
         cls = HTMLParser.from_tree(

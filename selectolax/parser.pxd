@@ -440,6 +440,7 @@ cdef extern from "myhtml/tree.h" nogil:
     myhtml_tree_node_t * myhtml_tree_node_clone(myhtml_tree_node_t* node)
     myhtml_tree_node_t * myhtml_tree_node_insert_root(myhtml_tree_t* tree, myhtml_token_node_t* token,
                                                       myhtml_namespace ns)
+    void myhtml_tree_node_add_child(myhtml_tree_node_t* root, myhtml_tree_node_t* node)
 
 cdef extern from "myhtml/serialization.h" nogil:
     mystatus_t myhtml_serialization(myhtml_tree_node_t* scope_node, mycore_string_raw_t* str)

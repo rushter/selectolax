@@ -1,6 +1,14 @@
 selectolax Changelog
 ====================
 
+Version 0.3.4
+--------------
+
+Released
+
+- Fix ``HTMLParser.html``
+
+
 Version 0.3.3
 --------------
 

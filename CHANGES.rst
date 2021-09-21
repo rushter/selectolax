@@ -1,6 +1,13 @@
 selectolax Changelog
 ====================
 
+Version 0.3.3
+--------------
+
+Released
+
+- Use `document` for the ``HTMLParser.html``, ``LexborHTMLParser.html``  root properties
+
 Version 0.3.2
 --------------
 

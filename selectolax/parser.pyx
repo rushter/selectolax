@@ -289,7 +289,11 @@ cdef class HTMLParser:
     @property
     def html(self):
         """Return HTML representation of the page."""
-        return self.root.html
+        if self.html_tree and self.html_tree.document:
+            node = Node()
+            node._init(self.html_tree.document, self)
+            return node.html
+        return None
 
     def select(self, query=None):
         """Select nodes give a CSS selector.

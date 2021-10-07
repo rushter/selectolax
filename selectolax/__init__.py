@@ -3,7 +3,7 @@
 
 __author__ = """Artem Golubin"""
 __email__ = 'me@rushter.com'
-__version__ = '0.3.4'
+__version__ = '0.3.5'
 
 from . import parser
 from . import lexbor

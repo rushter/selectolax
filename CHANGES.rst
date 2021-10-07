@@ -1,6 +1,14 @@
 selectolax Changelog
 ====================
 
+Version 0.3.5
+-------------
+
+Released
+
+- Add type annotations
+
+
 Version 0.3.4
 --------------
 

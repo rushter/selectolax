@@ -221,6 +221,8 @@ cdef class HTMLParser:
         text : str
 
         """
+        if not self.body:
+            return ""
         return self.body.text(deep=deep, separator=separator, strip=strip)
 
     def strip_tags(self, list tags, bool recursive = False):

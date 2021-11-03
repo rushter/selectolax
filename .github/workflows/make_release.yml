@@ -7,15 +7,19 @@ on:
 
 jobs:
   build_wheels:
-    name: Build wheels on ${{ matrix.os }}
+    name: Build wheels on ${{matrix.arch}} for ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 40
+    timeout-minutes: 120
     env:
       CIBW_SKIP: "cp27-* cp34-* pp27-*"
       CIBW_BEFORE_BUILD: "pip install cython"
     strategy:
       matrix:
         os: [ubuntu-20.04, windows-latest, macos-latest]
+        arch: [auto]
+        include:
+        - os: ubuntu-20.04
+          arch: aarch64
 
     steps:
       - uses: actions/checkout@v2
@@ -26,6 +30,10 @@ jobs:
         with:
           python-version: '3.9'
 
+      - uses: docker/setup-qemu-action@v1
+        if: ${{ matrix.arch == 'aarch64' }}
+        name: Set up QEMU
+
       - name: Install cibuildwheel
         run: |
           python -m pip install cibuildwheel==2.0.0a2 cython
@@ -33,6 +41,7 @@ jobs:
       - name: Build wheels
         env:
           CIBW_ARCHS_MACOS: x86_64 universal2
+          CIBW_ARCHS_LINUX: ${{matrix.arch}}
         run: |
           python -m cibuildwheel --output-dir wheelhouse
 

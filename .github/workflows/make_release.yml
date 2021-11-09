@@ -48,6 +48,7 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           path: ./wheelhouse/*.whl
+          retention-days: 1
 
   build_sdist:
     name: Build source distribution
@@ -74,6 +75,7 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           path: dist/*.tar.gz
+          retention-days: 1
 
   upload_pypi:
     needs: [build_wheels, build_sdist]

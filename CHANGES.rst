@@ -1,13 +1,13 @@
 selectolax Changelog
 ====================
 
-Version 0.3.5
+Version 0.3.6
 -------------
 
 Released
 
 - Improve text handling
-- Add binary builds for Python 3.10 and ARM on MacOS
+- Add binary builds for Python 3.10 and ARM on MacOS and Linux
 
 
 Version 0.3.5

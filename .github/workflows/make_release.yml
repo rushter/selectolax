@@ -9,7 +9,7 @@ jobs:
   build_wheels:
     name: Build wheels on ${{matrix.arch}} for ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 180
+    timeout-minutes: 300
     env:
       CIBW_SKIP: "cp27-* cp34-* pp27-* cp36-musllinux_aarch64 pp37-manylinux_aarch64 cp36-manylinux_aarch64"
       CIBW_BEFORE_BUILD: "pip install cython"

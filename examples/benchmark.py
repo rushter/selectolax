@@ -12,13 +12,15 @@ For each page, we extract:
 4) The content of the Meta description tag
 
 """
-import json
 import functools
+import json
 import time
 
-from lxml.html import fromstring
 from bs4 import BeautifulSoup
+from html5_parser import parse
+from lxml.html import fromstring
 from selectolax.parser import HTMLParser
+
 from selectolax.lexbor import LexborHTMLParser
 
 bad_urls = []
@@ -72,6 +74,21 @@ def lxml_parser(html_content):
         meta_content = meta_description[0].attrib.get('content', '')
 
 
+def html5_parser(html_content):
+    tree = parse(html_content)
+    title_text = tree.xpath('//title/text()')
+    assert title_text, 'title'
+
+    a_hrefs = [a.attrib.get('href', '') for a in tree.xpath('//a[@href]')]
+    assert len(a_hrefs) >= 5, 'href'
+
+    num_script_tags = len(tree.xpath('//script'))
+    assert num_script_tags > 0, 'script'
+    meta_description = tree.xpath('meta[@name="description"]')
+    if meta_description:
+        meta_content = meta_description[0].attrib.get('content', '')
+
+
 def _perform_test(pages, parse_func):
     for page in pages:
         parse_func(page['html'])
@@ -85,8 +102,9 @@ def main():
     #
     html_pages = [json.loads(page) for page in open('pages/pages.json', 'rt')]
     available_parsers = [
-        ('bs4', bs4_parser,),
+        # ('bs4', bs4_parser,),
         ('lxml', lxml_parser,),
+        ('html5_parser', html5_parser,),
         ('modest', selectolax_parser,),
         ('lexbor', functools.partial(selectolax_parser, parser=LexborHTMLParser)),
     ]

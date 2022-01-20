@@ -108,14 +108,15 @@ Simple Benchmark
 
 * Extract title, links, scripts and a meta tag from main pages of top 754 domains. See ``examples/benchmark.py`` for more information.
 
-============================  ==========
+============================ ===========
 Package                       Time
-============================  ==========
-Beautiful Soup (html.parser)  59.64 sec.
-lxml                          14.48 sec.
-selectolax (Modest)           2.396 sec.
-selectolax (Lexbor)           2.121 sec.
-============================  ==========
+============================ ===========
+Beautiful Soup (html.parser)  61.02 sec.
+lxml                          9.09 sec.
+html5_parser                  16.10 sec.
+selectolax (Modest)           2.94 sec.
+selectolax (Lexbor)           2.39 sec.
+============================ ===========
 
 Links
 -----

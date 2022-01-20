@@ -102,7 +102,7 @@ def main():
     #
     html_pages = [json.loads(page) for page in open('pages/pages.json', 'rt')]
     available_parsers = [
-        # ('bs4', bs4_parser,),
+        ('bs4', bs4_parser,),
         ('lxml', lxml_parser,),
         ('html5_parser', html5_parser,),
         ('modest', selectolax_parser,),

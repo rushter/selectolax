@@ -1,6 +1,13 @@
 selectolax Changelog
 ====================
 
+Version 0.3.7
+-------------
+
+Released
+
+- Fix return type of HTMLParser.tags
+
 Version 0.3.6
 -------------
 

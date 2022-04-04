@@ -13,3 +13,4 @@ pytest>=3.7.2
 pytest-runner>=4.2
 Cython>=0.29.23
 pluggy>=0.7.1
+jinja2<3.1.0

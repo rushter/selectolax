@@ -1,4 +1,6 @@
+cimport cython
 
+@cython.final
 cdef class CSSSelector:
 
     cdef char *c_selector

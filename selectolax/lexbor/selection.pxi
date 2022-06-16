@@ -1,3 +1,6 @@
+cimport cython
+
+@cython.final
 cdef class LexborCSSSelector:
 
     def __init__(self):

@@ -1,4 +1,4 @@
-from libc.stdlib cimport free
+cimport cython
 
 _TAG_TO_NAME = {
     0x0005: "- doctype",
@@ -18,7 +18,7 @@ cdef inline bytes to_bytes(str_or_LexborNode value):
         bytes_val =  <char*> value
     return bytes_val
 
-
+@cython.final
 cdef class LexborNode:
     """A class that represents HTML node (element)."""
 
@@ -748,6 +748,7 @@ cdef class LexborNode:
             return False
         return self.html == other.html
 
+@cython.final
 cdef class TextContainer:
     cdef public str text
     cdef public str separator

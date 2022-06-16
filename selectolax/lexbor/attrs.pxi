@@ -1,3 +1,6 @@
+cimport cython
+
+@cython.final
 cdef class LexborAttributes:
     """A dict-like object that represents attributes."""
     cdef lxb_dom_node_t *node

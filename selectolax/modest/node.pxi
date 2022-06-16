@@ -1,3 +1,5 @@
+cimport cython
+
 from libc.stdlib cimport free
 from libc.stdlib cimport malloc
 from libc.stdlib cimport realloc
@@ -5,6 +7,7 @@ from libc.stdlib cimport realloc
 DEF _STACK_SIZE = 100
 DEF _ENCODING = 'UTF-8'
 
+@cython.final
 cdef class Stack:
     def __cinit__(self, size_t capacity=25):
         self.capacity = capacity

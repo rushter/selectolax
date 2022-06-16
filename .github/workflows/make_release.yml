@@ -36,7 +36,7 @@ jobs:
 
       - name: Install cibuildwheel
         run: |
-          python -m pip install cibuildwheel==v2.2.2 cython
+          python -m pip install cibuildwheel==2.6.1 cython
 
       - name: Build wheels
         env:

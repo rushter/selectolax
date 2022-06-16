@@ -48,6 +48,9 @@ COMPILER_DIRECTIVES = {
     "language_level": 3,
     "embedsignature": True,
     "annotation_typing": False,
+    "emit_code_comments": True,
+    "boundscheck": False,
+    "wraparound": False,
 }
 
 

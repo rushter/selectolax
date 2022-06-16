@@ -1,4 +1,3 @@
-# cython: boundscheck=False, wraparound=False, nonecheck=False, language_level=3, embedsignature=False
 
 from cpython cimport bool
 

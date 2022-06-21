@@ -132,7 +132,10 @@ cdef class HTMLParser:
 
     @property
     def input_encoding(self):
-        """Return encoding of the HTML document."""
+        """Return encoding of the HTML document.
+
+        Returns `unknown` in case the encoding is not determined.
+        """
         cdef const char* encoding
         encoding = myencoding_name_by_id(self._encoding, NULL)
 

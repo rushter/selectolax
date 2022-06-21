@@ -70,7 +70,7 @@ cdef class CSSSelector:
 cdef class Selector:
     """An advanced CSS selector that supports additional operations.
 
-    Think of it as a toolkit that mimicks some of the features of XPath.
+    Think of it as a toolkit that mimics some of the features of XPath.
 
     Please note, this is an experimental feature that can change in the future.
     """

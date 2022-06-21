@@ -302,7 +302,7 @@ cdef class HTMLParser:
     def select(self, query=None):
         """Select nodes give a CSS selector.
 
-        Works similarly to the the ``css`` method, but supports chained filtering and extra features.
+        Works similarly to  the ``css`` method, but supports chained filtering and extra features.
 
         Parameters
         ----------

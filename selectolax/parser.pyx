@@ -36,7 +36,7 @@ cdef class HTMLParser:
         bytes_html, html_len = preprocess_input(html, decode_errors)
         html_chars = <char*> bytes_html
 
-        if detect_encoding:
+        if detect_encoding and isinstance(html, bytes):
             self._detect_encoding(html_chars, html_len)
 
         self._parse_html(html_chars, html_len)

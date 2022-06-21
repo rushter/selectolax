@@ -3,7 +3,6 @@ MAX_HTML_INPUT_SIZE = 8e+7
 def preprocess_input(html, decode_errors='ignore'):
     if isinstance(html, (str, unicode)):
         bytes_html = html.encode('UTF-8', errors=decode_errors)
-        detect_encoding = False
     elif isinstance(html, bytes):
         bytes_html = html
     else:

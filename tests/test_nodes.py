@@ -172,6 +172,19 @@ def test_iter_with_text(parser):
 
 
 @pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_text_deep_gh61(parser):
+    html = """<div>this is a test <h1>Heading</h1></div>"""
+    output = []
+    tree = parser(html)
+    for node in tree.root.traverse(include_text=True):
+        if node.tag == "-text":
+            text = node.text(deep=True)
+            if text:
+                output.append(text)
+    assert output == ['this is a test ', 'Heading']
+
+
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
 def test_iter_no_text(parser):
     html = """
     <div id="description">
@@ -474,10 +487,10 @@ def test_script_contain(parser):
 @pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
 def test_srcs_contain(parser):
     html_parser = parser("""<script src="http://google.com/analytics.js"></script>""")
-    assert html_parser.script_srcs_contain(('analytics.js', ))
+    assert html_parser.script_srcs_contain(('analytics.js',))
 
 
-@pytest.mark.parametrize("parser", (HTMLParser, ))
+@pytest.mark.parametrize("parser", (HTMLParser,))
 def test_css_chaining(parser):
     html = """
     <span class="red"></span>
@@ -493,7 +506,7 @@ def test_css_chaining(parser):
     assert len(tree.select('div').css("span").css(".red").matches) == 2
 
 
-@pytest.mark.parametrize("parser", (HTMLParser, ))
+@pytest.mark.parametrize("parser", (HTMLParser,))
 def test_css_chaining_two(parser):
     html = """
     <script  integrity="sha512-DHpNaMnQ8GaECHElNcJkpGhIThksyXA==" type="application/javascript" class="weird_script">

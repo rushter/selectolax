@@ -272,7 +272,7 @@ cdef class Node:
         cdef Stack stack = Stack(_STACK_SIZE)
         cdef myhtml_tree_node_t* current_node = NULL;
 
-        if node.tag_id == MyHTML_TAG__TEXT and node.next == NULL and node.child == NULL:
+        if node.tag_id == MyHTML_TAG__TEXT:
             c_text = myhtml_node_text(node, NULL)
             if c_text != NULL:
                 node_text = c_text.decode(_ENCODING, self.parser.decode_errors)

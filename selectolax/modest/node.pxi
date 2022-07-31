@@ -277,10 +277,9 @@ cdef class Node:
             if c_text != NULL:
                 node_text = c_text.decode(_ENCODING, self.parser.decode_errors)
                 text = append_text(text, node_text, separator, strip)
-            return text
 
         if node.child == NULL:
-            return ""
+            return text
 
         stack.push(node.child)
 

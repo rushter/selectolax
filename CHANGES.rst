@@ -1,6 +1,13 @@
 selectolax Changelog
 ====================
 
+Version 0.3.8
+-------------
+
+Released
+
+- Fix incorrect text handling when using ``text(deep=True)`` on a text node.
+
 Version 0.3.7
 -------------
 

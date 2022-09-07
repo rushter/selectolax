@@ -749,10 +749,11 @@ cdef class LexborNode:
         return self.html == other.html
 
     @property
-    def content(self):
+    def text_content(self):
         """Returns the text of the node if it is a text node.
 
-        Returns None for other nodes. Does ot include any child/next nodes.
+        Returns None for other nodes.
+        Unlike the ``text`` method, does not include child nodes.
 
         Returns
         -------

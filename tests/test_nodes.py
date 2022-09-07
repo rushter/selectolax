@@ -542,4 +542,4 @@ def test_merge_text_nodes(parser):
     node.merge_text_nodes()
     assert node.html == "<div><p>John</p><p>Doe</p></div>"
     text = tree.text(deep=True, separator=" ", strip=True)
-    assert text == "John Doe "
+    assert text == "John Doe"

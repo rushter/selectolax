@@ -772,20 +772,25 @@ cdef class LexborNode:
             return container.text
 @cython.final
 cdef class TextContainer:
-    cdef public str text
+    cdef str _text
     cdef public str separator
     cdef public bool strip
 
     def __init__(self, str separator = '', bool strip = False):
-        self.text = ""
+        self._text = ""
         self.separator = separator
         self.strip = strip
 
     def append(self, node_text):
         if self.strip:
-            self.text += node_text.strip() + self.separator
+            self._text += node_text.strip() + self.separator
         else:
-            self.text += node_text + self.separator
+            self._text += node_text + self.separator
+    @property
+    def text(self):
+        if self.separator and self._text and self._text.endswith(self.separator):
+            self._text = self._text[:-len(self.separator)]
+        return self._text
 
 
 cdef lexbor_action_t text_callback(lxb_dom_node_t *node, void *ctx):

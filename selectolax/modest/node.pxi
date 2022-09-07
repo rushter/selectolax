@@ -265,7 +265,9 @@ cdef class Node:
                         text = append_text(text, node_text, separator, strip)
                 node = node.next
         else:
-            return self._text_deep(self.node, separator=separator, strip=strip)
+            text = self._text_deep(self.node, separator=separator, strip=strip)
+        if separator and text and text.endswith(separator):
+            text = text[:-len(separator)]
         return text
 
     cdef inline _text_deep(self, myhtml_tree_node_t *node, separator='', strip=False):

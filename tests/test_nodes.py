@@ -529,5 +529,17 @@ def test_content_method(parser):
     </div>
     """
     tree = parser(html)
-    assert tree.css_first('#main').child.content == "SuperTest"
-    assert tree.css_first('#main').content is None
+    assert tree.css_first('#main').child.text_content == "SuperTest"
+    assert tree.css_first('#main').text_content is None
+
+
+@pytest.mark.parametrize("parser", (HTMLParser,))
+def test_merge_text_nodes(parser):
+    html = """<div><p><strong>J</strong>ohn</p><p>Doe</p></div>"""
+    tree = parser(html)
+    tree.unwrap_tags(["strong"])
+    node = tree.css_first("div", strict=True)
+    node.merge_text_nodes()
+    assert node.html == "<div><p>John</p><p>Doe</p></div>"
+    text = tree.text(deep=True, separator=" ", strip=True)
+    assert text == "John Doe "

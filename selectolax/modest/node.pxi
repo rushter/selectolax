@@ -3,6 +3,7 @@ cimport cython
 from libc.stdlib cimport free
 from libc.stdlib cimport malloc
 from libc.stdlib cimport realloc
+from libc.string cimport strcpy, strcat
 
 DEF _STACK_SIZE = 100
 DEF _ENCODING = 'UTF-8'
@@ -843,6 +844,45 @@ cdef class Node:
                 return append_text(text, node_text)
         return None
 
+    def merge_text_nodes(self):
+        """Iterates over all text nodes and merges all text nodes that are close to each other.
+
+        This is useful for text extraction.
+        """
+        cdef Stack stack = Stack(_STACK_SIZE)
+        cdef myhtml_tree_node_t * current_node = NULL
+        cdef Node next_node
+        cdef const char* left_text
+        cdef const char* right_text
+        cdef char* final_text
+        cdef size_t left_length, right_length, final_length
+
+        stack.push(self.node)
+
+        while not stack.is_empty():
+            current_node = stack.pop()
+
+            if current_node.tag_id == MyHTML_TAG__TEXT and current_node.prev and \
+                current_node.prev.tag_id == MyHTML_TAG__TEXT:
+                left_text = myhtml_node_text(current_node.prev, &left_length)
+                right_text = myhtml_node_text(current_node, &right_length)
+                if left_text and right_text:
+                    final_length = left_length + right_length
+                    final_text = <char *>malloc(final_length + 1)
+                    if final_text == NULL:
+                        raise MemoryError("Can't allocate memory for a new node.")
+                    strcpy(final_text, left_text)
+                    strcat(final_text, right_text)
+                    final_text[final_length + 1] = b'\0'
+                    myhtml_node_text_set(current_node, <const char *>final_text, final_length, MyENCODING_UTF_8)
+                    myhtml_node_delete(current_node.prev)
+                    free(final_text)
+
+            if current_node.next is not NULL:
+                stack.push(current_node.next)
+
+            if current_node.child is not NULL:
+                stack.push(current_node.child)
 
 cdef inline str append_text(str text, str node_text, str separator='', bint strip=False):
     if strip:

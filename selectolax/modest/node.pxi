@@ -821,6 +821,26 @@ cdef class Node:
         if not isinstance(other, Node):
             return False
         return self.html == other.html
+    @property
+    def content(self):
+        """Returns the text of the node if it is a text node.
+
+        Returns None for other nodes. Does ot include any child/next nodes.
+
+        Returns
+        -------
+        text : str or None.
+        """
+        text = ""
+        cdef const char* c_text
+        cdef myhtml_tree_node_t *node = self.node.child
+
+        if self.node.tag_id == MyHTML_TAG__TEXT:
+            c_text = myhtml_node_text(self.node, NULL)
+            if c_text != NULL:
+                node_text = c_text.decode(_ENCODING, self.parser.decode_errors)
+                return append_text(text, node_text)
+        return None
 
 
 cdef inline str append_text(str text, str node_text, str separator='', bint strip=False):

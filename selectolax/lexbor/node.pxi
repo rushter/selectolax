@@ -748,6 +748,27 @@ cdef class LexborNode:
             return False
         return self.html == other.html
 
+    @property
+    def content(self):
+        """Returns the text of the node if it is a text node.
+
+        Returns None for other nodes. Does ot include any child/next nodes.
+
+        Returns
+        -------
+        text : str or None.
+        """
+        cdef unsigned char * text
+        cdef lxb_dom_node_t* node = <lxb_dom_node_t*> self.node.first_child
+
+        container = TextContainer()
+        if self.node == NULL or self.node.type != LXB_DOM_NODE_TYPE_TEXT:
+            return None
+        text = <unsigned char *> lexbor_str_data_noi(&(<lxb_dom_character_data_t *> self.node).data)
+        if text != NULL:
+            py_text = text.decode(_ENCODING)
+            container.append(py_text)
+            return container.text
 @cython.final
 cdef class TextContainer:
     cdef public str text

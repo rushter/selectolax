@@ -519,3 +519,15 @@ def test_css_chaining_two(parser):
         .attribute_longer_than("integrity", 25)
     )
     assert query
+
+
+@pytest.mark.parametrize("parser", (HTMLParser, LexborHTMLParser))
+def test_content_method(parser):
+    html = """
+    <div> 
+        <div id="main">SuperTest</div>
+    </div>
+    """
+    tree = parser(html)
+    assert tree.css_first('#main').child.content == "SuperTest"
+    assert tree.css_first('#main').content is None

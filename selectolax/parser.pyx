@@ -349,7 +349,12 @@ cdef class HTMLParser:
 
     def css_matches(self, str selector):
         return self.root.css_matches(selector)
+    def merge_text_nodes(self):
+        """Iterates over all text nodes and merges all text nodes that are close to each other.
 
+        This is useful for text extraction.
+        """
+        return self.root.merge_text_nodes()
     @staticmethod
     cdef HTMLParser from_tree(
             myhtml_tree_t * tree, bytes raw_html, bint detect_encoding, bint use_meta_tags, str decode_errors,

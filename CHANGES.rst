@@ -1,6 +1,14 @@
 selectolax Changelog
 ====================
 
+Version 0.3.9
+-------------
+
+Released
+
+- Remove trailing separator when using ``text(deep=True, separator='x')``.
+- Add a new ``merge_text_nodes`` method for Modest backend.
+
 Version 0.3.8
 -------------
 

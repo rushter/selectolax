@@ -1,6 +1,16 @@
 selectolax Changelog
 ====================
 
+Version 0.3.10
+--------------
+
+Released
+
+This release does not contain any changes.
+Due to a typo in the version number (`#70`_), we need to make a new release.
+
+.. _#70: https://github.com/rushter/selectolax/issues/70
+
 Version 0.3.9
 -------------
 

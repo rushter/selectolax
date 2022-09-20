@@ -1,6 +1,14 @@
 selectolax Changelog
 ====================
 
+Version 0.3.11
+-------------
+
+Released
+
+- Fix out-of-bounds bug for ``merge_text_nodes`` method.
+
+
 Version 0.3.10
 --------------
 

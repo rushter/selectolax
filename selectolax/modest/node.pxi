@@ -3,7 +3,7 @@ cimport cython
 from libc.stdlib cimport free
 from libc.stdlib cimport malloc
 from libc.stdlib cimport realloc
-from libc.string cimport strcpy, strcat
+from libc.string cimport memcpy
 
 DEF _STACK_SIZE = 100
 DEF _ENCODING = 'UTF-8'
@@ -873,9 +873,8 @@ cdef class Node:
                     final_text = <char *>malloc(final_length + 1)
                     if final_text == NULL:
                         raise MemoryError("Can't allocate memory for a new node.")
-                    strcpy(final_text, left_text)
-                    strcat(final_text, right_text)
-                    final_text[final_length + 1] = b'\0'
+                    memcpy(final_text, left_text, left_length)
+                    memcpy(final_text + left_length, right_text, right_length + 1)
                     myhtml_node_text_set(current_node, <const char *>final_text, final_length, MyENCODING_UTF_8)
                     myhtml_node_delete(current_node.prev)
                     free(final_text)

@@ -300,7 +300,7 @@ cdef class HTMLParser:
         return None
 
     def select(self, query=None):
-        """Select nodes give a CSS selector.
+        """Select nodes given a CSS selector.
 
         Works similarly to  the ``css`` method, but supports chained filtering and extra features.
 

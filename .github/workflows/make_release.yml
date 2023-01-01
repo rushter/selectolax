@@ -11,7 +11,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 450
     env:
-      CIBW_SKIP: "cp27-* cp34-* pp27-* cp36-musllinux_aarch64 pp37-manylinux_aarch64 cp36-manylinux_aarch64 pp3*"
+      CIBW_SKIP: "cp27-* cp34-* cp35-* pp27-* cp36-musllinux_aarch64 pp37-manylinux_aarch64 cp36-manylinux_aarch64 pp3*"
       CIBW_BEFORE_BUILD: "pip install cython"
     strategy:
       matrix:
@@ -36,7 +36,7 @@ jobs:
 
       - name: Install cibuildwheel
         run: |
-          python -m pip install cibuildwheel==2.10.1 cython
+          python -m pip install cibuildwheel==2.11.4 cython
 
       - name: Build wheels
         env:
@@ -55,7 +55,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     env:
-      CIBW_SKIP: "cp27-* cp34-* pp27-*"
+      CIBW_SKIP: "cp27-* cp34-* pp27-* cp35-*"
       CIBW_BEFORE_BUILD: "pip install cython"
     steps:
       - uses: actions/checkout@v3

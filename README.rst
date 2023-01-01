@@ -16,11 +16,11 @@ From PyPI using pip:
 
 .. code-block:: bash
 
-        pip install selectolax 
+        pip install selectolax
 
 Development version from GitHub:
 
-.. code-block:: bash       
+.. code-block:: bash
 
         git clone --recursive  https://github.com/rushter/selectolax
         cd selectolax
@@ -122,6 +122,7 @@ Links
 -----
 
 *  `selectolax API reference <http://selectolax.readthedocs.io/en/latest/parser.html>`_
+*  `Video introduction to web scraping using selectolax <https://youtu.be/HpRsfpPuUzE>`_
 *  `Detailed overview <https://github.com/rushter/selectolax/blob/master/examples/walkthrough.ipynb>`_
 *  `Modest introduction <https://lexborisov.github.io/Modest/>`_
 *  `Modest benchmark <http://lexborisov.github.io/benchmark-html-persers/>`_
@@ -133,5 +134,3 @@ License
 
 * Modest engine — `LGPL2.1 <https://github.com/lexborisov/Modest/blob/master/LICENSE>`_
 * selectolax - `MIT <https://github.com/rushter/selectolax/blob/master/LICENSE>`_
-
-

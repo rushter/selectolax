@@ -61,3 +61,7 @@ target/
 
 # pyenv python configuration file
 .python-version
+
+
+selectolax/parser.c
+selectolax/lexbor.c

@@ -85,8 +85,6 @@ Available backends
 Selectolax supports two backends: ``Modest`` and ``Lexbor``. By default, all examples use the Modest backend.
 Most of the features between backends are almost identical, but there are still some differences.
 
-Currently, the ``Lexbor`` backend is in **beta** and missing some of the features.
-
 To use ``lexbor``, just import the parser and use it in the similar way to the `HTMLParser`.
 
 .. code:: python

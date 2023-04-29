@@ -18,6 +18,15 @@ From PyPI using pip:
 
         pip install selectolax
 
+If installation fails due to compilation errors, you may need to install Cython:
+
+.. code-block:: bash
+
+        pip install selectolax[Cython]
+
+This usually happens when you try to install an outdated version of selectolax on a newer version of Python.
+
+
 Development version from GitHub:
 
 .. code-block:: bash

@@ -13,13 +13,13 @@ cdef class LexborCSSSelector:
 
 
         self.parser = lxb_css_parser_create()
-        status = lxb_css_parser_init(self.parser, NULL, NULL)
+        status = lxb_css_parser_init(self.parser, NULL)
 
         if status != LXB_STATUS_OK:
             raise SelectolaxError("Can't initialize CSS parser.")
 
         self.css_selectors = lxb_css_selectors_create()
-        status = lxb_css_selectors_init(self.css_selectors, 32)
+        status = lxb_css_selectors_init(self.css_selectors)
 
         if status != LXB_STATUS_OK:
             raise SelectolaxError("Can't initialize CSS selector.")
@@ -77,7 +77,7 @@ cdef class LexborCSSSelector:
     def __dealloc__(self):
         lxb_selectors_destroy(self.selectors, True)
         lxb_css_parser_destroy(self.parser, True)
-        lxb_css_selectors_destroy(self.css_selectors, True, True)
+        lxb_css_selectors_destroy(self.css_selectors, True)
 
 
 cdef class LexborSelector:

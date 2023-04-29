@@ -1,6 +1,14 @@
 selectolax Changelog
 ====================
 
+Version 0.3.13
+-------------
+
+Released
+
+- Update `lexbor`
+
+
 Version 0.3.12
 -------------
 

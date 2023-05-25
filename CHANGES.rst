@@ -1,6 +1,14 @@
 selectolax Changelog
 ====================
 
+Version 0.3.14
+-------------
+
+Released
+
+- Fix memory leak for `lexbor` backend
+
+
 Version 0.3.13
 -------------
 

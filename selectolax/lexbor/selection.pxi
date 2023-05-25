@@ -51,6 +51,7 @@ cdef class LexborCSSSelector:
         results = list(self.results)
         self.results = []
         self.current_node = None
+        lxb_css_selector_list_destroy_memory(selectors_list)
         return results
 
     cpdef any_matches(self, str query, LexborNode node):
@@ -78,6 +79,8 @@ cdef class LexborCSSSelector:
         lxb_selectors_destroy(self.selectors, True)
         lxb_css_parser_destroy(self.parser, True)
         lxb_css_selectors_destroy(self.css_selectors, True)
+        # lxb_css_memory_destroy(, True)
+
 
 
 cdef class LexborSelector:

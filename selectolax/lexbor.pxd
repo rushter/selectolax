@@ -342,10 +342,13 @@ cdef extern from "lexbor/dom/collection.h" nogil:
 cdef extern from "lexbor/css/css.h" nogil:
     ctypedef struct lxb_css_parser_t
     ctypedef struct lxb_css_syntax_tokenizer_t
+    ctypedef struct lxb_css_memory_t
 
     lxb_css_parser_t * lxb_css_parser_create()
     lxb_status_t lxb_css_parser_init(lxb_css_parser_t *parser, lxb_css_syntax_tokenizer_t *tkz)
     lxb_css_parser_t * lxb_css_parser_destroy(lxb_css_parser_t *parser, bint self_destroy)
+    lxb_css_memory_t * lxb_css_memory_destroy(lxb_css_memory_t *memory, bint self_destroy);
+    void lxb_css_selector_list_destroy_memory(lxb_css_selector_list_t *list)
 
 
 cdef extern from "lexbor/tag/tag.h" nogil:

@@ -59,6 +59,13 @@ def test_css_one(parser):
 
 
 @pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_text_when_html_is_empty(parser):
+    html_parser = parser("")
+
+    assert html_parser.text() == ""
+
+
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
 def test_css_first_default(parser):
     html = "<span></span><div><p class='p3'>text</p><p class='p3'>sd</p></div><p></p>"
     selector = ".s3"

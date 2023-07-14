@@ -348,7 +348,9 @@ def test_node_insert_before(parser):
     html_parser2 = parser('<div>Test</div>')
     img_node = html_parser.css_first('img')
     img_node.insert_before(html_parser2.body.child)
-    assert html_parser.body.child.html == '<div>Get <span alt="Laptop"><div>Test</div><img src="/jpg"> <div></div></span></div>'
+    assert (
+            html_parser.body.child.html
+            == '<div>Get <span alt="Laptop"><div>Test</div><img src="/jpg"> <div></div></span></div>')
 
 
 @pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
@@ -365,7 +367,9 @@ def test_node_insert_after(parser):
     html_parser2 = parser('<div>Test</div>')
     img_node = html_parser.css_first('img')
     img_node.insert_after(html_parser2.body.child)
-    assert html_parser.body.child.html == '<div>Get <span alt="Laptop"><img src="/jpg"><div>Test</div> <div></div></span></div>'
+    assert (
+            html_parser.body.child.html
+            == '<div>Get <span alt="Laptop"><img src="/jpg"><div>Test</div> <div></div></span></div>')
 
 
 @pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
@@ -456,7 +460,7 @@ def test_node_comparison_fails(parser):
     html_parser = parser(html)
     node = html_parser.css_first('#test')
 
-    assert node != None
+    assert node is not None
     assert node != 123
     assert node != object
 
@@ -474,7 +478,6 @@ def test_adavanced_selector(parser):
     <script>
      var super_value = 100;
     </script>
-    
     """)
     selector = html_parser.select('script').text_contains("super_value")
     assert selector.any_matches
@@ -486,7 +489,6 @@ def test_script_contain(parser):
     <script>
      var super_value = 100;
     </script>
-    
     """)
     assert html_parser.scripts_contain('super_value')
 
@@ -531,7 +533,7 @@ def test_css_chaining_two(parser):
 @pytest.mark.parametrize("parser", (HTMLParser, LexborHTMLParser))
 def test_content_method(parser):
     html = """
-    <div> 
+    <div>
         <div id="main">SuperTest</div>
     </div>
     """

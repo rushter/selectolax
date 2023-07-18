@@ -1,6 +1,13 @@
 selectolax Changelog
 ====================
 
+Version 0.3.15
+-------------
+
+Released
+
+- Improve typing. Thanks to @nesb1
+
 Version 0.3.14
 -------------
 

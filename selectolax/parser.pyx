@@ -288,7 +288,8 @@ cdef class HTMLParser:
         >>> tree.head.html
         '<body><div>Hello world!</div></body>'
         """
-        self.root.unwrap_tags(tags)
+        if self.root is not None:
+            self.root.unwrap_tags(tags)
 
     @property
     def html(self):

@@ -65,3 +65,7 @@ target/
 
 selectolax/parser.c
 selectolax/lexbor.c
+
+# virtual env
+.venv/
+venv/

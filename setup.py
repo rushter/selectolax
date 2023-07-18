@@ -153,6 +153,7 @@ setup(
     author_email='me@rushter.com',
     url='https://github.com/rushter/selectolax',
     packages=find_packages(include=['selectolax']),
+    package_data={"selectolax": ["py.typed"]},
     include_package_data=True,
     extras_require={'cython': 'Cython>=0.29.23', },
     license="MIT license",

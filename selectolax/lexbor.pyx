@@ -139,6 +139,8 @@ cdef class LexborHTMLParser:
         text : str
 
         """
+        if self.body is None:
+            return ""
         return self.body.text(deep=deep, separator=separator, strip=strip)
 
     @property
@@ -340,4 +342,5 @@ cdef class LexborHTMLParser:
         >>> tree.body.html
         '<body><div>Hello world!</div></body>'
         """
-        self.root.unwrap_tags(tags)
+        if self.root is not None:
+            self.root.unwrap_tags(tags)

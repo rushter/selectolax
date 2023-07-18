@@ -72,7 +72,7 @@ jobs:
           python setup.py build_ext --inplace --cython
           python setup.py sdist
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           path: dist/*.tar.gz
           retention-days: 1

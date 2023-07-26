@@ -28,6 +28,10 @@ cdef class LexborNode:
         return self
 
     @property
+    def mem_id(self):
+        return <size_t> self.node
+
+    @property
     def child(self):
         """Alias for the `first_child` property."""
         return self.first_child
@@ -100,6 +104,9 @@ cdef class LexborNode:
             lexbor_str_destroy(lxb_str,  self.node.owner_document.text, True)
             return html
         return None
+
+    def __hash__(self):
+        return self.mem_id
 
     def text_lexbor(self):
         """Returns the text of the node including text of all its child nodes.

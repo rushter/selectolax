@@ -72,6 +72,18 @@ class Node:
 
         Returns None if id does not set."""
         ...
+
+    def mem_id(self) -> int:
+        """Get the mem_id of the node.
+
+        Returns 0 if mem_id does not set."""
+        ...
+
+    def __hash__(self) -> int:
+        """ Get the hash of this node
+        :return: int
+        """
+        ...
     def text(self, deep: bool = True, separator: str = "", strip: bool = False) -> str:
         """Returns the text of the node including text of all its child nodes."""
         ...

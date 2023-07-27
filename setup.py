@@ -155,7 +155,7 @@ setup(
     packages=find_packages(include=['selectolax']),
     package_data={"selectolax": ["py.typed"]},
     include_package_data=True,
-    extras_require={'cython': 'Cython>=0.29.23', },
+    extras_require={'cython': 'Cython==0.29.36', },
     license="MIT license",
     zip_safe=False,
     keywords='selectolax',

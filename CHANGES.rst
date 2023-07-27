@@ -6,6 +6,15 @@ Version 0.3.15
 
 Released
 
+- Make HTML nodes hashable
+- Pin Cython version
+
+
+Version 0.3.15
+-------------
+
+Released
+
 - Improve typing. Thanks to @nesb1
 
 Version 0.3.14

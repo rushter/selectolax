@@ -215,6 +215,16 @@ cdef class Node:
         return attributes
 
     @property
+    def mem_id(self):
+        """Get the mem_id attribute of the node.
+
+        Returns
+        -------
+        text : int
+        """
+        return <size_t> self.node
+
+    @property
     def id(self):
         """Get the id attribute of the node.
 
@@ -228,6 +238,9 @@ cdef class Node:
         cdef myhtml_tree_attr_t *attr
         attr = myhtml_attribute_by_key(self.node, key, 2)
         return None if attr == NULL else attr.value.data.decode(_ENCODING, self.parser.decode_errors)
+
+    def __hash__(self):
+        return self.mem_id
 
     def text(self, bool deep=True, str separator='', bool strip=False):
         """Returns the text of the node including text of all its child nodes.

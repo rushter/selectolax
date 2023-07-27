@@ -497,7 +497,6 @@ def test_script_contain(parser):
 def test_hash_nodes(parser):
     tree = parser("""<div><p><strong>J</strong>ohn</p><p>Doe</p></div>""")
     node = tree.css_first("div")
-    node_dict = {"node": node}
     assert node.mem_id == hash(node)
 
 

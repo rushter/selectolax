@@ -492,6 +492,7 @@ def test_script_contain(parser):
     """)
     assert html_parser.scripts_contain('super_value')
 
+
 @pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
 def test_hash_nodes(parser):
     tree = parser("""<div><p><strong>J</strong>ohn</p><p>Doe</p></div>""")
@@ -559,4 +560,3 @@ def test_merge_text_nodes(parser):
     assert node.html == "<div><p>John</p><p>Doe</p></div>"
     text = tree.text(deep=True, separator=" ", strip=True)
     assert text == "John Doe"
-

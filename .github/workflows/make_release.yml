@@ -68,7 +68,7 @@ jobs:
 
       - name: Build sdist
         run: |
-          pip install Cython==0.29.36
+          pip install Cython==0.29.36 setuptools wheel
           python setup.py build_ext --inplace --cython
           python setup.py sdist
 

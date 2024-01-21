@@ -1,7 +1,7 @@
 selectolax Changelog
 ====================
 
-Version 0.3.15
+Version 0.3.18
 -------------
 
 Released

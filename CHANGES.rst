@@ -1,6 +1,14 @@
 selectolax Changelog
 ====================
 
+Version 0.3.15
+-------------
+
+Released
+
+- Fix memory leak when using CSS selectors, `lexbor` backend
+
+
 Version 0.3.17
 -------------
 

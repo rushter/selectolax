@@ -72,6 +72,7 @@ cdef class LexborCSSSelector:
             raise SelectolaxError("Can't parse CSS selector.")
         result = bool(self.results)
         self.results = []
+        lxb_css_selector_list_destroy_memory(selectors_list)
         return result
 
 

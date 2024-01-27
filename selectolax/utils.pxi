@@ -1,4 +1,4 @@
-MAX_HTML_INPUT_SIZE = 25e+7
+MAX_HTML_INPUT_SIZE = 250e+7
 
 def preprocess_input(html, decode_errors='ignore'):
     if isinstance(html, (str, unicode)):

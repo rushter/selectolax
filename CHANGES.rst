@@ -1,6 +1,14 @@
 selectolax Changelog
 ====================
 
+Version 0.3.19
+-------------
+
+Released
+
+- Increase maximum HTML size to 2.4GB
+
+
 Version 0.3.18
 -------------
 

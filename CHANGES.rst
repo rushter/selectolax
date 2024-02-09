@@ -1,6 +1,15 @@
 selectolax Changelog
 ====================
 
+Version 0.3.20
+-------------
+
+Released
+
+- Fixup for 0.3.19 release
+- Fix tag order for `lexbor` backend
+
+
 Version 0.3.19
 -------------
 

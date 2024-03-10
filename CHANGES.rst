@@ -6,7 +6,7 @@ Version 0.3.21
 
 Released
 
-- *Breaking change*: `lexbor` backend now includes the root node when queries CSS selectors. Same as `Modest` backend.
+- ***Breaking change***: `lexbor` backend now includes the root node when querying CSS selectors. Same as `Modest` backend.
 - Fix `css_matches` and `any_css_matches` methods for `Modest` backend on some compilers
 
 

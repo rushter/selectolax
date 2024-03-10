@@ -559,3 +559,11 @@ def test_merge_text_nodes(parser):
     assert node.html == "<div><p>John</p><p>Doe</p></div>"
     text = tree.text(deep=True, separator=" ", strip=True)
     assert text == "John Doe"
+
+
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_css_first_first(parser):
+    html = '<h2 class="list-details__item__partial" id="js-partial">(1:1, 0:0, 0:0, 5:3)</h2>'
+    selector = "h2.list-details__item__partial"
+    find_first = parser(html).css_first(selector)
+    assert find_first.css_first(selector) is not None

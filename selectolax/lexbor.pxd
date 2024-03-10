@@ -560,7 +560,12 @@ cdef extern from "lexbor/selectors/selectors.h" nogil:
     ctypedef struct lxb_css_selector_specificity_t
     ctypedef lxb_status_t (*lxb_selectors_cb_f)(lxb_dom_node_t *node, lxb_css_selector_specificity_t *spec,
                       void *ctx)
+    ctypedef enum lxb_selectors_opt_t:
+        LXB_SELECTORS_OPT_DEFAULT = 0x00
+        LXB_SELECTORS_OPT_MATCH_ROOT = 1 << 1
+        LXB_SELECTORS_OPT_MATCH_FIRST = 1 << 2
 
+    void lxb_selectors_opt_set(lxb_selectors_t *selectors, lxb_selectors_opt_t opt)
     lxb_css_selectors_t * lxb_css_selectors_create()
     lxb_status_t lxb_css_selectors_init(lxb_css_selectors_t *selectors)
     void lxb_css_parser_selectors_set(lxb_css_parser_t *parser, lxb_css_selectors_t *selectors)

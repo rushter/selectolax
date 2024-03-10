@@ -1,5 +1,13 @@
 selectolax Changelog
 ====================
+Version 0.3.20
+-------------
+
+Released
+
+- *Breaking change*: `lexbor` backend now includes the root node when queries CSS selectors. Same as `Modest` backend.
+- Fix `css_matches` and `any_css_matches` methods for `Modest` backend on some compilers
+
 
 Version 0.3.20
 -------------

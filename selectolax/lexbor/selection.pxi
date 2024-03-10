@@ -28,7 +28,7 @@ cdef class LexborCSSSelector:
 
         self.selectors = lxb_selectors_create()
         status = lxb_selectors_init(self.selectors)
-
+        lxb_selectors_opt_set(self.selectors, LXB_SELECTORS_OPT_MATCH_ROOT)
         if status != LXB_STATUS_OK:
             raise SelectolaxError("Can't initialize CSS selector.")
 

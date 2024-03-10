@@ -188,6 +188,6 @@ cdef bool find_matches(HTMLParser parser, myhtml_tree_node_t *node, tuple select
 
         collection_size = collection.length
         myhtml_collection_destroy(collection)
-        if collection.length > 0:
+        if collection_size > 0:
             return True
     return False

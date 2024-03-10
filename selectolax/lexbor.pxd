@@ -340,7 +340,8 @@ cdef extern from "lexbor/dom/collection.h" nogil:
 
 
 cdef extern from "lexbor/css/css.h" nogil:
-    ctypedef struct lxb_css_parser_t
+    ctypedef struct lxb_css_parser_t:
+        lxb_css_memory_t* memory
     ctypedef struct lxb_css_syntax_tokenizer_t
     ctypedef struct lxb_css_memory_t
 

@@ -1,11 +1,13 @@
 selectolax Changelog
 ====================
-Version 0.3.21
+
+Version 0.3.23
 -------------
 
 Released
 
--- Add Python 3.13 wheels
+- Add Python 3.13 wheels
+- Update lexbor
 
 Version 0.3.21
 -------------

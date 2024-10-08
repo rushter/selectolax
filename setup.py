@@ -177,7 +177,7 @@ setup(
     package_data={"selectolax": ["py.typed"]},
     include_package_data=True,
     extras_require={
-        "cython": "Cython==0.29.36",
+        "cython": "Cython==3.0.11",
     },
     license="MIT license",
     zip_safe=False,

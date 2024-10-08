@@ -1,5 +1,11 @@
 selectolax Changelog
 ====================
+Version 0.3.21
+-------------
+
+Released
+
+-- Add Python 3.13 wheels
 
 Version 0.3.21
 -------------

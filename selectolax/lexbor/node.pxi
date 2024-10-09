@@ -655,6 +655,57 @@ cdef class LexborNode:
         else:
             raise SelectolaxError("Expected a string or LexborNode instance, but %s found" % type(value).__name__)
 
+    def insert_child(self, str_or_LexborNode value):
+        """
+        Insert a node inside (at the end of) the current Node.
+
+        Parameters
+        ----------
+        value : str, bytes or Node
+            The text or Node instance to insert inside the Node.
+            When a text string is passed, it's treated as text. All HTML tags will be escaped.
+            Convert and pass the ``Node`` object when you want to work with HTML.
+            Does not clone the ``Node`` object.
+            All future changes to the passed ``Node`` object will also be taken into account.
+
+        Examples
+        --------
+
+        >>> tree = LexborHTMLParser('<div>Get <img src=""></div>')
+        >>> div = tree.css_first('div')
+        >>> div.insert_child('Laptop')
+        >>> tree.body.child.html
+        '<div>Get <img src="">Laptop</div>'
+
+        >>> html_parser = LexborHTMLParser('<div>Get <span alt="Laptop"> <div>Laptop</div> </span></div>')
+        >>> html_parser2 = LexborHTMLParser('<div>Test</div>')
+        >>> span_node = html_parser.css_first('span')
+        >>> span_node.insert_child(html_parser2.body.child)
+        <div>Get <span alt="Laptop"> <div>Laptop</div> <div>Test</div> </span></div>'
+        """
+        cdef lxb_dom_node_t * new_node
+
+        if isinstance(value, (str, bytes, unicode)):
+            bytes_val = to_bytes(value)
+            new_node = <lxb_dom_node_t *> lxb_dom_document_create_text_node(
+                    &self.parser.document.dom_document,
+                    <lxb_char_t *> bytes_val, len(bytes_val)
+            )
+            if new_node == NULL:
+                raise SelectolaxError("Can't create a new node")
+            lxb_dom_node_insert_child(self.node,  new_node)
+        elif isinstance(value, LexborNode):
+            new_node = lxb_dom_document_import_node(
+                &self.parser.document.dom_document,
+                <lxb_dom_node_t *> value.node,
+                <bint> True
+            )
+            if new_node == NULL:
+                raise SelectolaxError("Can't create a new node")
+            lxb_dom_node_insert_child(self.node, <lxb_dom_node_t *> new_node)
+        else:
+            raise SelectolaxError("Expected a string or LexborNode instance, but %s found" % type(value).__name__)
+
     @property
     def raw_value(self):
         """Return the raw (unparsed, original) value of a node.

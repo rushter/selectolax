@@ -373,6 +373,25 @@ def test_node_insert_after(parser):
 
 
 @pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_insert_child(parser):
+    html_parser = parser('<div>Get <img src=""></div>')
+    div = html_parser.css_first('div')
+    div.insert_child('Laptop')
+    assert html_parser.body.child.html == '<div>Get <img src="">Laptop</div>'
+
+
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_node_insert_child(parser):
+    html_parser = parser('<div>Get <span alt="Laptop"> <div>Laptop</div> </span></div>')
+    html_parser2 = parser('<div>Test</div>')
+    span_node = html_parser.css_first('span')
+    span_node.insert_child(html_parser2.body.child)
+    assert (
+            html_parser.body.child.html
+            == '<div>Get <span alt="Laptop"> <div>Laptop</div> <div>Test</div></span></div>')
+
+
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
 def test_attrs_adds_attribute(parser):
     html_parser = parser('<div id="id"></div>')
     node = html_parser.css_first('div')

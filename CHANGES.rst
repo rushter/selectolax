@@ -1,6 +1,13 @@
 selectolax Changelog
 ====================
 
+Version 0.3.24
+-------------
+
+Released
+
+- Add  `Node.insert_child` method to lexbor and modest backends
+
 Version 0.3.23
 -------------
 

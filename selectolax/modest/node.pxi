@@ -712,6 +712,46 @@ cdef class Node:
         else:
             raise TypeError("Expected a string or Node instance, but %s found" % type(value).__name__)
 
+    def insert_child(self, str_or_Node value):
+        """
+        Insert a node inside (at the end of) the current Node.
+
+        Parameters
+        ----------
+        value : str, bytes or Node
+            The text or Node instance to insert inside the Node.
+            When a text string is passed, it's treated as text. All HTML tags will be escaped.
+            Convert and pass the ``Node`` object when you want to work with HTML.
+            Does not clone the ``Node`` object.
+            All future changes to the passed ``Node`` object will also be taken into account.
+
+        Examples
+        --------
+
+        >>> tree = HTMLParser('<div>Get <img src=""></div>')
+        >>> div = tree.css_first('div')
+        >>> div.insert_child('Laptop')
+        >>> tree.body.child.html
+        '<div>Get <img src="">Laptop</div>'
+
+        >>> html_parser = HTMLParser('<div>Get <span alt="Laptop"> <div>Laptop</div> </span></div>')
+        >>> html_parser2 = HTMLParser('<div>Test</div>')
+        >>> span_node = html_parser.css_first('span')
+        >>> span_node.insert_child(html_parser2.body.child)
+        <div>Get <span alt="Laptop"> <div>Laptop</div> <div>Test</div> </span></div>'
+        """
+        cdef myhtml_tree_node_t *node
+        if isinstance(value, (str, bytes, unicode)):
+            bytes_val = to_bytes(value)
+            node = myhtml_node_create(self.parser.html_tree, MyHTML_TAG__TEXT, MyHTML_NAMESPACE_HTML)
+            myhtml_node_text_set(node, <char*> bytes_val, len(bytes_val), MyENCODING_UTF_8)
+            myhtml_node_append_child(self.node, node)
+        elif isinstance(value, Node):
+            node = myhtml_node_clone_deep(self.parser.html_tree, <myhtml_tree_node_t *> value.node)
+            myhtml_node_append_child(self.node, node)
+        else:
+            raise TypeError("Expected a string or Node instance, but %s found" % type(value).__name__)
+
     def unwrap_tags(self, list tags):
         """Unwraps specified tags from the HTML tree.
 

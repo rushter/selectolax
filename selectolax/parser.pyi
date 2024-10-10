@@ -161,6 +161,9 @@ class Node:
     def insert_after(self, value: str | bytes | None) -> None:
         """Insert a node after the current Node."""
         ...
+    def insert_child(self, value: str | bytes | None) -> None:
+        """Insert a node inside (at the end of) the current Node.."""
+        ...
     @property
     def raw_value(self) -> bytes:
         """Return the raw (unparsed, original) value of a node.

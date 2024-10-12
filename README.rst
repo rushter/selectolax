@@ -94,6 +94,10 @@ Available backends
 Selectolax supports two backends: ``Modest`` and ``Lexbor``. By default, all examples use the Modest backend.
 Most of the features between backends are almost identical, but there are still some differences.
 
+As of 2024, the preferred backend is ``Lexbor``. The ``Modest`` backend is still available for compatibility reasons
+and the underlying C library that selectolax uses is not maintained anymore.
+
+
 To use ``lexbor``, just import the parser and use it in the similar way to the `HTMLParser`.
 
 .. code:: python
@@ -119,7 +123,7 @@ Simple Benchmark
 Package                       Time
 ============================ ===========
 Beautiful Soup (html.parser)  61.02 sec.
-lxml                          9.09 sec.
+lxml / Beautiful Soup (lxml)  9.09 sec.
 html5_parser                  16.10 sec.
 selectolax (Modest)           2.94 sec.
 selectolax (Lexbor)           2.39 sec.

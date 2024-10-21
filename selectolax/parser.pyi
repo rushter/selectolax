@@ -279,3 +279,20 @@ class HTMLParser:
 
         This is useful for text extraction."""
         ...
+
+def create_tag(tag: str) -> "Node":
+    """
+    Given an HTML tag name, e.g. `"div"`, create a single empty node for that tag,
+    e.g. `"<div></div>"`.
+    """
+    ...
+
+def parse_fragment(html: str) -> list["Node"]:
+    """
+    Given HTML, parse it into a list of Nodes, such that the nodes
+    correspond to the given HTML.
+
+    For contrast, HTMLParser adds `<html>`, `<head>`, and `<body>` tags
+    if they are missing. This function does not add these tags.
+    """
+    ...

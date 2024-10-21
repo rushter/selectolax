@@ -7,6 +7,7 @@ include "utils.pxi"
 include "lexbor/attrs.pxi"
 include "lexbor/node.pxi"
 include "lexbor/selection.pxi"
+include "lexbor/util.pxi"
 
 # We don't inherit from HTMLParser here, because it also includes all the C code from Modest.
 

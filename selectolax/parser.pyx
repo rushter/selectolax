@@ -3,6 +3,7 @@ from cpython cimport bool
 
 include "modest/selection.pxi"
 include "modest/node.pxi"
+include "modest/util.pxi"
 include "utils.pxi"
 
 cdef class HTMLParser:

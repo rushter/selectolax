@@ -87,6 +87,7 @@ def test_parse_fragment_html_with_head(impl: Impl):
     assert len(nodes[0].parser.css("head")) == 1
     assert len(nodes[0].parser.css("body")) == 0
 
+
 @pytest.mark.parametrize(*_IMPL_PARAMETRIZER)
 def test_parse_fragment_html_with_body(impl: Impl):
     html = '<!DOCTYPE html><html><body><div><script src="http://"></script></div></body></html>'
@@ -102,12 +103,12 @@ def test_parse_fragment_html_with_body(impl: Impl):
 
 @pytest.mark.parametrize(*_IMPL_PARAMETRIZER)
 def test_parse_fragment_html_with_head_and_body(impl: Impl):
-    html = '<!DOCTYPE html><html><head><link href="http://"></head><body><div><script src="http://"></script></div></body></html>'
+    html = '<!DOCTYPE html><html><head><link href="http://"></head><body><div><script src="http://"></script></div></body></html>'  # noqa: E501
     nodes = impl.parse_fragment_fn(html)
     assert len(nodes) == 1
     assert nodes[0].tag == "html"
-    assert nodes[0].html == '<html><head><link href="http://"></head><body><div><script src="http://"></script></div></body></html>'
-    assert nodes[0].parser.html == '<!DOCTYPE html><html><head><link href="http://"></head><body><div><script src="http://"></script></div></body></html>'
+    assert nodes[0].html == '<html><head><link href="http://"></head><body><div><script src="http://"></script></div></body></html>'  # noqa: E501
+    assert nodes[0].parser.html == '<!DOCTYPE html><html><head><link href="http://"></head><body><div><script src="http://"></script></div></body></html>'  # noqa: E501
 
     assert len(nodes[0].parser.css("head")) == 1
     assert len(nodes[0].parser.css("body")) == 1
@@ -122,7 +123,7 @@ def test_parse_fragment_head_and_body_no_html(impl: Impl):
     assert nodes[1].tag == "body"
     assert nodes[0].html == '<head><link href="http://"></head>'
     assert nodes[1].html == '<body><div><script src="http://"></script></div></body>'
-    assert nodes[0].parser.html == '<html><head><link href="http://"></head><body><div><script src="http://"></script></div></body></html>'
+    assert nodes[0].parser.html == '<html><head><link href="http://"></head><body><div><script src="http://"></script></div></body></html>'  # noqa: E501
 
     assert len(nodes[0].parser.css("head")) == 1
     assert len(nodes[0].parser.css("body")) == 1
@@ -167,6 +168,6 @@ def test_parse_fragment_fragment(impl: Impl):
     # NOTE: Ideally the full HTML would NOT contain `<html>`, `<head>` and `<body>` in this case,
     # but this is technical limitation of the parser.
     # But as long as user serializes fragment nodes by as `Node.html`, they should be fine.
-    assert nodes[0].parser.html == '<html><head><link href="http://"></head><body><div><script src="http://"></script></div></body></html>'
+    assert nodes[0].parser.html == '<html><head><link href="http://"></head><body><div><script src="http://"></script></div></body></html>'  # noqa: E501
     assert len(nodes[0].parser.css("head")) == 1
     assert len(nodes[0].parser.css("body")) == 1

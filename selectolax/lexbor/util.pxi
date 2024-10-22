@@ -1,6 +1,6 @@
 include "../utils.pxi"
 
-def lexbor_create_tag(tag: str):
+def create_tag(tag: str):
     """
     Given an HTML tag name, e.g. `"div"`, create a single empty node for that tag,
     e.g. `"<div></div>"`.
@@ -8,7 +8,7 @@ def lexbor_create_tag(tag: str):
     return do_create_tag(tag, LexborHTMLParser)
 
 
-def lexbor_parse_fragment(html: str):
+def parse_fragment(html: str):
     """
     Given HTML, parse it into a list of Nodes, such that the nodes
     correspond to the given HTML.

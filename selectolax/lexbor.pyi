@@ -122,14 +122,14 @@ class LexborHTMLParser:
     def clone(self) -> "LexborHTMLParser": ...
     def unwrap_tags(self, tags: list[str]) -> None: ...
 
-def lexbor_create_tag(tag: str) -> "LexborNode":
+def create_tag(tag: str) -> "LexborNode":
     """
     Given an HTML tag name, e.g. `"div"`, create a single empty node for that tag,
     e.g. `"<div></div>"`.
     """
     ...
 
-def lexbor_parse_fragment(html: str) -> list["LexborNode"]:
+def parse_fragment(html: str) -> list["LexborNode"]:
     """
     Given HTML, parse it into a list of Nodes, such that the nodes
     correspond to the given HTML.

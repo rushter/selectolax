@@ -8,7 +8,12 @@ from typing import Callable, NamedTuple, Sequence, Type, Union
 
 import pytest
 from selectolax.parser import HTMLParser, Node, create_tag, parse_fragment
-from selectolax.lexbor import LexborHTMLParser, LexborNode, lexbor_create_tag, lexbor_parse_fragment
+from selectolax.lexbor import (
+    LexborHTMLParser,
+    LexborNode,
+    create_tag as lexbor_create_tag,
+    parse_fragment as lexbor_parse_fragment,
+)
 
 
 class Impl(NamedTuple):
@@ -44,7 +49,7 @@ def test_create_tag(impl: Impl):
     assert node.html == "<p></p>"
 
 
-# Cases to test parse_fragment() and lexbor_parse_fragment():
+# Cases to test parse_fragment():
 # - <doctyle> + <html> only
 # - HTML with <head>
 # - HTML with <body>

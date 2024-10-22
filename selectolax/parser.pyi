@@ -56,6 +56,7 @@ class Selector:
         ...
 
 class Node:
+    parser: "HTMLParser"
     @property
     def attributes(self) -> dict[str, None | str]:
         """Get all attributes that belong to the current node.

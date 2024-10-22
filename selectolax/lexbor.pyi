@@ -37,6 +37,7 @@ class LexborCSSSelector:
     def any_matches(self, query: str, node: "LexborNode") -> bool: ...
 
 class LexborNode:
+    parser: "LexborHTMLParser"
     @property
     def mem_id(self) -> int: ...
     @property

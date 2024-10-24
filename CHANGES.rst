@@ -1,6 +1,15 @@
 selectolax Changelog
 ====================
 
+Version 0.3.25
+-------------
+
+Released
+
+- Feat: Add `parse_fragment()` and `create_tag()`
+- Add missing typing for `Node.insert_child()`
+- Add `Node.parser` to access the `HTMLParser` to which the node belongs
+
 Version 0.3.24
 -------------
 

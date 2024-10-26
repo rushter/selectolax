@@ -6,7 +6,6 @@ flake8>=2.6.0
 tox>=2.3.1
 coverage>=4.1
 Sphinx==8.0.2
-sphinx-rtd-theme==3.0.0
 numpydoc==1.8.0
 pytest>=3.7.2
 pytest-runner>=4.2
@@ -14,3 +13,6 @@ Cython>=3.0.11
 pluggy>=0.7.1
 mypy==1.4.1
 types-pyinstaller==6.10.0.20240812
+furo==2024.8.6
+sphinxext-opengraph==0.9.1
+sphinx-copybutton==0.5.2

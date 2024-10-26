@@ -49,6 +49,8 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.viewcode',
     'numpydoc',
+    'sphinxext.opengraph',
+    'sphinx_copybutton'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -65,7 +67,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'selectolax'
-copyright = u"2018-2023, Artem Golubin"
+copyright = u"2018-2024, Artem Golubin"
 
 # The version info for the project you're documenting, acts as replacement
 # for |version| and |release|, also used in various other places throughout
@@ -121,12 +123,16 @@ pygments_style = 'sphinx'
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 # html_theme = 'default'
-html_theme = 'sphinx_rtd_theme'
+html_theme = 'furo'
 
 # Theme options are theme-specific and customize the look and feel of a
 # theme further.  For a list of options available for each theme, see the
 # documentation.
-# html_theme_options = {}
+html_theme_options = {
+    "source_repository": "https://github.com/rushter/selectolax",
+    "source_branch": "master",
+    "source_directory": "docs/",
+}
 
 # Add any paths that contain custom themes here, relative to this directory.
 # html_theme_path = []
@@ -141,7 +147,7 @@ html_theme = 'sphinx_rtd_theme'
 
 # The name of an image file (relative to this directory) to place at the
 # top of the sidebar.
-# html_logo = None
+html_logo = "logo.png"
 
 # The name of an image file (within the static path) to use as favicon
 # of the docs.  This file should be a Windows icon file (.ico) being

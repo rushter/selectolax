@@ -2,7 +2,6 @@ pip>=18.0
 bumpversion>=0.5.3
 wheel>=0.29.0
 watchdog>=0.8.3
-flake8>=2.6.0
 tox>=2.3.1
 coverage>=4.1
 Sphinx==8.0.2
@@ -16,3 +15,4 @@ types-pyinstaller==6.10.0.20240812
 furo==2024.8.6
 sphinxext-opengraph==0.9.1
 sphinx-copybutton==0.5.2
+ruff

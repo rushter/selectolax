@@ -47,7 +47,7 @@ jobs:
           pip install -r requirements_dev.txt
           python3 -m pip install types-pyinstaller
           USE_LEXBOR=1 python setup.py build_ext --inplace --cython
-      - name: Lint flake8
-        run: flake8 selectolax tests
+      - name: Lint using Ruff
+        run: ruff selectolax tests
       - name: Lint Mypy
         run: mypy selectolax tests

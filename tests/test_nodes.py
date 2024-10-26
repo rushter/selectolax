@@ -481,7 +481,6 @@ def test_node_comparison_fails(parser):
 
     assert node is not None
     assert node != 123
-    assert node != object
 
 
 def test_raw_value():

@@ -67,7 +67,7 @@ class Selector:
 class Node:
     parser: "HTMLParser"
     @property
-    def attributes(self) -> dict[str, None | str]:
+    def attributes(self) -> dict[str, str | None]:
         """Get all attributes that belong to the current node.
 
         The value of empty attributes is None."""
@@ -108,27 +108,27 @@ class Node:
         """Return the name of the current tag (e.g. div, p, img)."""
         ...
     @property
-    def child(self) -> None | "Node":
+    def child(self) -> "Node" | None:
         """Return the child node."""
         ...
     @property
-    def parent(self) -> None | "Node":
+    def parent(self) -> "Node" | None:
         """Return the parent node."""
         ...
     @property
-    def next(self) -> None | "Node":
+    def next(self) -> "Node" | None:
         """Return next node."""
         ...
     @property
-    def prev(self) -> None | "Node":
+    def prev(self) -> "Node" | None:
         """Return previous node."""
         ...
     @property
-    def last_child(self) -> None | "Node":
+    def last_child(self) -> "Node" | None:
         """Return last child node."""
         ...
     @property
-    def html(self) -> None | str:
+    def html(self) -> str | None:
         """Return HTML representation of the current node including all its child nodes."""
         ...
     def css(self, query: str) -> list["Node"]:
@@ -263,7 +263,7 @@ class HTMLParser:
         Works the same as th unwrap method, but applied to a list of tags."""
         ...
     @property
-    def html(self) -> None | str:
+    def html(self) -> str | None:
         """Return HTML representation of the page."""
         ...
     def select(self, query: str | None = None) -> "Selector" | None:

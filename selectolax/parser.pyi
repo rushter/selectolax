@@ -4,7 +4,7 @@ DefaultT = TypeVar("DefaultT")
 
 class _Attributes:
     @staticmethod
-    def create(node: "Node", decode_errors: str) -> "_Attributes": ...
+    def create(node: Node, decode_errors: str) -> _Attributes: ...
     def keys(self) -> Iterator[str]: ...
     def items(self) -> Iterator[tuple[str, str | None]]: ...
     def values(self) -> Iterator[str | None]: ...
@@ -27,12 +27,12 @@ class Selector:
 
     Please note, this is an experimental feature that can change in the future."""
 
-    def __init__(self, node: "Node", query: str): ...
-    def css(self, query: str) -> "Node":
+    def __init__(self, node: Node, query: str): ...
+    def css(self, query: str) -> Node:
         """Evaluate CSS selector against current scope."""
         ...
     @property
-    def matches(self) -> list["Node"]:
+    def matches(self) -> list[Node]:
         """Returns all possible selector matches"""
         ...
     @property
@@ -41,7 +41,7 @@ class Selector:
         ...
     def text_contains(
         self, text: str, deep: bool = True, separator: str = "", strip: bool = False
-    ) -> "Selector":
+    ) -> Selector:
         """Filter all current matches given text."""
         ...
     def any_text_contains(
@@ -51,7 +51,7 @@ class Selector:
         ...
     def attribute_long_than(
         self, text: str, length: int, start: str | None = None
-    ) -> "Selector":
+    ) -> Selector:
         """Filter all current matches by attribute length.
 
         Similar to string-length in XPath."""
@@ -65,7 +65,7 @@ class Selector:
         ...
 
 class Node:
-    parser: "HTMLParser"
+    parser: HTMLParser
     @property
     def attributes(self) -> dict[str, str | None]:
         """Get all attributes that belong to the current node.
@@ -73,7 +73,7 @@ class Node:
         The value of empty attributes is None."""
         ...
     @property
-    def attrs(self) -> "_Attributes":
+    def attrs(self) -> _Attributes:
         """A dict-like object that is similar to the attributes property, but operates directly on the Node data."""
         ...
     @property
@@ -97,10 +97,10 @@ class Node:
     def text(self, deep: bool = True, separator: str = "", strip: bool = False) -> str:
         """Returns the text of the node including text of all its child nodes."""
         ...
-    def iter(self, include_text: bool = False) -> Iterator["Node"]:
+    def iter(self, include_text: bool = False) -> Iterator[Node]:
         """Iterate over nodes on the current level."""
         ...
-    def traverse(self, include_text: bool = False) -> Iterator["Node"]:
+    def traverse(self, include_text: bool = False) -> Iterator[Node]:
         """Iterate over all child and next nodes starting from the current level."""
         ...
     @property
@@ -108,30 +108,30 @@ class Node:
         """Return the name of the current tag (e.g. div, p, img)."""
         ...
     @property
-    def child(self) -> "Node" | None:
+    def child(self) -> Node | None:
         """Return the child node."""
         ...
     @property
-    def parent(self) -> "Node" | None:
+    def parent(self) -> Node | None:
         """Return the parent node."""
         ...
     @property
-    def next(self) -> "Node" | None:
+    def next(self) -> Node | None:
         """Return next node."""
         ...
     @property
-    def prev(self) -> "Node" | None:
+    def prev(self) -> Node | None:
         """Return previous node."""
         ...
     @property
-    def last_child(self) -> "Node" | None:
+    def last_child(self) -> Node | None:
         """Return last child node."""
         ...
     @property
     def html(self) -> str | None:
         """Return HTML representation of the current node including all its child nodes."""
         ...
-    def css(self, query: str) -> list["Node"]:
+    def css(self, query: str) -> list[Node]:
         """Evaluate CSS selector against current node and its child nodes."""
         ...
     def any_css_matches(self, selectors: tuple[str]) -> bool:
@@ -143,11 +143,11 @@ class Node:
     @overload
     def css_first(
         self, query: str, default: DefaultT, strict: bool = False
-    ) -> "Node" | DefaultT: ...
+    ) -> Node | DefaultT: ...
     @overload
     def css_first(
         self, query: str, default: None = None, strict: bool = False
-    ) -> "Node" | None:
+    ) -> Node | None:
         """Evaluate CSS selector against current node and its child nodes."""
         ...
     def decompose(self, recursive: bool = True) -> None:
@@ -185,7 +185,7 @@ class Node:
 
         Currently, works on text nodes only."""
         ...
-    def select(self, query: str | None = None) -> "Selector":
+    def select(self, query: str | None = None) -> Selector:
         """Select nodes given a CSS selector.
 
         Works similarly to the css method, but supports chained filtering and extra features.
@@ -222,14 +222,14 @@ class HTMLParser:
         use_meta_tags: bool = True,
         decode_errors: Literal["strict", "ignore", "replace"] = "ignore",
     ): ...
-    def css(self, query: str) -> list["Node"]:
+    def css(self, query: str) -> list[Node]:
         """A CSS selector.
 
         Matches pattern query against HTML tree."""
         ...
     def css_first(
         self, query: str, default: DefaultT | None = None, strict: bool = False
-    ) -> DefaultT | "Node":
+    ) -> DefaultT | Node:
         """Same as css but returns only the first match."""
         ...
     @property
@@ -239,18 +239,18 @@ class HTMLParser:
         Returns unknown in case the encoding is not determined."""
         ...
     @property
-    def root(self) -> "Node" | None:
+    def root(self) -> Node | None:
         """Returns root node."""
         ...
     @property
-    def head(self) -> "Node" | None:
+    def head(self) -> Node | None:
         """Returns head node."""
         ...
     @property
-    def body(self) -> "Node" | None:
+    def body(self) -> Node | None:
         """Returns document body."""
         ...
-    def tags(self, name: str) -> list["Node"]:
+    def tags(self, name: str) -> list[Node]:
         """Returns a list of tags that match specified name."""
         ...
     def text(self, deep: bool = True, separator: str = "", strip: bool = False) -> str:
@@ -266,7 +266,7 @@ class HTMLParser:
     def html(self) -> str | None:
         """Return HTML representation of the page."""
         ...
-    def select(self, query: str | None = None) -> "Selector" | None:
+    def select(self, query: str | None = None) -> Selector | None:
         """Select nodes given a CSS selector.
 
         Works similarly to the css method, but supports chained filtering and extra features.
@@ -286,7 +286,7 @@ class HTMLParser:
         Caches values on the first call to improve performance."""
         ...
     def css_matches(self, selector: str) -> bool: ...
-    def clone(self) -> "HTMLParser":
+    def clone(self) -> HTMLParser:
         """Clone the current tree."""
         ...
     def merge_text_nodes(self):
@@ -295,14 +295,14 @@ class HTMLParser:
         This is useful for text extraction."""
         ...
 
-def create_tag(tag: str) -> "Node":
+def create_tag(tag: str) -> Node:
     """
     Given an HTML tag name, e.g. `"div"`, create a single empty node for that tag,
     e.g. `"<div></div>"`.
     """
     ...
 
-def parse_fragment(html: str) -> list["Node"]:
+def parse_fragment(html: str) -> list[Node]:
     """
     Given HTML, parse it into a list of Nodes, such that the nodes
     correspond to the given HTML.

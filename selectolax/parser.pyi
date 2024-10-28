@@ -140,9 +140,14 @@ class Node:
     def css_matches(self, selector: str) -> bool:
         """Returns True if CSS selector matches a node."""
         ...
+    @overload
     def css_first(
-        self, query: str, default: DefaultT | None = None, strict: bool = False
-    ) -> "Node" | DefaultT:
+        self, query: str, default: DefaultT, strict: bool = False
+    ) -> "Node" | DefaultT: ...
+    @overload
+    def css_first(
+        self, query: str, default: None = None, strict: bool = False
+    ) -> "Node" | None:
         """Evaluate CSS selector against current node and its child nodes."""
         ...
     def decompose(self, recursive: bool = True) -> None:

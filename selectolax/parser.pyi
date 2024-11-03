@@ -1,4 +1,4 @@
-from typing import Iterator, TypeVar, Literal, overload
+from typing import Any, Iterator, TypeVar, Literal, overload
 
 DefaultT = TypeVar("DefaultT")
 
@@ -146,6 +146,10 @@ class Node:
         ...
     @overload
     def css_first(
+        self, query: str, default: Any = ..., strict: Literal[True] = ...
+    ) -> Node: ...
+    @overload
+    def css_first(
         self, query: str, default: DefaultT, strict: bool = False
     ) -> Node | DefaultT: ...
     @overload
@@ -231,9 +235,18 @@ class HTMLParser:
 
         Matches pattern query against HTML tree."""
         ...
+    @overload
     def css_first(
-        self, query: str, default: DefaultT | None = None, strict: bool = False
-    ) -> DefaultT | Node:
+        self, query: str, default: Any = ..., strict: Literal[True] = ...
+    ) -> Node: ...
+    @overload
+    def css_first(
+        self, query: str, default: DefaultT, strict: bool = False
+    ) -> Node | DefaultT: ...
+    @overload
+    def css_first(
+        self, query: str, default: None = None, strict: bool = False
+    ) -> Node | None:
         """Same as css but returns only the first match."""
         ...
     @property

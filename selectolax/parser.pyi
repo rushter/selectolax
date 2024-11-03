@@ -18,7 +18,7 @@ class _Attributes:
     @overload
     def get(self, key: str, default: DefaultT) -> DefaultT | str | None: ...
     @overload
-    def get(self, key: str, default: None = None) -> str | None: ...
+    def get(self, key: str, default: None = ...) -> str | None: ...
     @overload
     def sget(self, key: str, default: str | DefaultT) -> str | DefaultT: ...
     @overload
@@ -154,7 +154,7 @@ class Node:
     ) -> Node | DefaultT: ...
     @overload
     def css_first(
-        self, query: str, default: None = None, strict: bool = False
+        self, query: str, default: None = ..., strict: bool = False
     ) -> Node | None:
         """Evaluate CSS selector against current node and its child nodes."""
         ...
@@ -245,7 +245,7 @@ class HTMLParser:
     ) -> Node | DefaultT: ...
     @overload
     def css_first(
-        self, query: str, default: None = None, strict: bool = False
+        self, query: str, default: None = ..., strict: bool = False
     ) -> Node | None:
         """Same as css but returns only the first match."""
         ...

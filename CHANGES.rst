@@ -1,6 +1,17 @@
 selectolax Changelog
 ====================
 
+
+Version 0.3.26
+-------------
+
+Released
+
+- Improve type hints
+
+
+
+
 Version 0.3.25
 -------------
 

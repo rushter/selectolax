@@ -34,7 +34,7 @@ def get_fragment_type(
         tree = parser_cls(html)
     
     import re
-    html_re = re.compile(r"<html|<body|<head", re.IGNORECASE)
+    html_re = re.compile(r"<html|<body|<head(?!er)", re.IGNORECASE)
 
     has_html = False
     has_head = False

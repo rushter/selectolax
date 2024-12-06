@@ -49,6 +49,12 @@ def test_create_tag(impl: Impl):
     assert node.html == "<p></p>"
 
 
+@pytest.mark.parametrize(*_IMPL_PARAMETRIZER)
+def test_create_header_tag(impl: Impl):
+    node = impl.tag_fn("header")
+    assert isinstance(node, impl.node)
+    assert node.html == "<header></header>"
+
 # Cases to test parse_fragment():
 # - <doctyle> + <html> only
 # - HTML with <head>

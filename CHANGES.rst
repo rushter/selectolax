@@ -1,6 +1,14 @@
 selectolax Changelog
 ====================
 
+Version 0.3.27
+-------------
+
+Released
+
+- Fix: Header detected as head
+
+
 Version 0.3.26
 -------------
 

@@ -3,6 +3,7 @@ selectolax Changelog
 
 
 - Fix: typo in type annotations. Fixes #147.
+- Fix: Fix incorrect type annotations for `LexborHTMLParser.__init__`. Fixes #144.
 
 Version 0.3.27
 -------------

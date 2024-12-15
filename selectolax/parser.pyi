@@ -60,7 +60,7 @@ class Selector:
 
         Similar to string-length in XPath."""
         ...
-    def attribute_longer_than(
+    def any_attribute_longer_than(
         self, text: str, length: int, start: str | None = None
     ) -> bool:
         """Returns True any href attribute longer than a specified length.

@@ -53,14 +53,14 @@ class Selector:
     ) -> bool:
         """Returns True if any node in the current search scope contains specified text"""
         ...
-    def attribute_long_than(
+    def attribute_longer_than(
         self, text: str, length: int, start: str | None = None
     ) -> Selector:
         """Filter all current matches by attribute length.
 
         Similar to string-length in XPath."""
         ...
-    def any_attribute_long_than(
+    def attribute_longer_than(
         self, text: str, length: int, start: str | None = None
     ) -> bool:
         """Returns True any href attribute longer than a specified length.

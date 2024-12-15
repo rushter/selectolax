@@ -1,6 +1,9 @@
 selectolax Changelog
 ====================
 
+
+- Fix: typo in type annotations. Fixes #147.
+
 Version 0.3.27
 -------------
 

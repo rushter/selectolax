@@ -112,6 +112,7 @@ cdef class LexborHTMLParser:
             len(pybyte_name)
         )
         if status != 0x0000:
+            lxb_dom_collection_destroy(collection, <bint> True)
             raise SelectolaxError("Can't locate elements.")
 
         for i in range(lxb_dom_collection_length_noi(collection)):

@@ -232,9 +232,9 @@ cdef class LexborHTMLParser:
 
             for i in range(lxb_dom_collection_length_noi(collection)):
                 if recursive:
-                    lxb_dom_node_destroy( <lxb_dom_node_t*> lxb_dom_collection_element_noi(collection, i))
-                else:
                     lxb_dom_node_destroy_deep( <lxb_dom_node_t*> lxb_dom_collection_element_noi(collection, i))
+                else:
+                    lxb_dom_node_destroy(<lxb_dom_node_t *> lxb_dom_collection_element_noi(collection, i))
             lxb_dom_collection_destroy(collection, <bint> True)
 
     def select(self, query=None):

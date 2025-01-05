@@ -46,6 +46,10 @@ How to compile selectolax while developing:
 Basic examples
 --------------
 
+Here are some basic examples to get you started with selectolax:
+
+Parsing HTML and extracting text:
+
 .. code:: python
 
     In [1]: from selectolax.parser import HTMLParser
@@ -67,6 +71,8 @@ Basic examples
     Out[4]:
     ['Lorem Ipsum is simply dummy text of the printing and typesetting industry. ',
      'Lorem ipsum dolor sit amet, consectetur adipiscing elit.']
+
+Using advanced CSS selectors:
 
 .. code:: python
 

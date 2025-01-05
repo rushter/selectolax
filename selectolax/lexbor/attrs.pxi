@@ -19,8 +19,9 @@ cdef class LexborAttributes:
 
         while attr != NULL:
             key = lxb_dom_attr_local_name_noi(attr, &str_len)
+            if key is not NULL:
+                yield key.decode(_ENCODING)
             attr = attr.next
-            yield key.decode(_ENCODING)
 
     def __setitem__(self, str key, value):
         value = str(value)

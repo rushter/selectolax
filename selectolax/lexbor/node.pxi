@@ -95,7 +95,7 @@ cdef class LexborNode:
         text : str
         """
         cdef lexbor_str_t *lxb_str
-        cdef lxb_status_t lxb_status_t
+        cdef lxb_status_t status
 
         lxb_str = lexbor_str_create()
         status = lxb_html_serialize_tree_str(self.node, lxb_str)

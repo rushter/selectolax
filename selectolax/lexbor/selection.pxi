@@ -106,16 +106,16 @@ cdef class LexborSelector:
         raise SelectolaxError("This features is not supported by the lexbor backend. Please use Modest backend.")
 
     @property
-    def matches(self):
+    def matches(self) -> list:
         """Returns all possible matches"""
         return self.nodes
 
     @property
-    def any_matches(self):
+    def any_matches(self) -> bool:
         """Returns True if there are any matches"""
         return bool(self.nodes)
 
-    def text_contains(self, str text, bool deep=True, str separator='', bool strip=False):
+    def text_contains(self, str text, bool deep=True, str separator='', bool strip=False) -> LexborSelector:
         """Filter all current matches given text."""
         nodes = []
         for node in self.nodes:
@@ -125,7 +125,7 @@ cdef class LexborSelector:
         self.nodes = nodes
         return self
 
-    def any_text_contains(self, str text, bool deep=True, str separator='', bool strip=False):
+    def any_text_contains(self, str text, bool deep=True, str separator='', bool strip=False) -> bool:
         """Returns True if any node in the current search scope contains specified text"""
         nodes = []
         for node in self.nodes:
@@ -134,7 +134,7 @@ cdef class LexborSelector:
                 return True
         return False
 
-    def attribute_longer_than(self, str attribute, int length, str start  = None):
+    def attribute_longer_than(self, str attribute, int length, str start  = None) -> LexborSelector:
         """Filter all current matches by attribute length.
 
         Similar to `string-length` in XPath.
@@ -149,7 +149,7 @@ cdef class LexborSelector:
         self.nodes = nodes
         return self
 
-    def any_attribute_longer_than(self, str attribute, int length, str start  = None):
+    def any_attribute_longer_than(self, str attribute, int length, str start  = None) -> bool:
         """Returns True any href attribute longer than a specified length.
 
         Similar to `string-length` in XPath.

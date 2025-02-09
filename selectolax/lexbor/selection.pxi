@@ -77,10 +77,12 @@ cdef class LexborCSSSelector:
 
 
     def __dealloc__(self):
-        lxb_selectors_destroy(self.selectors, True)
-        # lxb_css_memory_destroy(self.parser.memory, True)
-        lxb_css_parser_destroy(self.parser, True)
-        lxb_css_selectors_destroy(self.css_selectors, True)
+        if self.selectors != NULL:
+            lxb_selectors_destroy(self.selectors, True)
+        if self.parser != NULL:
+            lxb_css_parser_destroy(self.parser, True)
+        if self.css_selectors != NULL:
+            lxb_css_selectors_destroy(self.css_selectors, True)
 
 
 

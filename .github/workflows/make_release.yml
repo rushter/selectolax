@@ -1,9 +1,6 @@
 name: Build and upload to PyPI
 
-on:
- release:
-   types:
-     - published
+on: [push]
 
 jobs:
   build_wheels:
@@ -45,7 +42,7 @@ jobs:
         run: |
           python -m cibuildwheel --output-dir wheelhouse
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           path: ./wheelhouse/*.whl
           retention-days: 1
@@ -72,7 +69,7 @@ jobs:
           python setup.py build_ext --inplace --cython
           python setup.py sdist
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           path: dist/*.tar.gz
           retention-days: 1
@@ -82,7 +79,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'release' && github.event.action == 'published'
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: artifact
           path: dist

@@ -167,7 +167,7 @@ def make_extensions():
 
 setup(
     name="selectolax",
-    version='0.3.27',
+    version='0.3.28',
     description="Fast HTML5 parser with CSS selectors.",
     long_description=readme,
     author="Artem Golubin",

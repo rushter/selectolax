@@ -45,6 +45,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           path: ./wheelhouse/*.whl
+          name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
           retention-days: 1
 
   build_sdist:
@@ -73,6 +74,7 @@ jobs:
         with:
           path: dist/*.tar.gz
           retention-days: 1
+          name: cibw-sdist
 
   upload_pypi:
     needs: [build_wheels, build_sdist]
@@ -81,8 +83,9 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: artifact
+          pattern: cibw-*
           path: dist
+          merge-multiple: true
 
       - uses: pypa/gh-action-pypi-publish@release/v1
         with:

@@ -1,7 +1,10 @@
 selectolax Changelog
 ====================
 
+Version 0.3.28
+-------------
 
+- Fix: Update lexbor and improve HTML serialization speed. Fixes #153.
 - Fix: typo in type annotations. Fixes #147.
 - Fix: Fix incorrect type annotations for `LexborHTMLParser.__init__`. Fixes #144.
 

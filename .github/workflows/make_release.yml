@@ -9,9 +9,9 @@ jobs:
   build_wheels:
     name: Build wheels on ${{matrix.arch}} for ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 1000
+    timeout-minutes: 1500
     env:
-      CIBW_SKIP: "cp27-* cp34-* cp35-* cp36-* pp27-* cp36-musllinux_aarch64 cp36-*_aarch64 cp37-*_aarch64 cp38-*_aarch64 pp3*"
+      CIBW_SKIP: "cp27-* cp34* cp35* cp36-* pp27-* cp37* pp3*"
       CIBW_BEFORE_BUILD: "pip install Cython==3.0.11 setuptools wheel"
     strategy:
       matrix:
@@ -45,9 +45,10 @@ jobs:
         run: |
           python -m cibuildwheel --output-dir wheelhouse
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           path: ./wheelhouse/*.whl
+          name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}-${{matrix.arch}}
           retention-days: 1
 
   build_sdist:
@@ -72,20 +73,22 @@ jobs:
           python setup.py build_ext --inplace --cython
           python setup.py sdist
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           path: dist/*.tar.gz
           retention-days: 1
+          name: cibw-sdist
 
   upload_pypi:
     needs: [build_wheels, build_sdist]
     runs-on: ubuntu-latest
     if: github.event_name == 'release' && github.event.action == 'published'
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
-          name: artifact
+          pattern: cibw-*
           path: dist
+          merge-multiple: true
 
       - uses: pypa/gh-action-pypi-publish@release/v1
         with:

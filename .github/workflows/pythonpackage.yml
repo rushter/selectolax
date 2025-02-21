@@ -25,7 +25,10 @@ jobs:
         USE_LEXBOR=1 python setup.py build_ext --inplace --cython
     - name: Test with pytest
       run: |
-        USE_LEXBOR=1 pytest
+        USE_LEXBOR=1 pytest tests
+    - name: Test typesafety
+      run: |
+        pytest typesafety
   lint:
     strategy:
       max-parallel: 6

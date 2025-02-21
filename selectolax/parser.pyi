@@ -1,4 +1,4 @@
-from typing import Any, Iterator, TypeVar, Literal, overload
+from typing import Iterator, TypeVar, Literal, overload
 
 DefaultT = TypeVar("DefaultT")
 
@@ -146,17 +146,13 @@ class Node:
         ...
     @overload
     def css_first(
-        self, query: str, default: Any = ..., strict: Literal[True] = ...
-    ) -> Node: ...
+            self, query: str, default: DefaultT, strict: bool = False
+    ) -> Node | DefaultT:
+        ...
     @overload
     def css_first(
-        self, query: str, default: DefaultT, strict: bool = False
-    ) -> Node | DefaultT: ...
-    @overload
-    def css_first(
-        self, query: str, default: None = ..., strict: bool = False
-    ) -> Node | None:
-        """Evaluate CSS selector against current node and its child nodes."""
+            self, query: str, default: None = None, strict: bool = False
+    ) -> Node | None | DefaultT:
         ...
     def decompose(self, recursive: bool = True) -> None:
         """Remove a Node from the tree."""
@@ -237,17 +233,14 @@ class HTMLParser:
         ...
     @overload
     def css_first(
-        self, query: str, default: Any = ..., strict: Literal[True] = ...
-    ) -> Node: ...
-    @overload
-    def css_first(
         self, query: str, default: DefaultT, strict: bool = False
-    ) -> Node | DefaultT: ...
+    ) -> Node | DefaultT:
+        ...
+
     @overload
     def css_first(
-        self, query: str, default: None = ..., strict: bool = False
-    ) -> Node | None:
-        """Same as css but returns only the first match."""
+            self, query: str, default: None = None, strict: bool = False
+    ) -> Node | None | DefaultT:
         ...
     @property
     def input_encoding(self) -> str:

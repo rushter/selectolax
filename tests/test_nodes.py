@@ -274,11 +274,27 @@ def test_unwrap(parser):
 
 
 @pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_unwrap_empty_tag(parser):
+    html = '<a id="url" href="https://rushter.com/">I linked to rushter.com<i></i></a>'
+    html_parser = parser(html)
+    node = html_parser.css_first('i')
+    node.unwrap(delete_empty=True)
+    assert html_parser.body.child.html == '<a id="url" href="https://rushter.com/">I linked to rushter.com</a>'
+
+
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
 def test_unwrap_tags(parser):
     html_parser = parser("<div><a href="">Hello</a> <i>world</i>!</div>")
     html_parser.body.unwrap_tags(['i', 'a'])
     assert html_parser.body.html == '<body><div>Hello world!</div></body>'
 
+
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_unwrap_empty_tags(parser):
+    html_parser = parser("<div><a href="">Hello</a> <i>world</i>!<i></i><a></a></div>")
+    html_parser.body.unwrap_tags(['i', 'a'])
+    assert html_parser.body.html == '<body><div>Hello world!</div></body>'
+    
 
 @pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
 def test_unwraps_multiple_child_nodes(parser):
@@ -289,6 +305,18 @@ def test_unwraps_multiple_child_nodes(parser):
     """
     html_parser = parser(html)
     html_parser.body.unwrap_tags(['span', 'i'])
+    assert html_parser.body.child.html == '<div id="test">\n        foo bar Lorems I dummy <div>text</div>\n    </div>'
+
+ 
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_unwraps_multiple_child_nodes_with_empty(parser):
+    html = """
+    <div id="test">
+        foo <span>bar <i>Lor<span>ems</span></i> I <span class='p3'>dummy<span><i></i></span> <div>text</div></span></span>
+    </div>
+    """
+    html_parser = parser(html)
+    html_parser.body.unwrap_tags(['span', 'i'], delete_empty=True)
     assert html_parser.body.child.html == '<div id="test">\n        foo bar Lorems I dummy <div>text</div>\n    </div>'
 
 

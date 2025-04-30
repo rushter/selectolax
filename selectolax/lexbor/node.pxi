@@ -416,7 +416,7 @@ cdef class LexborNode:
             node = node.next
 
 
-    def unwrap(self):
+    def unwrap(self, delete_empty=False):
         """Replace node with whatever is inside this node.
 
         Examples
@@ -426,9 +426,12 @@ cdef class LexborNode:
         >>>  tree.css_first('i').unwrap()
         >>>  tree.html
         '<html><head></head><body><div>Hello world!</div></body></html>'
-
+        
+        Note: by default, empty tags are ignored, use "delete_empty" to change this.
         """
         if self.node.first_child == NULL:
+            if delete_empty:
+                lxb_dom_node_destroy(<lxb_dom_node_t *> self.node)
             return
         cdef lxb_dom_node_t* next_node;
         cdef lxb_dom_node_t* current_node;
@@ -445,7 +448,7 @@ cdef class LexborNode:
             lxb_dom_node_insert_before(self.node, self.node.first_child)
         lxb_dom_node_destroy(<lxb_dom_node_t *> self.node)
 
-    def unwrap_tags(self, list tags):
+    def unwrap_tags(self, list tags, delete_empty=False):
         """Unwraps specified tags from the HTML tree.
 
         Works the same as the ``unwrap`` method, but applied to a list of tags.
@@ -462,11 +465,13 @@ cdef class LexborNode:
         >>> tree.body.unwrap_tags(['i','a'])
         >>> tree.body.html
         '<body><div>Hello world!</div></body>'
+        
+        Note: by default, empty tags are ignored, use "delete_empty" to change this.
         """
 
         for tag in tags:
             for element in self.css(tag):
-                element.unwrap()
+                element.unwrap(delete_empty)
 
 
     def traverse(self, include_text=False):

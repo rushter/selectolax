@@ -292,7 +292,7 @@ def test_unwrap_tags(parser):
 @pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
 def test_unwrap_empty_tags(parser):
     html_parser = parser("<div><a href="">Hello</a> <i>world</i>!<i></i><a></a></div>")
-    html_parser.body.unwrap_tags(['i', 'a'])
+    html_parser.body.unwrap_tags(['i', 'a'], delete_empty=True)
     assert html_parser.body.html == '<body><div>Hello world!</div></body>'
     
 

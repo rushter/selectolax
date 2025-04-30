@@ -515,7 +515,7 @@ cdef class Node:
         """An alias for the decompose method."""
         self.decompose(recursive)
 
-    def unwrap(self):
+    def unwrap(self, delete_empty=False):
         """Replace node with whatever is inside this node.
 
         Examples
@@ -526,8 +526,11 @@ cdef class Node:
         >>>  tree.html
         '<html><head></head><body><div>Hello world!</div></body></html>'
 
+        Note: by default, empty tags are ignored, set "delete_empty" to "True" to change this.
         """
         if self.node.child == NULL:
+            if delete_empty:
+                myhtml_node_delete(self.node)
             return
         cdef myhtml_tree_node_t* next_node;
         cdef myhtml_tree_node_t* current_node;
@@ -568,7 +571,7 @@ cdef class Node:
             for element in self.css(tag):
                 element.decompose(recursive=recursive)
 
-    def unwrap_tags(self, list tags):
+    def unwrap_tags(self, list tags, delete_empty=False):
         """Unwraps specified tags from the HTML tree.
 
         Works the same as the ``unwrap`` method, but applied to a list of tags.
@@ -585,11 +588,13 @@ cdef class Node:
         >>> tree.body.unwrap_tags(['i','a'])
         >>> tree.body.html
         '<body><div>Hello world!</div></body>'
+        
+        Note: by default, empty tags are ignored, set "delete_empty" to "True" to change this.
         """
 
         for tag in tags:
             for element in self.css(tag):
-                element.unwrap()
+                element.unwrap(delete_empty)
 
     def replace_with(self, str_or_Node value):
         """Replace current Node with specified value.
@@ -752,7 +757,7 @@ cdef class Node:
         else:
             raise TypeError("Expected a string or Node instance, but %s found" % type(value).__name__)
 
-    def unwrap_tags(self, list tags):
+    def unwrap_tags(self, list_tags, delete_empty=False):
         """Unwraps specified tags from the HTML tree.
 
         Works the same as th ``unwrap`` method, but applied to a list of tags.
@@ -769,11 +774,13 @@ cdef class Node:
         >>> tree.body.unwrap_tags(['i','a'])
         >>> tree.body.html
         '<body><div>Hello world!</div></body>'
+        
+        Note: by default, empty tags are ignored, set "delete_empty" to "True" to change this.
         """
 
         for tag in tags:
             for element in self.css(tag):
-                element.unwrap()
+                element.unwrap(delete_empty)
 
     @property
     def raw_value(self):

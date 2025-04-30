@@ -427,7 +427,7 @@ cdef class LexborNode:
         >>>  tree.html
         '<html><head></head><body><div>Hello world!</div></body></html>'
         
-        Note: by defaulte it ignores empty tags, chane behafior by set 'delete_empty' to 'True'
+        Note: by default, empty tags are ignored, use "delete_empty" to change this.
         """
         if self.node.first_child == NULL:
             if delete_empty:
@@ -466,7 +466,7 @@ cdef class LexborNode:
         >>> tree.body.html
         '<body><div>Hello world!</div></body>'
         
-        Note: by defaulte it ignores empty tags, chane behafior by set 'delete_empty' to 'True'
+        Note: by default, empty tags are ignored, use "delete_empty" to change this.
         """
 
         for tag in tags:

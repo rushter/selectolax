@@ -269,7 +269,7 @@ cdef class HTMLParser:
             myhtml_collection_destroy(collection)
 
 
-    def unwrap_tags(self, list tags):
+    def unwrap_tags(self, list tags, delete_empty : bool = False):
         """Unwraps specified tags from the HTML tree.
 
         Works the same as th `unwrap` method, but applied to a list of tags.
@@ -278,6 +278,8 @@ cdef class HTMLParser:
         ----------
         tags : list
             List of tags to remove.
+        delete_empty : bool, default False
+            If True, removes empty tags.
 
         Examples
         --------
@@ -288,7 +290,7 @@ cdef class HTMLParser:
         '<body><div>Hello world!</div></body>'
         """
         if self.root is not None:
-            self.root.unwrap_tags(tags)
+            self.root.unwrap_tags(tags, delete_empty=delete_empty)
 
     @property
     def html(self):

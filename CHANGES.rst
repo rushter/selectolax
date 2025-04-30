@@ -1,5 +1,12 @@
 selectolax Changelog
 ====================
+Version 0.3.28
+-------------
+
+Released
+
+- Feat: Add unwrap empty tags functionality. Fixes #159.
+
 
 Version 0.3.28
 -------------

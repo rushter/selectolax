@@ -327,7 +327,7 @@ cdef class LexborHTMLParser:
 
         cls = LexborHTMLParser.from_document(cloned_document, self.raw_html)
         return cls
-    def unwrap_tags(self, list tags):
+    def unwrap_tags(self, list tags, delete_empty = False):
         """Unwraps specified tags from the HTML tree.
 
         Works the same as the ``unwrap`` method, but applied to a list of tags.
@@ -336,6 +336,8 @@ cdef class LexborHTMLParser:
         ----------
         tags : list
             List of tags to remove.
+        delete_empty : bool
+            Whenever to delete empty tags.
 
         Examples
         --------
@@ -346,4 +348,4 @@ cdef class LexborHTMLParser:
         '<body><div>Hello world!</div></body>'
         """
         if self.root is not None:
-            self.root.unwrap_tags(tags)
+            self.root.unwrap_tags(tags, delete_empty=delete_empty)

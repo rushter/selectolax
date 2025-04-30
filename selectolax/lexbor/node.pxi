@@ -419,6 +419,11 @@ cdef class LexborNode:
     def unwrap(self, delete_empty=False):
         """Replace node with whatever is inside this node.
 
+        Parameters
+        ----------
+        delete_empty : bool, default False
+            If True, removes empty tags.
+
         Examples
         --------
 
@@ -448,7 +453,7 @@ cdef class LexborNode:
             lxb_dom_node_insert_before(self.node, self.node.first_child)
         lxb_dom_node_destroy(<lxb_dom_node_t *> self.node)
 
-    def unwrap_tags(self, list tags, delete_empty=False):
+    def unwrap_tags(self, list tags, delete_empty = False):
         """Unwraps specified tags from the HTML tree.
 
         Works the same as the ``unwrap`` method, but applied to a list of tags.
@@ -457,6 +462,8 @@ cdef class LexborNode:
         ----------
         tags : list
             List of tags to remove.
+        delete_empty : bool, default False
+            If True, removes empty tags.
 
         Examples
         --------

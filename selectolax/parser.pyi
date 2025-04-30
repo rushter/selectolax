@@ -166,7 +166,7 @@ class Node:
     def strip_tags(self, tags: list[str], recursive: bool = False) -> None:
         """Remove specified tags from the HTML tree."""
         ...
-    def unwrap_tags(self, tags: list[str]) -> None:
+    def unwrap_tags(self, tags: list[str], delete_empty: bool = False) -> None:
         """Unwraps specified tags from the HTML tree.
 
         Works the same as the unwrap method, but applied to a list of tags."""
@@ -267,7 +267,7 @@ class HTMLParser:
         """Returns the text of the node including text of all its child nodes."""
         ...
     def strip_tags(self, tags: list[str], recursive: bool = False) -> None: ...
-    def unwrap_tags(self, tags: list[str]) -> None:
+    def unwrap_tags(self, tags: list[str], delete_empty: bool = False) -> None:
         """Unwraps specified tags from the HTML tree.
 
         Works the same as th unwrap method, but applied to a list of tags."""

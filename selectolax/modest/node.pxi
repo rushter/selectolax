@@ -515,8 +515,13 @@ cdef class Node:
         """An alias for the decompose method."""
         self.decompose(recursive)
 
-    def unwrap(self, delete_empty=False):
+    def unwrap(self, delete_empty = False):
         """Replace node with whatever is inside this node.
+
+        Parameters
+        ----------
+        delete_empty : bool, default False
+            Whenever to delete empty tags.
 
         Examples
         --------
@@ -571,7 +576,7 @@ cdef class Node:
             for element in self.css(tag):
                 element.decompose(recursive=recursive)
 
-    def unwrap_tags(self, list tags, delete_empty=False):
+    def unwrap_tags(self, list tags, delete_empty = False):
         """Unwraps specified tags from the HTML tree.
 
         Works the same as the ``unwrap`` method, but applied to a list of tags.
@@ -580,6 +585,8 @@ cdef class Node:
         ----------
         tags : list
             List of tags to remove.
+        delete_empty : bool, default False
+            Whenever to delete empty tags.
 
         Examples
         --------
@@ -757,7 +764,7 @@ cdef class Node:
         else:
             raise TypeError("Expected a string or Node instance, but %s found" % type(value).__name__)
 
-    def unwrap_tags(self, list_tags, delete_empty=False):
+    def unwrap_tags(self, list tags, delete_empty = False):
         """Unwraps specified tags from the HTML tree.
 
         Works the same as th ``unwrap`` method, but applied to a list of tags.
@@ -766,6 +773,8 @@ cdef class Node:
         ----------
         tags : list
             List of tags to remove.
+        delete_empty : bool, default False
+            Whenever to delete empty tags.
 
         Examples
         --------

@@ -16,5 +16,5 @@ furo==2024.8.6
 sphinxext-opengraph==0.9.1
 sphinx-copybutton==0.5.2
 ruff
-setuptools==75.7.0
+setuptools==78.1.1
 pytest-mypy-plugins>=3.2,<4.0.0

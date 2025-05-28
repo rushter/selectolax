@@ -56,6 +56,74 @@ def test_parser(parser):
         parser("asd").css(123)
 
 
+
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_malformed_data(parser):
+    malformed_inputs = [
+        b"\x00\x01\x02\x03",
+        "<div><p><span></div>",
+        "<" + "a" * 1000 + ">",
+    ]
+
+    for malformed_html in malformed_inputs:
+        try:
+            html_parser = parser(malformed_html)
+            # Should not crash, but may return None or empty results
+            result = html_parser.html
+            assert result is None or isinstance(result, str)
+        except (ValueError, RuntimeError, UnicodeDecodeError):
+            # These exceptions are acceptable for malformed input
+            pass
+
+
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_properties(parser):
+    html_parser = parser("<div><p>test</p></div>")
+
+    properties_to_test = ['root', 'head', 'body', 'html']
+
+    for prop_name in properties_to_test:
+        getattr(html_parser, prop_name)
+
+
+
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_unicode_handling(parser):
+    unicode_content = [
+        "Hello 世界",
+        "🚀🌟💫",
+        "Café résumé naïve",
+    ]
+
+    for content in unicode_content:
+        html = f"<div>{content}</div>"
+        try:
+            html_parser = parser(html)
+            result = html_parser.css_first('div')
+            if result:
+                extracted_text = result.text()
+                assert content in extracted_text
+        except UnicodeEncodeError:
+            # Some encoding issues might be expected
+            pass
+
+
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_tag_name_validation(parser):
+    """Test that tag name validation works correctly."""
+    html_parser = parser("<div></div>")
+
+    # Empty tag name should be rejected
+    with pytest.raises(ValueError, match="Tag name cannot be empty"):
+        html_parser.tags("")
+
+    # Very long tag names should be rejected
+    long_tag_name = "a" * 101  # Exceeds 100 character limit
+    with pytest.raises(ValueError, match="Tag name is too long"):
+        html_parser.tags(long_tag_name)
+
+
+
 @pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
 def test_nodes(parser):
     html = (

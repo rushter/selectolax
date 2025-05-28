@@ -8,7 +8,7 @@ Sphinx==8.0.2
 numpydoc==1.8.0
 pytest>=3.7.2
 pytest-runner>=4.2
-Cython==3.0.12
+Cython=3.0.11
 pluggy>=0.7.1
 mypy==1.4.1
 types-pyinstaller==6.10.0.20240812

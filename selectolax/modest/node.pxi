@@ -133,7 +133,7 @@ cdef class _Attributes:
 
 
 ctypedef fused str_or_Node:
-    basestring
+    str
     bytes
     Node
 
@@ -980,8 +980,8 @@ cdef inline str append_text(str text, str node_text, str separator='', bint stri
 
 cdef inline bytes to_bytes(str_or_Node value):
     cdef bytes bytes_val
-    if isinstance(value, (str, unicode)):
-        bytes_val = value.encode(_ENCODING)
+    if isinstance(value, unicode):
+        bytes_val = <bytes>value.encode("utf-8")
     elif isinstance(value, bytes):
-        bytes_val =  <char*> value
+        bytes_val = <bytes>value
     return bytes_val

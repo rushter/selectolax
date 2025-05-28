@@ -6,16 +6,16 @@ _TAG_TO_NAME = {
     0x0004: "-comment",
 }
 ctypedef fused str_or_LexborNode:
-    basestring
+    str
     bytes
     LexborNode
 
 cdef inline bytes to_bytes(str_or_LexborNode value):
     cdef bytes bytes_val
-    if isinstance(value, (str, unicode)):
-        bytes_val = value.encode(_ENCODING)
+    if isinstance(value, unicode):
+        bytes_val = <bytes>value.encode("utf-8")
     elif isinstance(value, bytes):
-        bytes_val =  <char*> value
+        bytes_val = <bytes>value
     return bytes_val
 
 @cython.final
@@ -431,7 +431,7 @@ cdef class LexborNode:
         >>>  tree.css_first('i').unwrap()
         >>>  tree.html
         '<html><head></head><body><div>Hello world!</div></body></html>'
-        
+
         Note: by default, empty tags are ignored, use "delete_empty" to change this.
         """
         if self.node.first_child == NULL:
@@ -472,7 +472,7 @@ cdef class LexborNode:
         >>> tree.body.unwrap_tags(['i','a'])
         >>> tree.body.html
         '<body><div>Hello world!</div></body>'
-        
+
         Note: by default, empty tags are ignored, use "delete_empty" to change this.
         """
 

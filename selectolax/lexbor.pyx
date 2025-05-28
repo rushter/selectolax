@@ -99,7 +99,7 @@ cdef class LexborHTMLParser:
 
         if not name:
             raise ValueError("Tag name cannot be empty")
-        if len(name) > 100:  # Reasonable limit for tag names
+        if len(name) > 100:
             raise ValueError("Tag name is too long")
 
         cdef lxb_dom_collection_t* collection = NULL

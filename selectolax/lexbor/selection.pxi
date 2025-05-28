@@ -38,6 +38,9 @@ cdef class LexborCSSSelector:
         cdef lxb_char_t* c_selector
         cdef lxb_css_selector_list_t * selectors_list
 
+        if not isinstance(query, str):
+            raise TypeError("Query must be a string.")
+
         bytes_query = query.encode(_ENCODING)
         selectors_list = lxb_css_selectors_parse(self.parser, <lxb_char_t *> bytes_query, <size_t>len(query))
 
@@ -58,6 +61,9 @@ cdef class LexborCSSSelector:
         cdef lxb_css_selector_list_t * selectors
         cdef lxb_char_t * c_selector
         cdef lxb_css_selector_list_t * selectors_list
+
+        if not isinstance(query, str):
+            raise TypeError("Query must be a string.")
 
         bytes_query = query.encode(_ENCODING)
         selectors_list = lxb_css_selectors_parse(self.parser, <lxb_char_t *> bytes_query, <size_t> len(query))

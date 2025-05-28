@@ -1,0 +1,21 @@
+
+[build-system]
+requires = [
+    "wheel",
+    "Cython>=3.1.0",
+]
+
+
+[project]
+name = 'selectolax'
+version = '0.3.29'
+description = 'Fast HTML5 parser with CSS selectors.'
+readme = 'README.rst'
+requires-python = '>=3.8'
+license = {text = 'MIT'}
+authors = [
+    {name = 'Artem Golubin', email = 'me@rushter.com'}
+]
+dependencies = [
+   "Cython>=3.1.0",
+]

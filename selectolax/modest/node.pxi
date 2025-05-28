@@ -14,6 +14,8 @@ cdef class Stack:
         self.capacity = capacity
         self.top = 0
         self._stack = <myhtml_tree_node_t**> malloc(capacity * sizeof(myhtml_tree_node_t))
+        if self._stack == NULL:
+            raise MemoryError("Failed to allocate memory for stack")
 
     def __dealloc__(self):
         free(self._stack)
@@ -595,7 +597,7 @@ cdef class Node:
         >>> tree.body.unwrap_tags(['i','a'])
         >>> tree.body.html
         '<body><div>Hello world!</div></body>'
-        
+
         Note: by default, empty tags are ignored, set "delete_empty" to "True" to change this.
         """
 
@@ -783,7 +785,7 @@ cdef class Node:
         >>> tree.body.unwrap_tags(['i','a'])
         >>> tree.body.html
         '<body><div>Hello world!</div></body>'
-        
+
         Note: by default, empty tags are ignored, set "delete_empty" to "True" to change this.
         """
 

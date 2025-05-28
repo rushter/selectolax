@@ -124,7 +124,7 @@ cdef class HTMLParser:
             status = myhtml_parse(self.html_tree, self._encoding, html, html_len)
 
         if status != 0:
-            raise RuntimeError("Can't parse HTML:\n%s" % str(html))
+            raise RuntimeError("Can't parse HTML (status code: %d)" % status)
 
         assert self.html_tree.node_html != NULL
 
@@ -147,9 +147,13 @@ cdef class HTMLParser:
     def root(self):
         """Returns root node."""
         if self.html_tree and self.html_tree.node_html:
-            node = Node()
-            node._init(self.html_tree.node_html, self)
-            return node
+            try:
+                node = Node()
+                node._init(self.html_tree.node_html, self)
+                return node
+            except Exception:
+                # If Node creation or initialization fails, return None
+                return None
         return None
 
     @property
@@ -185,6 +189,12 @@ cdef class HTMLParser:
         name : str (e.g. div)
 
         """
+        # Validate tag name
+        if not name:
+            raise ValueError("Tag name cannot be empty")
+        if len(name) > 100:  # Reasonable limit for tag names
+            raise ValueError("Tag name is too long")
+
         cdef myhtml_collection_t* collection = NULL
         pybyte_name = name.encode('UTF-8')
         cdef mystatus_t status = 0;
@@ -428,6 +438,7 @@ cdef class HTMLParser:
         if self.html_tree != NULL:
             myhtml = self.html_tree.myhtml
             myhtml_tree_destroy(self.html_tree)
+            self.html_tree = NULL  # Prevent double-free
             if myhtml != NULL:
                 myhtml_destroy(myhtml)
 

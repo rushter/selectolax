@@ -96,6 +96,12 @@ cdef class LexborHTMLParser:
         name : str (e.g. div)
 
         """
+
+        if not name:
+            raise ValueError("Tag name cannot be empty")
+        if len(name) > 100:  # Reasonable limit for tag names
+            raise ValueError("Tag name is too long")
+
         cdef lxb_dom_collection_t* collection = NULL
         cdef lxb_status_t status
         pybyte_name = name.encode('UTF-8')

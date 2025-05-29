@@ -170,3 +170,8 @@ def parse_fragment(html: str) -> list[LexborNode]:
     if they are missing. This function does not add these tags.
     """
     ...
+
+
+class SelectolaxError(Exception):
+    """An exception that indicates error."""
+    pass

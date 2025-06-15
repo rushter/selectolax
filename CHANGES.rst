@@ -1,6 +1,15 @@
 selectolax Changelog
 ====================
 
+Version 0.3.30
+-------------
+
+Released
+
+- Update lexbor
+- Expose exception lexbor.pyi
+
+
 Version 0.3.29
 -------------
 

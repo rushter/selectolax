@@ -51,7 +51,7 @@ jobs:
           submodules: true
       - name: Build sdist
         run: |
-          pip install Cython==3.0.11 setuptools wheel setuptools
+          pip install Cython setuptools wheel setuptools
           python setup.py build_ext --inplace --cython
           python setup.py sdist
 

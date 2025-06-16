@@ -2,7 +2,7 @@
 [build-system]
 requires = [
     "wheel",
-    "Cython==3.0.11",
+    "Cython",
     "setuptools>=62.4",
 ]
 
@@ -18,7 +18,7 @@ authors = [
     { name = 'Artem Golubin', email = 'me@rushter.com' }
 ]
 dependencies = [
-    "Cython==3.0.11",
+    "Cython",
 ]
 keywords = [
     "selectolax",
@@ -62,3 +62,9 @@ skip = [
     "pp*"
 ]
 test-skip = "*-macosx_arm64"
+
+
+[project.optional-dependencies]
+cython = [
+    "Cython",
+]

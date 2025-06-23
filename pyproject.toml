@@ -13,13 +13,13 @@ version = '0.3.30'
 description = 'Fast HTML5 parser with CSS selectors.'
 readme = 'README.rst'
 requires-python = '>=3.9'
-license = { file = 'LICENSE' }
+license = {text = 'MIT'}
 authors = [
     { name = 'Artem Golubin', email = 'me@rushter.com' }
 ]
 dependencies = [
-    "Cython",
 ]
+
 keywords = [
     "selectolax",
     "html",
@@ -33,7 +33,6 @@ classifiers = [
     "Topic :: Internet",
     "Topic :: Internet :: WWW/HTTP",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
     "Natural Language :: English",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.9",

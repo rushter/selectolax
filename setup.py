@@ -176,11 +176,6 @@ setup(
     packages=find_packages(include=["selectolax"]),
     package_data={"selectolax": ["py.typed"]},
     include_package_data=True,
-    license="MIT license",
     zip_safe=False,
-    test_suite="tests",
-    tests_require=[
-        "pytest",
-    ],
     ext_modules=make_extensions(),
 )

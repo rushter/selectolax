@@ -75,6 +75,7 @@ cdef class LexborCSSSelector:
         status = lxb_selectors_find(self.selectors, node.node, selectors_list,
                                     <lxb_selectors_cb_f> css_matcher_callback, <void *> self)
         if status != LXB_STATUS_OK:
+            lxb_css_selector_list_destroy_memory(selectors_list)
             raise SelectolaxError("Can't parse CSS selector.")
         result = bool(self.results)
         self.results = []

@@ -273,6 +273,9 @@ cdef class LexborNode:
         >>>     tag.decompose()
 
         """
+        if self.node == <lxb_dom_node_t *> lxb_dom_document_root(&self.parser.document.dom_document):
+            raise SelectolaxError("Decomposing the root node is not allowed.")
+
         if recursive:
             lxb_dom_node_destroy_deep(<lxb_dom_node_t *> self.node)
         else:

@@ -297,3 +297,9 @@ def test_null_pointer_safety(parser):
 
         for prop_name in properties_to_test:
             getattr(html_parser, prop_name)
+
+
+def test_decompose_root_node():
+    html_parser = LexborHTMLParser("<div><p>test</p></div>")
+    with pytest.raises(SelectolaxError):
+        html_parser.root.decompose()

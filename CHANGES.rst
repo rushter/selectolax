@@ -1,6 +1,10 @@
 selectolax Changelog
 ====================
 
+Version 0.3.31
+-------------
+
+Released
 
 - Improve type hints, add docstrings to type hints
 - Prevent decomposing of the root node

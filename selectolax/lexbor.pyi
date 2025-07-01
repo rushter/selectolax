@@ -158,11 +158,45 @@ class LexborNode:
     @overload
     def css_first(
         self, query: str, default: Any = ..., strict: Literal[True] = ...
-    ) -> LexborNode: ...
+    ) -> LexborNode:
+        """Same as `css` but returns only the first match.
+
+        Parameters
+        ----------
+
+        query : str
+        default : bool, default None
+            Default value to return if there is no match.
+        strict: bool, default True
+            Set to True if you want to check if there is strictly only one match in the document.
+
+
+        Returns
+        -------
+        selector : `LexborNode` object
+        """
+        ...
     @overload
     def css_first(
         self, query: str, default: DefaultT, strict: bool = False
-    ) -> LexborNode | DefaultT: ...
+    ) -> LexborNode | DefaultT:
+        """Same as `css` but returns only the first match.
+
+        Parameters
+        ----------
+
+        query : str
+        default : bool, default None
+            Default value to return if there is no match.
+        strict: bool, default True
+            Set to True if you want to check if there is strictly only one match in the document.
+
+
+        Returns
+        -------
+        selector : `LexborNode` object
+        """
+        ...
     @overload
     def css_first(
         self, query: str, default: None = ..., strict: bool = False
@@ -625,11 +659,45 @@ class LexborHTMLParser:
     @overload
     def css_first(
         self, query: str, default: Any = ..., strict: Literal[True] = ...
-    ) -> LexborNode: ...
+    ) -> LexborNode:
+        """Same as `css` but returns only the first match.
+
+        Parameters
+        ----------
+
+        query : str
+        default : bool, default None
+            Default value to return if there is no match.
+        strict: bool, default True
+            Set to True if you want to check if there is strictly only one match in the document.
+
+
+        Returns
+        -------
+        selector : `LexborNode` object
+        """
+        ...
     @overload
     def css_first(
         self, query: str, default: DefaultT, strict: bool = False
-    ) -> LexborNode | DefaultT: ...
+    ) -> LexborNode | DefaultT:
+        """Same as `css` but returns only the first match.
+
+        Parameters
+        ----------
+
+        query : str
+        default : bool, default None
+            Default value to return if there is no match.
+        strict: bool, default True
+            Set to True if you want to check if there is strictly only one match in the document.
+
+
+        Returns
+        -------
+        selector : `LexborNode` object
+        """
+        ...
     @overload
     def css_first(
         self, query: str, default: None = ..., strict: bool = False

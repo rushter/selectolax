@@ -60,21 +60,21 @@ cdef extern from "lexbor/html/html.h" nogil:
 
     ctypedef struct lxb_dom_node_t:
         lxb_dom_event_target_t event_target
-    
-    
+
+
         uintptr_t              local_name
         uintptr_t              prefix
         uintptr_t              ns
-    
+
         lxb_dom_document_t     *owner_document
-    
+
         lxb_dom_node_t         *next
         lxb_dom_node_t         *prev
         lxb_dom_node_t         *parent
         lxb_dom_node_t         *first_child
         lxb_dom_node_t         *last_child
         void                   *user
-    
+
         lxb_dom_node_type_t    type
 
 
@@ -318,7 +318,6 @@ cdef extern from "lexbor/dom/dom.h" nogil:
     void lxb_dom_node_insert_child(lxb_dom_node_t *to, lxb_dom_node_t *node)
     void lxb_dom_node_insert_before(lxb_dom_node_t *to, lxb_dom_node_t *node)
     void lxb_dom_node_insert_after(lxb_dom_node_t *to, lxb_dom_node_t *node)
-
     lxb_dom_text_t * lxb_dom_document_create_text_node(lxb_dom_document_t *document, const lxb_char_t *data, size_t len)
     void lxb_dom_node_simple_walk(lxb_dom_node_t *root, lxb_dom_node_simple_walker_f walker_cb, void *ctx)
 

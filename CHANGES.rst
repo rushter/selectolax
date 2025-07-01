@@ -5,7 +5,7 @@ selectolax Changelog
 - Improve type hints, add docstrings to type hints
 - Prevent decomposing of the root node
 - Unpin Cython version and make it Optional
-
+- Allow empty attribute values. Fixes #165.
 
 Version 0.3.30
 -------------

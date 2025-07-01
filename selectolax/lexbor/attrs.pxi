@@ -1,5 +1,7 @@
 cimport cython
 
+from typing import Optional
+
 @cython.final
 cdef class LexborAttributes:
     """A dict-like object that represents attributes."""
@@ -23,16 +25,32 @@ cdef class LexborAttributes:
                 yield key.decode(_ENCODING)
             attr = attr.next
 
-    def __setitem__(self, str key, value):
-        value = str(value)
+    def __setitem__(self, str key, object value):
+        value = value
         bytes_key = key.encode(_ENCODING)
-        bytes_value = value.encode(_ENCODING)
+        bytes_value = value.encode(_ENCODING) if value else b""
+        cdef lxb_dom_attr_t *attr
+        cdef lxb_dom_document_t *doc
 
-        lxb_dom_element_set_attribute(
-            <lxb_dom_element_t *> self.node,
-            <lxb_char_t *> bytes_key, len(bytes_key),
-            <lxb_char_t *> bytes_value, len(bytes_value),
-        )
+        if value is None:
+            # N.B. This is suboptimal, but there is not API to set empty attributes
+            attr = lxb_dom_element_set_attribute(
+                <lxb_dom_element_t *> self.node,
+                <lxb_char_t *> bytes_key, len(bytes_key),
+                NULL, 0
+            )
+            doc = (<lxb_dom_node_t*>attr).owner_document
+            lexbor_str_destroy(attr.value, doc.text, 0)
+            attr.value = NULL
+
+        elif isinstance(value, str) or isinstance(value, unicode) :
+            lxb_dom_element_set_attribute(
+                <lxb_dom_element_t *> self.node,
+                <lxb_char_t *> bytes_key, len(bytes_key),
+                <lxb_char_t *> bytes_value, len(bytes_value),
+            )
+        else:
+            raise TypeError("Expected str or unicode, got %s" % type(value))
 
     def __delitem__(self, key):
         try:

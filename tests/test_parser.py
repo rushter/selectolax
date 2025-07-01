@@ -4,7 +4,7 @@ from difflib import SequenceMatcher
 import pytest
 from selectolax.parser import HTMLParser, Node
 
-from selectolax.lexbor import LexborHTMLParser, LexborNode, SelectolaxError
+from selectolax.lexbor import LexborHTMLParser, LexborNode, SelectolaxError, create_tag
 
 """
 We'are testing only our own code.
@@ -303,3 +303,8 @@ def test_decompose_root_node():
     html_parser = LexborHTMLParser("<div><p>test</p></div>")
     with pytest.raises(SelectolaxError):
         html_parser.root.decompose()
+
+def test_empty_attribute_lexbor():
+    div = create_tag("div")
+    div.attrs["hidden"] = None
+    assert div.html == "<div hidden></div>"

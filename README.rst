@@ -143,7 +143,7 @@ Links
 *  `How to Scrape 7k Products with Python using selectolax and httpx <https://www.youtube.com/watch?v=XpGvq755J2U>`_
 *  `Detailed overview <https://github.com/rushter/selectolax/blob/master/examples/walkthrough.ipynb>`_
 *  `Modest introduction <https://lexborisov.github.io/Modest/>`_
-*  `Modest benchmark <http://lexborisov.github.io/benchmark-html-persers/>`_
+*  `Modest benchmark <https://lexborisov.github.io/benchmark-html-parsers/>`_
 *  `Python benchmark <https://rushter.com/blog/python-fast-html-parser/>`_
 *  `Another Python benchmark <https://www.peterbe.com/plog/selectolax-or-pyquery>`_
 

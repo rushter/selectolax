@@ -138,7 +138,7 @@ selectolax (Lexbor)           2.39 sec.
 Links
 -----
 
-*  `selectolax API reference <http://selectolax.readthedocs.io/en/latest/parser.html>`_
+*  `selectolax API reference <https://selectolax.readthedocs.io/en/latest/index.html>`_
 *  `Video introduction to web scraping using selectolax <https://youtu.be/HpRsfpPuUzE>`_
 *  `How to Scrape 7k Products with Python using selectolax and httpx <https://www.youtube.com/watch?v=XpGvq755J2U>`_
 *  `Detailed overview <https://github.com/rushter/selectolax/blob/master/examples/walkthrough.ipynb>`_

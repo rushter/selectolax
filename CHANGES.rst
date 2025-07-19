@@ -1,6 +1,12 @@
 selectolax Changelog
 ====================
 
+Version 0.3.32
+-------------
+
+
+- Update lexbor. New version of lexbor fixes bugs with CSS selectors.
+
 Version 0.3.31
 -------------
 

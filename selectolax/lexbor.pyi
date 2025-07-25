@@ -1,4 +1,4 @@
-from typing import Any, Iterator, Literal, TypeVar, NoReturn, overload, Optional
+from typing import Any, Iterator, Literal, NoReturn, Optional, TypeVar, overload
 
 DefaultT = TypeVar("DefaultT")
 

@@ -1,4 +1,5 @@
 cimport cython
+from cpython.exc cimport PyErr_NoMemory
 
 from libc.stdlib cimport free
 from libc.stdlib cimport malloc
@@ -23,9 +24,10 @@ cdef class Stack:
     cdef bint is_empty(self):
         return self.top <= 0
 
-    cdef push(self, myhtml_tree_node_t* res):
+    cdef int push(self, myhtml_tree_node_t* res) except -1:
         if self.top >= self.capacity:
-            self.resize()
+            if self.resize() < 0:
+                return -1
         self._stack[self.top] = res
         self.top += 1
 
@@ -33,10 +35,13 @@ cdef class Stack:
         self.top = self.top - 1
         return self._stack[self.top]
 
-    cdef resize(self):
+    cdef int resize(self) except -1:
         self.capacity *= 2
         self._stack = <myhtml_tree_node_t**> realloc(<void*> self._stack, self.capacity * sizeof(myhtml_tree_node_t))
-
+        if self._stack == NULL:
+            PyErr_NoMemory()
+            return -1
+        return 0
 
 cdef class _Attributes:
     """A dict-like object that represents attributes."""
@@ -143,12 +148,14 @@ cdef class Node:
     cdef myhtml_tree_node_t *node
     cdef public HTMLParser parser
 
-
-    cdef _init(self, myhtml_tree_node_t *node, HTMLParser parser):
-        # custom init, because __cinit__ doesn't accept C types
-        self.node = node
+    @staticmethod
+    cdef Node new(myhtml_tree_node_t *node, HTMLParser parser):
+        # custom __init__ for C, because __cinit__ doesn't accept C types
+        cdef Node cls = Node.__new__(Node)
+        cls.node = node
         # Keep reference to the selector object, so myhtml structures will not be garbage collected prematurely
-        self.parser = parser
+        cls.parser = parser
+        return cls
 
     @property
     def attributes(self):
@@ -341,8 +348,7 @@ cdef class Node:
                 node = node.next
                 continue
 
-            next_node = Node()
-            next_node._init(node, self.parser)
+            next_node = Node.new(node, self.parser)
             yield next_node
             node = node.next
 
@@ -360,16 +366,15 @@ cdef class Node:
         node
         """
         cdef Stack stack = Stack(_STACK_SIZE)
-        cdef myhtml_tree_node_t* current_node = NULL;
-        cdef Node next_node;
+        cdef myhtml_tree_node_t* current_node = NULL
+        cdef Node next_node
 
         stack.push(self.node)
 
         while not stack.is_empty():
             current_node = stack.pop()
             if current_node != NULL and not (current_node.tag_id == MyHTML_TAG__TEXT and not include_text):
-                next_node = Node()
-                next_node._init(current_node, self.parser)
+                next_node = Node.new(current_node, self.parser)
                 yield next_node
 
             if current_node.next is not NULL:
@@ -398,8 +403,7 @@ cdef class Node:
         """Return the child node."""
         cdef Node node
         if self.node.child:
-            node = Node()
-            node._init(self.node.child, self.parser)
+            node = Node.new(self.node.child, self.parser)
             return node
         return None
 
@@ -408,8 +412,7 @@ cdef class Node:
         """Return the parent node."""
         cdef Node node
         if self.node.parent:
-            node = Node()
-            node._init(self.node.parent, self.parser)
+            node = Node.new(self.node.parent, self.parser)
             return node
         return None
 
@@ -418,8 +421,7 @@ cdef class Node:
         """Return next node."""
         cdef Node node
         if self.node.next:
-            node = Node()
-            node._init(self.node.next, self.parser)
+            node = Node.new(self.node.next, self.parser)
             return node
         return None
 
@@ -428,8 +430,7 @@ cdef class Node:
         """Return previous node."""
         cdef Node node
         if self.node.prev:
-            node = Node()
-            node._init(self.node.prev, self.parser)
+            node = Node.new(self.node.prev, self.parser)
             return node
         return None
 
@@ -438,8 +439,7 @@ cdef class Node:
         """Return last child node."""
         cdef Node node
         if self.node.last_child:
-            node = Node()
-            node._init(self.node.last_child, self.parser)
+            node = Node.new(self.node.last_child, self.parser)
             return node
         return None
 
@@ -539,8 +539,8 @@ cdef class Node:
             if delete_empty:
                 myhtml_node_delete(self.node)
             return
-        cdef myhtml_tree_node_t* next_node;
-        cdef myhtml_tree_node_t* current_node;
+        cdef myhtml_tree_node_t* next_node
+        cdef myhtml_tree_node_t* current_node
 
         if self.node.child.next != NULL:
             current_node = self.node.child
@@ -574,6 +574,8 @@ cdef class Node:
         '<html><body><div>Hello world!</div></body></html>'
 
         """
+        # ensure cython can recast element to a Node so that decompose will be called sooner.
+        cdef Node element
         for tag in tags:
             for element in self.css(tag):
                 element.decompose(recursive=recursive)
@@ -600,7 +602,7 @@ cdef class Node:
 
         Note: by default, empty tags are ignored, set "delete_empty" to "True" to change this.
         """
-
+        cdef Node element
         for tag in tags:
             for element in self.css(tag):
                 element.unwrap(delete_empty)
@@ -788,7 +790,7 @@ cdef class Node:
 
         Note: by default, empty tags are ignored, set "delete_empty" to "True" to change this.
         """
-
+        cdef Node element
         for tag in tags:
             for element in self.css(tag):
                 element.unwrap(delete_empty)
@@ -847,6 +849,7 @@ cdef class Node:
             The query to check.
 
         """
+        cdef Node node
         if self.parser.cached_script_texts is None:
             nodes = find_nodes(self.parser, self.node, 'script')
             text_nodes = []

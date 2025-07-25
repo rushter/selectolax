@@ -304,6 +304,7 @@ def test_decompose_root_node():
     with pytest.raises(SelectolaxError):
         html_parser.root.decompose()
 
+
 def test_empty_attribute_lexbor():
     div = create_tag("div")
     div.attrs["hidden"] = None

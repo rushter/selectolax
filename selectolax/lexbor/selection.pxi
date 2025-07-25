@@ -1,4 +1,6 @@
 cimport cython
+from cpython.exc cimport PyErr_SetObject
+from cpython.list cimport PyList_GET_SIZE
 
 @cython.final
 cdef class LexborCSSSelector:
@@ -8,7 +10,7 @@ cdef class LexborCSSSelector:
         self.results = []
         self.current_node = None
 
-    cdef _create_css_parser(self):
+    cdef int _create_css_parser(self) except -1:
         cdef lxb_status_t status
 
 
@@ -16,13 +18,15 @@ cdef class LexborCSSSelector:
         status = lxb_css_parser_init(self.parser, NULL)
 
         if status != LXB_STATUS_OK:
-            raise SelectolaxError("Can't initialize CSS parser.")
+            PyErr_SetObject(SelectolaxError, "Can't initialize CSS parser.")
+            return -1
 
         self.css_selectors = lxb_css_selectors_create()
         status = lxb_css_selectors_init(self.css_selectors)
 
         if status != LXB_STATUS_OK:
-            raise SelectolaxError("Can't initialize CSS selector.")
+            PyErr_SetObject(SelectolaxError, "Can't initialize CSS selector.")
+            return -1
 
         lxb_css_parser_selectors_set(self.parser, self.css_selectors)
 
@@ -30,10 +34,11 @@ cdef class LexborCSSSelector:
         status = lxb_selectors_init(self.selectors)
         lxb_selectors_opt_set(self.selectors, LXB_SELECTORS_OPT_MATCH_ROOT)
         if status != LXB_STATUS_OK:
-            raise SelectolaxError("Can't initialize CSS selector.")
+            PyErr_SetObject(SelectolaxError, "Can't initialize CSS selector.")
+            return -1
+        return 0
 
-
-    cpdef find(self, str query, LexborNode node):
+    cpdef list find(self, str query, LexborNode node):
         cdef lxb_css_selector_list_t* selectors
         cdef lxb_char_t* c_selector
         cdef lxb_css_selector_list_t * selectors_list
@@ -57,10 +62,11 @@ cdef class LexborCSSSelector:
         lxb_css_selector_list_destroy_memory(selectors_list)
         return results
 
-    cpdef any_matches(self, str query, LexborNode node):
+    cpdef int any_matches(self, str query, LexborNode node) except -1:
         cdef lxb_css_selector_list_t * selectors
         cdef lxb_char_t * c_selector
         cdef lxb_css_selector_list_t * selectors_list
+        cdef int result
 
         if not isinstance(query, str):
             raise TypeError("Query must be a string.")
@@ -69,15 +75,15 @@ cdef class LexborCSSSelector:
         selectors_list = lxb_css_selectors_parse(self.parser, <lxb_char_t *> bytes_query, <size_t> len(query))
 
         if selectors_list == NULL:
-            raise SelectolaxError("Can't parse CSS selector.")
+            PyErr_SetObject(SelectolaxError, "Can't parse CSS selector.")
 
         self.results = []
         status = lxb_selectors_find(self.selectors, node.node, selectors_list,
                                     <lxb_selectors_cb_f> css_matcher_callback, <void *> self)
         if status != LXB_STATUS_OK:
             lxb_css_selector_list_destroy_memory(selectors_list)
-            raise SelectolaxError("Can't parse CSS selector.")
-        result = bool(self.results)
+            PyErr_SetObject(SelectolaxError, "Can't parse CSS selector.")
+        result = PyList_GET_SIZE(self.results) > 0
         self.results = []
         lxb_css_selector_list_destroy_memory(selectors_list)
         return result
@@ -110,7 +116,7 @@ cdef class LexborSelector:
 
     cpdef css(self, str query):
         """Evaluate CSS selector against current scope."""
-        raise SelectolaxError("This features is not supported by the lexbor backend. Please use Modest backend.")
+        raise NotImplementedError("This features is not supported by the lexbor backend. Please use Modest backend.")
 
     @property
     def matches(self) -> list:
@@ -124,7 +130,7 @@ cdef class LexborSelector:
 
     def text_contains(self, str text, bool deep=True, str separator='', bool strip=False) -> LexborSelector:
         """Filter all current matches given text."""
-        nodes = []
+        cdef list nodes = []
         for node in self.nodes:
             node_text = node.text(deep=deep, separator=separator, strip=strip)
             if node_text and text in node_text:
@@ -134,7 +140,7 @@ cdef class LexborSelector:
 
     def any_text_contains(self, str text, bool deep=True, str separator='', bool strip=False) -> bool:
         """Returns True if any node in the current search scope contains specified text"""
-        nodes = []
+        cdef LexborNode node
         for node in self.nodes:
             node_text = node.text(deep=deep, separator=separator, strip=strip)
             if node_text and text in node_text:
@@ -146,7 +152,7 @@ cdef class LexborSelector:
 
         Similar to `string-length` in XPath.
         """
-        nodes = []
+        cdef list nodes = []
         for node in self.nodes:
             attr = node.attributes.get(attribute)
             if attr and start and start in attr:
@@ -161,7 +167,7 @@ cdef class LexborSelector:
 
         Similar to `string-length` in XPath.
         """
-        nodes = []
+        cdef LexborNode node
         for node in self.nodes:
             attr = node.attributes.get(attribute)
             if attr and start and start in attr:
@@ -176,15 +182,15 @@ cdef class LexborSelector:
 
 cdef lxb_status_t css_finder_callback(lxb_dom_node_t *node, lxb_css_selector_specificity_t *spec, void *ctx):
     cdef LexborNode lxb_node
-    cdef object cls
-    cls = <object> ctx
+    cdef LexborCSSSelector cls
+    cls = <LexborCSSSelector> ctx
     lxb_node = LexborNode.new(<lxb_dom_node_t *> node, cls.current_node.parser)
     cls.results.append(lxb_node)
     return LXB_STATUS_OK
 
 cdef lxb_status_t css_matcher_callback(lxb_dom_node_t *node, lxb_css_selector_specificity_t *spec, void *ctx):
     cdef LexborNode lxb_node
-    cdef object cls
-    cls = <object> ctx
+    cdef LexborCSSSelector cls
+    cls = <LexborCSSSelector> ctx
     cls.results.append(True)
     return LXB_STATUS_STOP

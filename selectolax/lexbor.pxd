@@ -235,8 +235,10 @@ cdef class LexborNode:
     cdef:
         lxb_dom_node_t *node
         public LexborHTMLParser parser
+        
     @staticmethod
     cdef LexborNode new(lxb_dom_node_t *node, LexborHTMLParser parser)
+
 
 cdef class LexborCSSSelector:
     cdef lxb_css_parser_t* parser
@@ -244,9 +246,9 @@ cdef class LexborCSSSelector:
     cdef lxb_css_selectors_t * css_selectors
     cdef public list results
     cdef public LexborNode current_node
-    cdef _create_css_parser(self)
-    cpdef find(self, str query, LexborNode node)
-    cpdef any_matches(self, str query, LexborNode node)
+    cdef int _create_css_parser(self) except -1
+    cpdef list find(self, str query, LexborNode node)
+    cpdef int any_matches(self, str query, LexborNode node) except -1
 
 cdef class LexborHTMLParser:
     cdef lxb_html_document_t *document

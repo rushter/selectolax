@@ -299,6 +299,7 @@ cdef class LexborNode:
         '<html><body><div>Hello world!</div></body></html>'
 
         """
+        cdef LexborNode element
         for tag in tags:
             for element in self.css(tag):
                 element.decompose(recursive=recursive)
@@ -751,6 +752,7 @@ cdef class LexborNode:
             The query to check.
 
         """
+        cdef LexborNode node
         if self.parser.cached_script_texts is None:
             nodes = self.parser.selector.find('script', self)
             text_nodes = []
@@ -775,6 +777,7 @@ cdef class LexborNode:
         queries : tuple of str
 
         """
+        cdef LexborNode node
         if self.parser.cached_script_srcs is None:
             nodes = self.parser.selector.find('script', self)
             src_nodes = []
@@ -830,21 +833,31 @@ cdef class LexborNode:
         """
         cdef unsigned char * text
         cdef lxb_dom_node_t* node = <lxb_dom_node_t*> self.node.first_child
-
-        container = TextContainer()
+        cdef TextContainer container
         if self.node == NULL or self.node.type != LXB_DOM_NODE_TYPE_TEXT:
             return None
+        
         text = <unsigned char *> lexbor_str_data_noi(&(<lxb_dom_character_data_t *> self.node).data)
         if text != NULL:
+            container = TextContainer.new_with_defaults()
             py_text = text.decode(_ENCODING)
             container.append(py_text)
             return container.text
 
+@cython.internal
 @cython.final
 cdef class TextContainer:
     cdef str _text
-    cdef public str separator
-    cdef public bool strip
+    cdef str separator
+    cdef bint strip
+
+    @staticmethod
+    cdef TextContainer new_with_defaults():
+        cdef TextContainer cls = TextContainer.__new__(TextContainer)
+        cls._text = ''
+        cls.separator = ''
+        cls.strip = False 
+        return cls
 
     def __init__(self, str separator = '', bool strip = False):
         self._text = ""

@@ -150,9 +150,10 @@ cdef class Node:
 
     @staticmethod
     cdef Node new(myhtml_tree_node_t *node, HTMLParser parser):
-        # custom __new__ for C, because __cinit__ doesn't accept C types
+        # custom __init__ for C, because __cinit__ doesn't accept C types
         cdef Node cls = Node.__new__(Node)
         cls.node = node
+        # Keep reference to the selector object, so myhtml structures will not be garbage collected prematurely
         cls.parser = parser
         return cls
 

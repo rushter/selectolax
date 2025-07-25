@@ -562,7 +562,7 @@ cdef class HTMLParser:
     cdef object cached_script_srcs
 
     cdef void _detect_encoding(self, char* html, size_t html_len) nogil
-    cdef _parse_html(self, char* html, size_t html_len)
+    cdef int _parse_html(self, char* html, size_t html_len) except -1
     @staticmethod
     cdef HTMLParser from_tree(
         myhtml_tree_t * tree, bytes raw_html, bint detect_encoding, bint use_meta_tags, str decode_errors,
@@ -576,6 +576,6 @@ cdef class Stack:
     cdef myhtml_tree_node_t ** _stack
 
     cdef bint is_empty(self)
-    cdef push(self, myhtml_tree_node_t* res)
+    cdef int push(self, myhtml_tree_node_t* res) except -1
     cdef myhtml_tree_node_t * pop(self)
-    cdef resize(self)
+    cdef int resize(self) except -1

@@ -1,4 +1,5 @@
 cimport cython
+from cpython.exc cimport PyErr_SetNone
 
 _TAG_TO_NAME = {
     0x0005: "- doctype",
@@ -21,11 +22,13 @@ cdef inline bytes to_bytes(str_or_LexborNode value):
 @cython.final
 cdef class LexborNode:
     """A class that represents HTML node (element)."""
-
-    cdef _cinit(self, lxb_dom_node_t *node, LexborHTMLParser parser):
-        self.parser = parser
-        self.node = node
-        return self
+    
+    @staticmethod
+    cdef LexborNode new(lxb_dom_node_t *node, LexborHTMLParser parser):
+        cdef LexborNode lxbnode = LexborNode.__new__(LexborNode)
+        lxbnode.node = node
+        lxbnode.parser = parser 
+        return lxbnode
 
     @property
     def mem_id(self):
@@ -41,8 +44,7 @@ cdef class LexborNode:
         """Return the first child node."""
         cdef LexborNode node
         if self.node.first_child:
-            node = LexborNode()
-            node._cinit(<lxb_dom_node_t *> self.node.first_child, self.parser)
+            node = LexborNode.new(<lxb_dom_node_t *> self.node.first_child, self.parser)
             return node
         return None
 
@@ -50,9 +52,8 @@ cdef class LexborNode:
     def parent(self):
         """Return the parent node."""
         cdef LexborNode node
-        if self.node.parent:
-            node = LexborNode()
-            node._cinit(<lxb_dom_node_t *> self.node.parent, self.parser)
+        if self.node.parent != NULL:
+            node = LexborNode.new(<lxb_dom_node_t *> self.node.parent, self.parser)
             return node
         return None
 
@@ -60,9 +61,8 @@ cdef class LexborNode:
     def next(self):
         """Return next node."""
         cdef LexborNode node
-        if self.node.next:
-            node = LexborNode()
-            node._cinit(<lxb_dom_node_t *> self.node.next, self.parser)
+        if self.node.next != NULL:
+            node = LexborNode.new(<lxb_dom_node_t *> self.node.next, self.parser)
             return node
         return None
 
@@ -70,9 +70,8 @@ cdef class LexborNode:
     def prev(self):
         """Return previous node."""
         cdef LexborNode node
-        if self.node.prev:
-            node = LexborNode()
-            node._cinit(<lxb_dom_node_t *> self.node.prev, self.parser)
+        if self.node.prev != NULL:
+            node = LexborNode.new(<lxb_dom_node_t *> self.node.prev, self.parser)
             return node
         return None
 
@@ -80,9 +79,8 @@ cdef class LexborNode:
     def last_child(self):
         """Return last child node."""
         cdef LexborNode node
-        if self.node.last_child:
-            node = LexborNode()
-            node._cinit(<lxb_dom_node_t *> self.node.last_child, self.parser)
+        if self.node.last_child != NULL:
+            node = LexborNode.new(<lxb_dom_node_t *> self.node.last_child, self.parser)
             return node
         return None
 
@@ -413,13 +411,12 @@ cdef class LexborNode:
                 node = node.next
                 continue
 
-            next_node = LexborNode()
-            next_node._cinit(<lxb_dom_node_t *> node, self.parser)
+            next_node = LexborNode.new(<lxb_dom_node_t *> node, self.parser)
             yield next_node
             node = node.next
 
 
-    def unwrap(self, delete_empty=False):
+    def unwrap(self, bint delete_empty=False):
         """Replace node with whatever is inside this node.
 
         Parameters
@@ -441,8 +438,8 @@ cdef class LexborNode:
             if delete_empty:
                 lxb_dom_node_destroy(<lxb_dom_node_t *> self.node)
             return
-        cdef lxb_dom_node_t* next_node;
-        cdef lxb_dom_node_t* current_node;
+        cdef lxb_dom_node_t* next_node
+        cdef lxb_dom_node_t* current_node
 
         if self.node.first_child.next != NULL:
             current_node = self.node.first_child
@@ -456,7 +453,7 @@ cdef class LexborNode:
             lxb_dom_node_insert_before(self.node, self.node.first_child)
         lxb_dom_node_destroy(<lxb_dom_node_t *> self.node)
 
-    def unwrap_tags(self, list tags, delete_empty = False):
+    def unwrap_tags(self, list tags, bint delete_empty = False):
         """Unwraps specified tags from the HTML tree.
 
         Works the same as the ``unwrap`` method, but applied to a list of tags.
@@ -478,7 +475,7 @@ cdef class LexborNode:
 
         Note: by default, empty tags are ignored, use "delete_empty" to change this.
         """
-
+        cdef LexborNode element
         for tag in tags:
             for element in self.css(tag):
                 element.unwrap(delete_empty)
@@ -502,8 +499,7 @@ cdef class LexborNode:
 
         while node != NULL:
             if not (not include_text and node.type == LXB_DOM_NODE_TYPE_TEXT):
-                lxb_node = LexborNode()
-                lxb_node._cinit(<lxb_dom_node_t *> node, self.parser)
+                lxb_node = LexborNode.new(<lxb_dom_node_t *> node, self.parser)
                 yield lxb_node
 
             if node.first_child != NULL:
@@ -742,7 +738,7 @@ cdef class LexborNode:
         >>> selector.child.raw_value
         b'&#x3C;test&#x3E;'
         """
-        raise SelectolaxError("This features is not supported by the lexbor backend. Please use Modest backend.")
+        raise NotImplementedError("This features is not supported by the lexbor backend. Please use Modest backend.")
 
     def scripts_contain(self, str query):
         """Returns True if any of the script tags contain specified text.
@@ -843,6 +839,7 @@ cdef class LexborNode:
             py_text = text.decode(_ENCODING)
             container.append(py_text)
             return container.text
+
 @cython.final
 cdef class TextContainer:
     cdef str _text
@@ -854,7 +851,7 @@ cdef class TextContainer:
         self.separator = separator
         self.strip = strip
 
-    def append(self, node_text):
+    def append(self, str node_text):
         if self.strip:
             self._text += node_text.strip() + self.separator
         else:
@@ -875,8 +872,15 @@ cdef lexbor_action_t text_callback(lxb_dom_node_t *node, void *ctx):
     text = <unsigned char*> lexbor_str_data_noi(&(<lxb_dom_text_t *> node).char_data.data)
     if not text:
         return LEXBOR_ACTION_OK
-    py_str = text.decode(_ENCODING)
-    cdef object cls
-    cls = <object> ctx
+    
+    try:
+        py_str = text.decode(_ENCODING)
+
+    except Exception as e:
+        PyErr_SetNone(e)
+        return LEXBOR_ACTION_STOP
+
+    cdef TextContainer cls
+    cls = <TextContainer> ctx
     cls.append(py_str)
     return LEXBOR_ACTION_OK

@@ -1,4 +1,5 @@
-from cpython cimport bool
+from cpython.bool cimport bool
+from cpython.exc cimport PyErr_SetObject
 
 _ENCODING = 'UTF-8'
 
@@ -24,10 +25,8 @@ cdef class LexborHTMLParser:
     html : str (unicode) or bytes
     """
     def __init__(self, html):
-
         cdef size_t html_len
-        cdef char* html_chars
-
+        cdef object bytes_html
         bytes_html, html_len = preprocess_input(html)
         self._parse_html(bytes_html, html_len)
         self.raw_html = bytes_html
@@ -40,21 +39,28 @@ cdef class LexborHTMLParser:
         return self._selector
 
 
-    cdef _parse_html(self, char *html, size_t html_len):
+    cdef int _parse_html(self, char *html, size_t html_len) except -1:
         cdef lxb_status_t status
 
         with nogil:
             self.document = lxb_html_document_create()
 
         if self.document == NULL:
-            raise SelectolaxError("Failed to initialize object for HTML Document.")
+            PyErr_SetObject(SelectolaxError, "Failed to initialize object for HTML Document.")
+            return -1
 
         with nogil:
             status = lxb_html_document_parse(self.document, <lxb_char_t *> html, html_len)
+        
         if status != 0x0000:
-            raise SelectolaxError("Can't parse HTML.")
+            PyErr_SetObject(SelectolaxError, "Can't parse HTML.")
+            return -1
 
-        assert self.document != NULL
+        if self.document == NULL:
+            PyErr_SetObject(RuntimeError, "document is NULL even after html was parsed correctly")
+            return -1
+        return 0
+
 
     def __dealloc__(self):
         if self.document != NULL:
@@ -68,7 +74,7 @@ cdef class LexborHTMLParser:
         """Returns root node."""
         if self.document == NULL:
             return None
-        return LexborNode()._cinit(<lxb_dom_node_t *> lxb_dom_document_root(&self.document.dom_document), self)
+        return LexborNode.new(<lxb_dom_node_t *> lxb_dom_document_root(&self.document.dom_document), self)
 
     @property
     def body(self):
@@ -77,7 +83,7 @@ cdef class LexborHTMLParser:
         body = lxb_html_document_body_element_noi(self.document)
         if body == NULL:
             return None
-        return LexborNode()._cinit(<lxb_dom_node_t *> body, self)
+        return LexborNode.new(<lxb_dom_node_t *> body, self)
 
     @property
     def head(self):
@@ -86,7 +92,7 @@ cdef class LexborHTMLParser:
         head = lxb_html_document_head_element_noi(self.document)
         if head == NULL:
             return None
-        return LexborNode()._cinit(<lxb_dom_node_t *> head, self)
+        return LexborNode.new(<lxb_dom_node_t *> head, self)
 
     def tags(self, str name):
         """Returns a list of tags that match specified name.
@@ -122,7 +128,7 @@ cdef class LexborHTMLParser:
             raise SelectolaxError("Can't locate elements.")
 
         for i in range(lxb_dom_collection_length_noi(collection)):
-            node = LexborNode()._cinit(
+            node = LexborNode.new(
                 <lxb_dom_node_t*> lxb_dom_collection_element_noi(collection, i),
                 self
             )
@@ -156,7 +162,7 @@ cdef class LexborHTMLParser:
         """Return HTML representation of the page."""
         if self.document == NULL:
             return None
-        node = LexborNode()._cinit(<lxb_dom_node_t *> &self.document.dom_document, self)
+        node = LexborNode.new(<lxb_dom_node_t *> &self.document.dom_document, self)
         return node.html
 
     def css(self, str query):
@@ -309,6 +315,7 @@ cdef class LexborHTMLParser:
         """Clone the current tree."""
         cdef lxb_html_document_t* cloned_document
         cdef lxb_dom_node_t* cloned_node
+        cdef LexborHTMLParser cls 
 
         with nogil:
             cloned_document = lxb_html_document_create()
@@ -333,6 +340,7 @@ cdef class LexborHTMLParser:
 
         cls = LexborHTMLParser.from_document(cloned_document, self.raw_html)
         return cls
+
     def unwrap_tags(self, list tags, delete_empty = False):
         """Unwraps specified tags from the HTML tree.
 
@@ -353,5 +361,6 @@ cdef class LexborHTMLParser:
         >>> tree.body.html
         '<body><div>Hello world!</div></body>'
         """
-        if self.root is not None:
+        # faster to check if the document is empty which should determine if we have a root
+        if self.document != NULL:
             self.root.unwrap_tags(tags, delete_empty=delete_empty)

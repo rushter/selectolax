@@ -1,4 +1,4 @@
-from libc.stdint cimport uint32_t, uint8_t, uintptr_t
+from libc.stdint cimport uint8_t, uint32_t, uintptr_t
 
 
 cdef extern from "lexbor/core/core.h" nogil:
@@ -232,9 +232,11 @@ cdef extern from "lexbor/html/html.h" nogil:
     lxb_status_t lxb_html_serialize_tree_str(lxb_dom_node_t *node, lexbor_str_t *str)
 
 cdef class LexborNode:
-    cdef lxb_dom_node_t *node
-    cdef public LexborHTMLParser parser
-    cdef _cinit(self, lxb_dom_node_t *node, LexborHTMLParser parser)
+    cdef:
+        lxb_dom_node_t *node
+        public LexborHTMLParser parser
+    @staticmethod
+    cdef LexborNode new(lxb_dom_node_t *node, LexborHTMLParser parser)
 
 cdef class LexborCSSSelector:
     cdef lxb_css_parser_t* parser
@@ -250,7 +252,7 @@ cdef class LexborHTMLParser:
     cdef lxb_html_document_t *document
     cdef public bytes raw_html
     cdef LexborCSSSelector _selector
-    cdef _parse_html(self, char* html, size_t html_len)
+    cdef int _parse_html(self, char* html, size_t html_len) except -1
     cdef object cached_script_texts
     cdef object cached_script_srcs
 

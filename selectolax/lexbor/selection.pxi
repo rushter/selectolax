@@ -178,8 +178,7 @@ cdef lxb_status_t css_finder_callback(lxb_dom_node_t *node, lxb_css_selector_spe
     cdef LexborNode lxb_node
     cdef object cls
     cls = <object> ctx
-    lxb_node = LexborNode()
-    lxb_node._cinit(<lxb_dom_node_t *> node, cls.current_node.parser)
+    lxb_node = LexborNode.new(<lxb_dom_node_t *> node, cls.current_node.parser)
     cls.results.append(lxb_node)
     return LXB_STATUS_OK
 

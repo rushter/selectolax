@@ -255,7 +255,6 @@ cdef class LexborNode:
             text = c_text.decode(_ENCODING)
         return text
 
-
     def decompose(self, bool recursive=True):
         """Remove the current node from the tree.
 
@@ -304,7 +303,6 @@ cdef class LexborNode:
         for tag in tags:
             for element in self.css(tag):
                 element.decompose(recursive=recursive)
-
 
     @property
     def attributes(self):
@@ -417,7 +415,6 @@ cdef class LexborNode:
             yield next_node
             node = node.next
 
-
     def unwrap(self, bint delete_empty=False):
         """Replace node with whatever is inside this node.
 
@@ -481,7 +478,6 @@ cdef class LexborNode:
         for tag in tags:
             for element in self.css(tag):
                 element.unwrap(delete_empty)
-
 
     def traverse(self, include_text=False):
         """Iterate over all child and next nodes starting from the current level.
@@ -564,7 +560,6 @@ cdef class LexborNode:
             lxb_dom_node_destroy(<lxb_dom_node_t *> self.node)
         else:
             raise SelectolaxError("Expected a string or LexborNode instance, but %s found" % type(value).__name__)
-
 
     def insert_before(self, str_or_LexborNode value):
         """

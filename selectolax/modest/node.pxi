@@ -136,13 +136,10 @@ cdef class _Attributes:
         tag_name = c_text.decode(_ENCODING, 'ignore') if c_text != NULL else 'unknown'
         return "<%s attributes, %s items>" % (tag_name, len(self))
 
-
-
 ctypedef fused str_or_Node:
     str
     bytes
     Node
-
 
 cdef class Node:
     """A class that represents HTML node (element)."""
@@ -352,7 +349,6 @@ cdef class Node:
             next_node = Node.new(node, self.parser)
             yield next_node
             node = node.next
-
 
     def traverse(self, include_text=False):
         """Iterate over all child and next nodes starting from the current level.

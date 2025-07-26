@@ -38,7 +38,6 @@ cdef class LexborHTMLParser:
             self._selector = LexborCSSSelector()
         return self._selector
 
-
     cdef int _parse_html(self, char *html, size_t html_len) except -1:
         cdef lxb_status_t status
 
@@ -60,7 +59,6 @@ cdef class LexborHTMLParser:
             PyErr_SetObject(RuntimeError, "document is NULL even after html was parsed correctly")
             return -1
         return 0
-
 
     def __dealloc__(self):
         if self.document != NULL:
@@ -284,7 +282,6 @@ cdef class LexborHTMLParser:
 
         """
         return self.root.scripts_contain(query)
-
 
     def script_srcs_contain(self, tuple queries):
         """Returns True if any of the script SRCs attributes contain on of the specified text.

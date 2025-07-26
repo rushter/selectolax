@@ -70,4 +70,4 @@ cython = [
 
 [tool.cython-lint]
 max-line-length = 120
-ignore = ['E221','E222', 'E303']
+ignore = ['E221','E222',]

@@ -31,7 +31,6 @@ cdef extern from "lexbor/core/core.h" nogil:
     lexbor_str_t* lexbor_str_create()
     lxb_char_t * lexbor_str_data_noi(lexbor_str_t *str)
 
-
 cdef extern from "lexbor/html/html.h" nogil:
     ctypedef unsigned int lxb_html_document_opt_t
 
@@ -57,10 +56,8 @@ cdef extern from "lexbor/html/html.h" nogil:
         lxb_char_t *data
         size_t     length
 
-
     ctypedef struct lxb_dom_node_t:
         lxb_dom_event_target_t event_target
-
 
         uintptr_t              local_name
         uintptr_t              prefix
@@ -76,7 +73,6 @@ cdef extern from "lexbor/html/html.h" nogil:
         void                   *user
 
         lxb_dom_node_type_t    type
-
 
     ctypedef struct lxb_dom_document_t:
         lxb_dom_node_t              node
@@ -104,7 +100,6 @@ cdef extern from "lexbor/html/html.h" nogil:
 
         bint                        scripting
 
-
     ctypedef  struct lxb_html_document_t:
         lxb_dom_document_t dom_document
 
@@ -127,7 +122,6 @@ cdef extern from "lexbor/html/html.h" nogil:
         LXB_HTML_PARSER_STATE_END              = 0x02
         LXB_HTML_PARSER_STATE_FRAGMENT_PROCESS = 0x03
         LXB_HTML_PARSER_STATE_ERROR            = 0x04
-
 
     ctypedef enum lxb_dom_node_type_t:
         LXB_DOM_NODE_TYPE_ELEMENT                = 0x01
@@ -174,7 +168,6 @@ cdef extern from "lexbor/html/html.h" nogil:
         size_t  size
         size_t  length
         size_t  struct_size
-
 
     ctypedef struct lxb_html_tree_pending_table_t
     ctypedef bint lxb_html_tree_insertion_mode_f
@@ -294,7 +287,6 @@ cdef extern from "lexbor/dom/dom.h" nogil:
 
         lxb_dom_attr_t *next
         lxb_dom_attr_t *prev
-
 
     lxb_dom_collection_t * lxb_dom_collection_make(lxb_dom_document_t *document, size_t start_list_size)
     lxb_char_t * lxb_dom_node_text_content(lxb_dom_node_t *node, size_t *len)

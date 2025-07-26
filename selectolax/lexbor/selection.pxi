@@ -14,7 +14,6 @@ cdef class LexborCSSSelector:
     cdef int _create_css_parser(self) except -1:
         cdef lxb_status_t status
 
-
         self.parser = lxb_css_parser_create()
         status = lxb_css_parser_init(self.parser, NULL)
 
@@ -89,7 +88,6 @@ cdef class LexborCSSSelector:
         lxb_css_selector_list_destroy_memory(selectors_list)
         return result
 
-
     def __dealloc__(self):
         if self.selectors != NULL:
             lxb_selectors_destroy(self.selectors, True)
@@ -97,7 +95,6 @@ cdef class LexborCSSSelector:
             lxb_css_parser_destroy(self.parser, True)
         if self.css_selectors != NULL:
             lxb_css_selectors_destroy(self.css_selectors, True)
-
 
 
 cdef class LexborSelector:
@@ -113,7 +110,6 @@ cdef class LexborSelector:
     def __init__(self, LexborNode node, query):
         self.node = node
         self.nodes = self.node.parser.selector.find(query, self.node) if query else [node, ]
-
 
     cpdef css(self, str query):
         """Evaluate CSS selector against current scope."""

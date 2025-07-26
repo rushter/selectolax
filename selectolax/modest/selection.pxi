@@ -30,7 +30,6 @@ cdef class CSSSelector:
 
         return collection
 
-
     cdef int _create_css_parser(self) except -1:
         cdef mystatus_t status
 
@@ -48,7 +47,6 @@ cdef class CSSSelector:
             PyErr_SetObject(RuntimeError, "Can't init MyCSS Entry object.")
             return -1
         return 0
-
 
     cdef int _prepare_selector(self, mycss_entry_t *css_entry, const char *selector, size_t selector_size) except -1:
         cdef mystatus_t out_status
@@ -83,7 +81,6 @@ cdef class Selector:
         """custom init, because __cinit__ doesn't accept C types"""
         self.node = node
         self.nodes = find_nodes(node.parser, node.node, query) if query else [node, ]
-
 
     cpdef css(self, str query):
         """Evaluate CSS selector against current scope."""

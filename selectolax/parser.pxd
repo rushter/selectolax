@@ -86,7 +86,6 @@ cdef extern from "myhtml/myhtml.h" nogil:
         MyHTML_TOKEN_TYPE_COMMENT          = 0x400
         MyHTML_TOKEN_TYPE_NULL             = 0x800
 
-
     ctypedef enum myhtml_tags:
         MyHTML_TAG__UNDEF              = 0x000
         MyHTML_TAG__TEXT               = 0x001
@@ -392,8 +391,6 @@ cdef extern from "myhtml/myhtml.h" nogil:
         size_t raw_value_begin
         size_t raw_value_length
 
-
-
     myhtml_t * myhtml_create()
     mystatus_t myhtml_init(myhtml_t* myhtml, myhtml_options opt, size_t thread_count, size_t queue_size)
     myhtml_tree_t * myhtml_tree_create()
@@ -540,7 +537,6 @@ cdef extern from "mycss/mycss.h" nogil:
                                                           mycss_selectors_list_t* selectors_list, bint self_destroy)
     mycss_entry_t * mycss_entry_destroy(mycss_entry_t* entry, bint self_destroy)
     mycss_t * mycss_destroy(mycss_t* mycss, bint self_destroy)
-
 
 
 cdef extern from "modest/finder/finder.h" nogil:

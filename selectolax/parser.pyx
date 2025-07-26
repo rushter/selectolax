@@ -274,7 +274,6 @@ cdef class HTMLParser:
 
             myhtml_collection_destroy(collection)
 
-
     def unwrap_tags(self, list tags, delete_empty : bool = False):
         """Unwraps specified tags from the HTML tree.
 
@@ -393,7 +392,6 @@ cdef class HTMLParser:
         obj.cached_script_texts = None
         obj.cached_script_srcs = None
         return obj
-
 
     def clone(self):
         """Clone the current tree."""

@@ -415,7 +415,7 @@ cdef extern from "myhtml/myhtml.h" nogil:
     myhtml_tree_node_t* myhtml_tree_get_node_head(myhtml_tree_t* tree)
 
     myhtml_collection_t* myhtml_get_nodes_by_name(myhtml_tree_t* tree, myhtml_collection_t *collection,
-                         const char* name, size_t length, mystatus_t *status)
+                                                  const char* name, size_t length, mystatus_t *status)
 
     void myhtml_node_delete(myhtml_tree_node_t *node)
     void myhtml_node_delete_recursive(myhtml_tree_node_t *node)
@@ -427,7 +427,7 @@ cdef extern from "myhtml/myhtml.h" nogil:
     myhtml_tree_node_t * myhtml_node_append_child(myhtml_tree_node_t* target, myhtml_tree_node_t* node)
 
     mycore_string_t * myhtml_node_text_set(myhtml_tree_node_t *node, const char* text, size_t length,
-                                          myencoding_t encoding)
+                                           myencoding_t encoding)
     myhtml_tree_attr_t * myhtml_attribute_by_key(myhtml_tree_node_t *node, const char *key, size_t key_len)
     myhtml_tree_attr_t * myhtml_attribute_remove_by_key(myhtml_tree_node_t *node, const char *key, size_t key_len)
     myhtml_tree_attr_t * myhtml_attribute_add(myhtml_tree_node_t *node, const char *key, size_t key_len,
@@ -547,7 +547,7 @@ cdef extern from "modest/finder/finder.h" nogil:
     ctypedef struct modest_finder_t
     modest_finder_t* modest_finder_create_simple()
     mystatus_t modest_finder_by_selectors_list(modest_finder_t* finder, myhtml_tree_node_t* scope_node,
-                                                mycss_selectors_list_t* selector_list, myhtml_collection_t** collection)
+                                               mycss_selectors_list_t* selector_list, myhtml_collection_t** collection)
     modest_finder_t * modest_finder_destroy(modest_finder_t* finder, bint self_destroy)
 
 
@@ -563,6 +563,7 @@ cdef class HTMLParser:
 
     cdef void _detect_encoding(self, char* html, size_t html_len) nogil
     cdef int _parse_html(self, char* html, size_t html_len) except -1
+
     @staticmethod
     cdef HTMLParser from_tree(
         myhtml_tree_t * tree, bytes raw_html, bint detect_encoding, bint use_meta_tags, str decode_errors,

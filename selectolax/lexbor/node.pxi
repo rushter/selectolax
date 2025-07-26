@@ -19,6 +19,7 @@ cdef inline bytes to_bytes(str_or_LexborNode value):
         bytes_val = <bytes>value
     return bytes_val
 
+
 @cython.final
 cdef class LexborNode:
     """A class that represents HTML node (element)."""
@@ -844,6 +845,7 @@ cdef class LexborNode:
             container.append(py_text)
             return container.text
 
+
 @cython.internal
 @cython.final
 cdef class TextContainer:
@@ -869,6 +871,7 @@ cdef class TextContainer:
             self._text += node_text.strip() + self.separator
         else:
             self._text += node_text + self.separator
+
     @property
     def text(self):
         if self.separator and self._text and self._text.endswith(self.separator):

@@ -1,5 +1,6 @@
 include "../utils.pxi"
 
+
 def create_tag(tag: str):
     """
     Given an HTML tag name, e.g. `"div"`, create a single empty node for that tag,

@@ -2,6 +2,7 @@ cimport cython
 from cpython.exc cimport PyErr_SetObject
 from cpython.list cimport PyList_GET_SIZE
 
+
 @cython.final
 cdef class LexborCSSSelector:
 

@@ -9,6 +9,7 @@ from libc.string cimport memcpy
 DEF _STACK_SIZE = 100
 DEF _ENCODING = 'UTF-8'
 
+
 @cython.final
 cdef class Stack:
     def __cinit__(self, size_t capacity=25):
@@ -898,6 +899,7 @@ cdef class Node:
         if not isinstance(other, Node):
             return False
         return self.html == other.html
+
     @property
     def text_content(self):
         """Returns the text of the node if it is a text node.
@@ -951,8 +953,8 @@ cdef class Node:
         while not stack.is_empty():
             current_node = stack.pop()
 
-            if current_node.tag_id == MyHTML_TAG__TEXT and current_node.prev and \
-                current_node.prev.tag_id == MyHTML_TAG__TEXT:
+            if (current_node.tag_id == MyHTML_TAG__TEXT and current_node.prev and
+                    current_node.prev.tag_id == MyHTML_TAG__TEXT):
                 left_text = myhtml_node_text(current_node.prev, &left_length)
                 right_text = myhtml_node_text(current_node, &right_length)
                 if left_text and right_text:

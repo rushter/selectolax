@@ -4,6 +4,16 @@ MAX_HTML_INPUT_SIZE = 250e+7
 
 ParserCls = Union[Type["HTMLParser"], Type["LexborHTMLParser"]]
 Parser = Union["HTMLParser", "LexborHTMLParser"]
+FRAGMENT = Literal[
+    "document",
+    "fragment",
+    "head",
+    "body",
+    "head_and_body",
+    "document_no_head",
+    "document_no_body",
+    "document_no_head_no_body",
+]
 
 
 def preprocess_input(html, decode_errors='ignore'):
@@ -29,10 +39,10 @@ def get_fragment_type(
     html: str,
     parser_cls: ParserCls,
     tree: Optional[Parser] = None,
-) -> Literal["document", "fragment", "head", "body", "head_and_body", "document_no_head", "document_no_body", "document_no_head_no_body"]:
+) -> FRAGMENT:
     if not tree:
         tree = parser_cls(html)
-    
+
     import re
     html_re = re.compile(r"<html|<body|<head(?!er)", re.IGNORECASE)
 
@@ -49,7 +59,7 @@ def get_fragment_type(
 
         if has_html and has_head and has_body:
             break
-    
+
     if has_html and has_head and has_body:
         return "document"
     elif has_html and not has_head and has_body:

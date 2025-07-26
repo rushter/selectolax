@@ -1,6 +1,5 @@
 cimport cython
 
-from typing import Optional
 
 @cython.final
 cdef class LexborAttributes:

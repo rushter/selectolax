@@ -1,6 +1,7 @@
 cimport cython
 from cpython.exc cimport PyErr_SetObject
 
+
 @cython.final
 cdef class CSSSelector:
 
@@ -49,13 +50,10 @@ cdef class CSSSelector:
         return 0
 
 
-    cdef int _prepare_selector(self, mycss_entry_t *css_entry,
-                                                   const char *selector, size_t selector_size) except -1:
+    cdef int _prepare_selector(self, mycss_entry_t *css_entry, const char *selector, size_t selector_size) except -1:
         cdef mystatus_t out_status
-        self.selectors_list = mycss_selectors_parse(mycss_entry_selectors(css_entry),
-                                                         myencoding_t.MyENCODING_UTF_8,
-                                                         selector, selector_size,
-                                                         &out_status)
+        self.selectors_list = mycss_selectors_parse(mycss_entry_selectors(css_entry), myencoding_t.MyENCODING_UTF_8,
+                                                    selector, selector_size, &out_status)
 
         if (self.selectors_list == NULL) or (self.selectors_list.flags and MyCSS_SELECTORS_FLAGS_SELECTOR_BAD):
             PyErr_SetObject(ValueError, "Bad CSS Selectors: %s" % self.c_selector.decode('utf-8'))

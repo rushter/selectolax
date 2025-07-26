@@ -67,3 +67,7 @@ test-skip = "*-macosx_arm64"
 cython = [
     "Cython",
 ]
+
+[tool.cython-lint]
+max-line-length = 120
+ignore = ['E221','E222', 'E303']

@@ -54,3 +54,5 @@ jobs:
         run: ruff check selectolax tests
       - name: Lint Mypy
         run: mypy selectolax tests
+      - name: Lint Cython
+        run: cython-lint selectolax/

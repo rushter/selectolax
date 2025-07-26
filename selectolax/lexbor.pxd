@@ -299,7 +299,7 @@ cdef extern from "lexbor/dom/dom.h" nogil:
     lxb_dom_collection_t * lxb_dom_collection_make(lxb_dom_document_t *document, size_t start_list_size)
     lxb_char_t * lxb_dom_node_text_content(lxb_dom_node_t *node, size_t *len)
     void * lxb_dom_document_destroy_text_noi(lxb_dom_document_t *document, lxb_char_t *text)
-    lxb_dom_node_t *  lxb_dom_document_root(lxb_dom_document_t *document)
+    lxb_dom_node_t * lxb_dom_document_root(lxb_dom_document_t *document)
     lxb_char_t * lxb_dom_element_qualified_name(lxb_dom_element_t *element, size_t *len)
     lxb_dom_node_t * lxb_dom_node_destroy(lxb_dom_node_t *node)
     lxb_dom_node_t * lxb_dom_node_destroy_deep(lxb_dom_node_t *root)
@@ -562,8 +562,7 @@ cdef extern from "lexbor/selectors/selectors.h" nogil:
     ctypedef struct lxb_selectors_t
     ctypedef struct lxb_css_selector_list_t
     ctypedef struct lxb_css_selector_specificity_t
-    ctypedef lxb_status_t (*lxb_selectors_cb_f)(lxb_dom_node_t *node, lxb_css_selector_specificity_t *spec,
-                      void *ctx)
+    ctypedef lxb_status_t (*lxb_selectors_cb_f)(lxb_dom_node_t *node, lxb_css_selector_specificity_t *spec, void *ctx)
     ctypedef enum lxb_selectors_opt_t:
         LXB_SELECTORS_OPT_DEFAULT = 0x00
         LXB_SELECTORS_OPT_MATCH_ROOT = 1 << 1
@@ -580,4 +579,4 @@ cdef extern from "lexbor/selectors/selectors.h" nogil:
     lxb_status_t lxb_selectors_init(lxb_selectors_t *selectors)
     lxb_selectors_t * lxb_selectors_destroy(lxb_selectors_t *selectors, bint self_destroy)
     lxb_status_t lxb_selectors_find(lxb_selectors_t *selectors, lxb_dom_node_t *root,
-                   lxb_css_selector_list_t *list, lxb_selectors_cb_f cb, void *ctx)
+                                    lxb_css_selector_list_t *list, lxb_selectors_cb_f cb, void *ctx)

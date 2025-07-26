@@ -268,7 +268,7 @@ class Node:
     def remove(self, recursive: bool = True) -> None:
         """An alias for the decompose method."""
         ...
-    def unwrap(self) -> None:
+    def unwrap(self, delete_empty: bool = False) -> None:
         """Replace node with whatever is inside this node.
 
         Parameters

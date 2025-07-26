@@ -128,7 +128,7 @@ cdef class HTMLParser:
             PyErr_SetObject(RuntimeError, "Can't parse HTML (status code: %d)" % status)
             return -1
 
-        if (self.html_tree.node_html == NULL):
+        if self.html_tree.node_html == NULL:
             PyErr_SetObject(RuntimeError, "html_tree is still NULL even after parsing ")
             return -1
         return 0

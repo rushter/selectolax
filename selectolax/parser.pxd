@@ -33,9 +33,9 @@ cdef extern from "myhtml/myhtml.h" nogil:
         MyHTML_OPTIONS_PARSE_MODE_SEPARATELY   = 0x04
 
     ctypedef struct myhtml_collection_t:
-        myhtml_tree_node_t **list;
-        size_t size;
-        size_t length;
+        myhtml_tree_node_t **list
+        size_t size
+        size_t length
 
     ctypedef  struct myhtml_tree_node_t:
         myhtml_tree_node_flags flags
@@ -515,16 +515,16 @@ cdef extern from "mycss/mycss.h" nogil:
     ctypedef mycss_selectors_flags mycss_selectors_flags_t
 
     ctypedef struct mycss_selectors_list_t:
-        mycss_selectors_entries_list_t* entries_list;
-        size_t entries_list_length;
+        mycss_selectors_entries_list_t* entries_list
+        size_t entries_list_length
 
-        mycss_declaration_entry_t* declaration_entry;
+        mycss_declaration_entry_t* declaration_entry
 
-        mycss_selectors_flags_t flags;
+        mycss_selectors_flags_t flags
 
-        mycss_selectors_list_t* parent;
-        mycss_selectors_list_t* next;
-        mycss_selectors_list_t* prev;
+        mycss_selectors_list_t* parent
+        mycss_selectors_list_t* next
+        mycss_selectors_list_t* prev
 
     # CSS init routines
     mycss_t * mycss_create()

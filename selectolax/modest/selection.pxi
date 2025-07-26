@@ -51,7 +51,7 @@ cdef class CSSSelector:
 
     cdef int _prepare_selector(self, mycss_entry_t *css_entry,
                                                    const char *selector, size_t selector_size) except -1:
-        cdef mystatus_t out_status;
+        cdef mystatus_t out_status
         self.selectors_list = mycss_selectors_parse(mycss_entry_selectors(css_entry),
                                                          myencoding_t.MyENCODING_UTF_8,
                                                          selector, selector_size,

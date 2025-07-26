@@ -295,7 +295,7 @@ cdef class Node:
     cdef inline _text_deep(self, myhtml_tree_node_t *node, separator='', strip=False):
         text = ""
         cdef Stack stack = Stack(_STACK_SIZE)
-        cdef myhtml_tree_node_t* current_node = NULL;
+        cdef myhtml_tree_node_t* current_node = NULL
 
         if node.tag_id == MyHTML_TAG__TEXT:
             c_text = myhtml_node_text(node, NULL)

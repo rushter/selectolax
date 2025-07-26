@@ -194,7 +194,7 @@ cdef class HTMLParser:
 
         cdef myhtml_collection_t* collection = NULL
         pybyte_name = name.encode('UTF-8')
-        cdef mystatus_t status = 0;
+        cdef mystatus_t status = 0
 
         result = list()
         collection = myhtml_get_nodes_by_name(self.html_tree, NULL, pybyte_name, len(pybyte_name), &status)
@@ -254,7 +254,7 @@ cdef class HTMLParser:
         """
         cdef myhtml_collection_t* collection = NULL
 
-        cdef mystatus_t status = 0;
+        cdef mystatus_t status = 0
 
         for tag in tags:
             pybyte_name = tag.encode('UTF-8')

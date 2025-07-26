@@ -22,12 +22,12 @@ cdef inline bytes to_bytes(str_or_LexborNode value):
 @cython.final
 cdef class LexborNode:
     """A class that represents HTML node (element)."""
-    
+
     @staticmethod
     cdef LexborNode new(lxb_dom_node_t *node, LexborHTMLParser parser):
         cdef LexborNode lxbnode = LexborNode.__new__(LexborNode)
         lxbnode.node = node
-        lxbnode.parser = parser 
+        lxbnode.parser = parser
         return lxbnode
 
     @property
@@ -836,7 +836,7 @@ cdef class LexborNode:
         cdef TextContainer container
         if self.node == NULL or self.node.type != LXB_DOM_NODE_TYPE_TEXT:
             return None
-        
+
         text = <unsigned char *> lexbor_str_data_noi(&(<lxb_dom_character_data_t *> self.node).data)
         if text != NULL:
             container = TextContainer.new_with_defaults()
@@ -856,7 +856,7 @@ cdef class TextContainer:
         cdef TextContainer cls = TextContainer.__new__(TextContainer)
         cls._text = ''
         cls.separator = ''
-        cls.strip = False 
+        cls.strip = False
         return cls
 
     def __init__(self, str separator = '', bool strip = False):
@@ -877,7 +877,7 @@ cdef class TextContainer:
 
 
 cdef lexbor_action_t text_callback(lxb_dom_node_t *node, void *ctx):
-    cdef unsigned char *text;
+    cdef unsigned char *text
     cdef lxb_tag_id_t tag_id = lxb_dom_node_tag_id_noi(node)
     if tag_id != LXB_TAG__TEXT:
         return LEXBOR_ACTION_OK
@@ -885,7 +885,7 @@ cdef lexbor_action_t text_callback(lxb_dom_node_t *node, void *ctx):
     text = <unsigned char*> lexbor_str_data_noi(&(<lxb_dom_text_t *> node).char_data.data)
     if not text:
         return LEXBOR_ACTION_OK
-    
+
     try:
         py_str = text.decode(_ENCODING)
 

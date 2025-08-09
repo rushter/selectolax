@@ -1,9 +1,17 @@
 selectolax Changelog
 ====================
 
+Version 0.3.33
+-------------
+Released
+
+- Add `merge_text_nodes` to lexbor backend. Fixes #170. @amirshukayev
+- Performance improvements in Cython code. @Vizonex
+
 Version 0.3.32
 -------------
 
+Released
 
 - Update lexbor. New version of lexbor fixes bugs with CSS selectors.
 

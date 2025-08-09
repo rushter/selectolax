@@ -479,6 +479,43 @@ cdef class LexborNode:
             for element in self.css(tag):
                 element.unwrap(delete_empty)
 
+    def merge_text_nodes(self):
+        """Iterates over all text nodes and merges all text nodes that are close to each other.
+
+        This is useful for text extraction.
+        Use it when you need to strip HTML tags and merge "dangling" text.
+
+        Examples
+        --------
+
+        >>> tree = LexborHTMLParser("<div><p><strong>J</strong>ohn</p><p>Doe</p></div>")
+        >>> node = tree.css_first('div')
+        >>> tree.unwrap_tags(["strong"])
+        >>> tree.text(deep=True, separator=" ", strip=True)
+        "J ohn Doe" # Text extraction produces an extra space because the strong tag was removed.
+        >>> node.merge_text_nodes()
+        >>> tree.text(deep=True, separator=" ", strip=True)
+        "John Doe"
+        """
+        cdef lxb_dom_node_t *node = self.node.first_child
+        cdef lxb_dom_node_t *next_node
+        cdef lxb_char_t *text1
+        cdef lxb_char_t *text2
+        cdef size_t len1, len2
+
+        while node != NULL:
+            next_node = node.next
+            if node.type == LXB_DOM_NODE_TYPE_TEXT and node.prev and node.prev.type == LXB_DOM_NODE_TYPE_TEXT:
+                text1 = lxb_dom_node_text_content(node.prev, &len1)
+                text2 = lxb_dom_node_text_content(node, &len2)
+                if text1 and text2:
+                    combined = (<bytes>text1[:len1]) + (<bytes>text2[:len2])
+                    lxb_dom_node_text_content_set(node, combined, len(combined))
+                    lxb_dom_node_remove(node.prev)
+            if node.first_child:
+                LexborNode.new(node, self.parser).merge_text_nodes()
+            node = next_node
+
     def traverse(self, include_text=False):
         """Iterate over all child and next nodes starting from the current level.
 

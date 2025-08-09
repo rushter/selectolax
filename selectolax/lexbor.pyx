@@ -298,6 +298,26 @@ cdef class LexborHTMLParser:
     def css_matches(self, str selector):
         return self.root.css_matches(selector)
 
+    def merge_text_nodes(self):
+        """Iterates over all text nodes and merges all text nodes that are close to each other.
+
+        This is useful for text extraction.
+        Use it when you need to strip HTML tags and merge "dangling" text.
+
+        Examples
+        --------
+
+        >>> tree = LexborHTMLParser("<div><p><strong>J</strong>ohn</p><p>Doe</p></div>")
+        >>> node = tree.css_first('div')
+        >>> tree.unwrap_tags(["strong"])
+        >>> tree.text(deep=True, separator=" ", strip=True)
+        "J ohn Doe" # Text extraction produces an extra space because the strong tag was removed.
+        >>> node.merge_text_nodes()
+        >>> tree.text(deep=True, separator=" ", strip=True)
+        "John Doe"
+        """
+        return self.root.merge_text_nodes()
+
     @staticmethod
     cdef LexborHTMLParser from_document(lxb_html_document_t *document, bytes raw_html):
         obj = <LexborHTMLParser> LexborHTMLParser.__new__(LexborHTMLParser)

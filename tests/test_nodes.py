@@ -652,7 +652,7 @@ def test_content_method(parser):
     assert tree.css_first("#main").text_content is None
 
 
-@pytest.mark.parametrize("parser", (HTMLParser,))
+@pytest.mark.parametrize("parser", (HTMLParser, LexborHTMLParser))
 def test_merge_text_nodes(parser):
     html = """<div><p><strong>J</strong>ohn</p><p>Doe</p></div>"""
     tree = parser(html)
@@ -662,6 +662,31 @@ def test_merge_text_nodes(parser):
     assert node.html == "<div><p>John</p><p>Doe</p></div>"
     text = tree.text(deep=True, separator=" ", strip=True)
     assert text == "John Doe"
+
+
+@pytest.mark.parametrize("parser", (HTMLParser, LexborHTMLParser))
+def test_merge_text_nodes_complex(parser):
+    from textwrap import dedent
+    html = dedent("""
+        <article>
+            <h1><em>H</em>ello <strong>W</strong>orld</h1>
+            <div>
+                <p>This <span>i</span>s <b>a</b> <i>t</i>est</p>
+                <section>
+                    <span>Nested</span> <span>text</span> nodes
+                    <div>with <em>m</em>ore <strong>nesting</strong> here</div>
+                </section>
+            </div>
+        </article>
+    """).strip()
+    tree = parser(html)
+    tree.unwrap_tags(["em", "strong", "span", "b", "i"])
+    root = tree.css_first("article", strict=True)
+    root.merge_text_nodes()
+    assert root.css_first("h1").text() == "Hello World"
+    assert root.css_first("p").text() == "This is a test"
+    assert "Nested text nodes" in root.css_first("section").text()
+    assert root.css_first("section > div").text() == "with more nesting here"
 
 
 @pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)

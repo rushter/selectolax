@@ -499,21 +499,19 @@ cdef class LexborNode:
         """
         cdef lxb_dom_node_t *node = self.node.first_child
         cdef lxb_dom_node_t *next_node
-        cdef lxb_char_t *text1
-        cdef lxb_char_t *text2
-        cdef size_t len1, len2
+        cdef lxb_char_t *left_text
+        cdef lxb_char_t *right_text
+        cdef size_t left_length, right_length
 
         while node != NULL:
             next_node = node.next
             if node.type == LXB_DOM_NODE_TYPE_TEXT and node.prev and node.prev.type == LXB_DOM_NODE_TYPE_TEXT:
-                text1 = lxb_dom_node_text_content(node.prev, &len1)
-                text2 = lxb_dom_node_text_content(node, &len2)
-                if text1 and text2:
-                    combined = (<bytes>text1[:len1]) + (<bytes>text2[:len2])
+                left_text = lxb_dom_node_text_content(node.prev, &left_length)
+                right_text = lxb_dom_node_text_content(node, &right_length)
+                if left_text and right_text:
+                    combined = (<bytes>left_text[:left_length]) + (<bytes>right_text[:right_length])
                     lxb_dom_node_text_content_set(node, combined, len(combined))
                     lxb_dom_node_remove(node.prev)
-                    lxb_dom_document_destroy_text_noi(node.owner_document, text1)
-                    lxb_dom_document_destroy_text_noi(node.owner_document, text2)
             if node.first_child:
                 LexborNode.new(node, self.parser).merge_text_nodes()
             node = next_node

@@ -384,6 +384,25 @@ class LexborNode:
         Note: by default, empty tags are ignored, use "delete_empty" to change this.
         """
         ...
+    def merge_text_nodes(self) -> None:
+        """Iterates over all text nodes and merges all text nodes that are close to each other.
+
+        This is useful for text extraction.
+        Use it when you need to strip HTML tags and merge "dangling" text.
+
+        Examples
+        --------
+
+        >>> tree = LexborHTMLParser("<div><p><strong>J</strong>ohn</p><p>Doe</p></div>")
+        >>> node = tree.css_first('div')
+        >>> tree.unwrap_tags(["strong"])
+        >>> tree.text(deep=True, separator=" ", strip=True)
+        "J ohn Doe" # Text extraction produces an extra space because the strong tag was removed.
+        >>> node.merge_text_nodes()
+        >>> tree.text(deep=True, separator=" ", strip=True)
+        "John Doe"
+        """
+        ...
     def traverse(self, include_text: bool = False) -> Iterator[LexborNode]:
         """Iterate over all child and next nodes starting from the current level.
 
@@ -779,6 +798,25 @@ class LexborHTMLParser:
         """
         ...
     def css_matches(self, selector: str) -> bool: ...
+    def merge_text_nodes(self) -> None:
+        """Iterates over all text nodes and merges all text nodes that are close to each other.
+
+        This is useful for text extraction.
+        Use it when you need to strip HTML tags and merge "dangling" text.
+
+        Examples
+        --------
+
+        >>> tree = LexborHTMLParser("<div><p><strong>J</strong>ohn</p><p>Doe</p></div>")
+        >>> node = tree.css_first('div')
+        >>> tree.unwrap_tags(["strong"])
+        >>> tree.text(deep=True, separator=" ", strip=True)
+        "J ohn Doe" # Text extraction produces an extra space because the strong tag was removed.
+        >>> node.merge_text_nodes()
+        >>> tree.text(deep=True, separator=" ", strip=True)
+        "John Doe"
+        """
+        ...
     def clone(self) -> LexborHTMLParser:
         """Clone the current tree."""
         ...

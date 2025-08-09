@@ -689,6 +689,16 @@ def test_merge_text_nodes_complex(parser):
     assert root.css_first("section > div").text() == "with more nesting here"
 
 
+@pytest.mark.parametrize("parser", (HTMLParser, LexborHTMLParser))
+def test_merge_text_nodes_three_plus(parser):
+    html = """<div><em>O</em><strong>n</strong><b>e</b> <i>T</i><span>w</span><u>o</u> <small>T</small><big>h</big><mark>r</mark><sub>e</sub><sup>e</sup></div>"""
+    tree = parser(html)
+    tree.unwrap_tags(["em", "strong", "b", "i", "span", "u", "small", "big", "mark", "sub", "sup"])
+    div = tree.css_first("div", strict=True)
+    div.merge_text_nodes()
+    assert div.text() == "One Two Three"
+
+
 @pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
 def test_css_first_first(parser):
     html = '<h2 class="list-details__item__partial" id="js-partial">(1:1, 0:0, 0:0, 5:3)</h2>'

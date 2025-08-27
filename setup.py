@@ -124,6 +124,7 @@ def make_extensions():
             "-Wno-unused-function",
             "-std=c99",
             "-O2",
+            "-g0",
         ]
         compile_arguments.extend(args)
         compile_arguments_lxb.extend(args)

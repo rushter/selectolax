@@ -85,7 +85,7 @@ div
 <p id="p5">text</p>
 ```
 
-### Using `lexbor-contains` CSS pseudo-class to match text
+#### Using `lexbor-contains` CSS pseudo-class to match text
 
 ```python
 from selectolax.lexbor import LexborHTMLParser
@@ -101,7 +101,7 @@ assert results[0].text() == "lexbor is AwesOme"
 
 * [Detailed overview](https://github.com/rushter/selectolax/blob/master/examples/walkthrough.ipynb)
 
-## Available backends
+### Available backends
 
 Selectolax supports two backends: `Modest` and `Lexbor`. By default, all examples use the Modest backend.
 Most of the features between backends are almost identical, but there are still some differences.

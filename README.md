@@ -1,5 +1,3 @@
-# selectolax
-
 ![selectolax logo](docs/logo.png)
 
 ---

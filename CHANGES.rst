@@ -7,7 +7,7 @@ Version 0.3.34
 
 Released
 
-- Lexbor backend now supports `:lexbor-contains("abc" i)` CSS pseudo-class.
+- Lexbor backend now supports `:lexbor-contains("abc" i)` CSS pseudo-class to match text nodes.
 
 Version 0.3.33
 ---------------

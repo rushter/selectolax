@@ -32,7 +32,7 @@ jobs:
           submodules: true
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v3.0.0
+        uses: pypa/cibuildwheel@v3.1.4
         env:
           CIBW_PLATFORM: ${{ matrix.platform || 'auto' }}
 
@@ -51,7 +51,7 @@ jobs:
           submodules: true
       - name: Build sdist
         run: |
-          pip install Cython setuptools wheel setuptools
+          pip install -U Cython packaging setuptools wheel
           python setup.py build_ext --inplace --cython
           python setup.py sdist
 

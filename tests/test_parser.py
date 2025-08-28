@@ -309,3 +309,11 @@ def test_empty_attribute_lexbor():
     div = create_tag("div")
     div.attrs["hidden"] = None
     assert div.html == "<div hidden></div>"
+
+
+def test_pseudo_class_contains():
+    html = "<div><p>hello world</p><p id='main'>AwesOme t3xt</p></div>"
+    parser = LexborHTMLParser(html)
+    results = parser.css('p:lexbor-contains("awesome" i)')
+    assert len(results) == 1
+    assert results[0].text() == "AwesOme t3xt"

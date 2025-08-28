@@ -145,6 +145,12 @@ class LexborNode:
         Matches pattern `query` against HTML tree.
         `CSS selectors reference <https://www.w3schools.com/cssref/css_selectors.asp>`_.
 
+        Special selectors:
+
+         - parser.css('p:lexbor-contains("awesome" i)') -- case-insensitive contains
+         - parser.css('p:lexbor-contains("awesome")') -- case-sensitive contains
+
+
         Parameters
         ----------
         query : str
@@ -664,6 +670,12 @@ class LexborHTMLParser:
 
         Matches pattern `query` against HTML tree.
         `CSS selectors reference <https://www.w3schools.com/cssref/css_selectors.asp>`_.
+
+        Special selectors:
+
+         - parser.css('p:lexbor-contains("awesome" i)') -- case-insensitive contains
+         - parser.css('p:lexbor-contains("awesome")') -- case-sensitive contains
+
 
         Parameters
         ----------

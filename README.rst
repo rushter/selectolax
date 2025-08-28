@@ -92,6 +92,21 @@ Using advanced CSS selectors:
     <p id="p5">text</p>
 
 
+Using `lexbor-contains` CSS pseudo-class to match text:
+
+.. code:: python
+
+    from selectolax.lexbor import LexborHTMLParser
+    html = "<div><p>hello </p><p id='main'>lexbor is AwesOme</p></div>"
+    parser = LexborHTMLParser(html)
+    # Case insensitive search
+    results = parser.css('p:lexbor-contains("awesome" i)')
+    # Case-sensitive search
+    results = parser.css('p:lexbor-contains("AwesOme")')
+    assert len(results) == 1
+    assert results[0].text() == "lexbor is AwesOme"
+
+
 * `Detailed overview <https://github.com/rushter/selectolax/blob/master/examples/walkthrough.ipynb>`_
 
 Available backends

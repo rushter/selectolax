@@ -1,22 +1,30 @@
 selectolax Changelog
 ====================
 
+
+Version 0.3.34
+---------------
+
+Released
+
+- Lexbor backend now supports `:lexbor-contains("abc" i)` CSS pseudo-class.
+
 Version 0.3.33
--------------
+---------------
 Released
 
 - Add `merge_text_nodes` to lexbor backend. Fixes #170. @amirshukayev
 - Performance improvements in Cython code. @Vizonex
 
 Version 0.3.32
--------------
+---------------
 
 Released
 
 - Update lexbor. New version of lexbor fixes bugs with CSS selectors.
 
 Version 0.3.31
--------------
+--------------
 
 Released
 
@@ -26,7 +34,7 @@ Released
 - Allow empty attribute values. Fixes #165.
 
 Version 0.3.30
--------------
+--------------
 
 Released
 
@@ -35,7 +43,7 @@ Released
 
 
 Version 0.3.29
--------------
+--------------
 
 Released
 
@@ -43,7 +51,7 @@ Released
 
 
 Version 0.3.28
--------------
+--------------
 
 Released
 
@@ -52,7 +60,7 @@ Released
 - Fix: Fix incorrect type annotations for `LexborHTMLParser.__init__`. Fixes #144.
 
 Version 0.3.27
--------------
+--------------
 
 Released
 
@@ -60,14 +68,14 @@ Released
 
 
 Version 0.3.26
--------------
+--------------
 
 Released
 
 - Improve type hints
 
 Version 0.3.25
--------------
+--------------
 
 Released
 
@@ -76,14 +84,14 @@ Released
 - Add `Node.parser` to access the `HTMLParser` to which the node belongs
 
 Version 0.3.24
--------------
+--------------
 
 Released
 
 - Add  `Node.insert_child` method to lexbor and modest backends
 
 Version 0.3.23
--------------
+--------------
 
 Released
 
@@ -91,7 +99,7 @@ Released
 - Update lexbor
 
 Version 0.3.21
--------------
+--------------
 
 Released
 
@@ -100,7 +108,7 @@ Released
 
 
 Version 0.3.20
--------------
+--------------
 
 Released
 
@@ -109,7 +117,7 @@ Released
 
 
 Version 0.3.19
--------------
+--------------
 
 Released
 
@@ -117,7 +125,7 @@ Released
 
 
 Version 0.3.18
--------------
+--------------
 
 Released
 
@@ -125,7 +133,7 @@ Released
 
 
 Version 0.3.17
--------------
+--------------
 
 Released
 
@@ -134,7 +142,7 @@ Released
 
 
 Version 0.3.16
--------------
+--------------
 
 Released
 
@@ -143,14 +151,14 @@ Released
 
 
 Version 0.3.15
--------------
+--------------
 
 Released
 
 - Improve typing. Thanks to @nesb1
 
 Version 0.3.14
--------------
+--------------
 
 Released
 
@@ -158,7 +166,7 @@ Released
 
 
 Version 0.3.13
--------------
+--------------
 
 Released
 
@@ -166,7 +174,7 @@ Released
 
 
 Version 0.3.12
--------------
+--------------
 
 Released
 
@@ -175,7 +183,7 @@ Released
 
 
 Version 0.3.11
--------------
+--------------
 
 Released
 

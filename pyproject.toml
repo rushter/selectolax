@@ -45,7 +45,7 @@ classifiers = [
 [project.urls]
 Repository = "https://github.com/rushter/selectolax"
 Documentation = "https://selectolax.readthedocs.io/en/latest/parser.html"
-Changelog = "https://github.com/rushter/selectolax/blob/main/CHANGES.md"
+Changelog = "https://github.com/rushter/selectolax/blob/master/CHANGES.md"
 
 
 [tool.cibuildwheel]

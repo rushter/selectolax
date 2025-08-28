@@ -1,7 +1,7 @@
 include CONTRIBUTING.rst
 include HISTORY.rst
 include LICENSE
-include README.rst
+include README.md
 include CHANGES.rst
 
 include selectolax/*

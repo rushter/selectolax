@@ -2,7 +2,7 @@ include CONTRIBUTING.rst
 include HISTORY.rst
 include LICENSE
 include README.md
-include CHANGES.rst
+include CHANGES.md
 
 include selectolax/*
 include selectolax/lexbor/*

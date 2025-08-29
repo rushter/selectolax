@@ -138,10 +138,9 @@ Out[4]: '2021-08-15'
 
 ## Links
 
-* [selectolax API reference](https://selectolax.readthedocs.io/en/latest/index.html)
+* [selectolax API reference and examples](https://selectolax.readthedocs.io/en/latest/index.html)
 * [Video introduction to web scraping using selectolax](https://youtu.be/HpRsfpPuUzE)
 * [How to Scrape 7k Products with Python using selectolax and httpx](https://www.youtube.com/watch?v=XpGvq755J2U)
-* [Detailed overview](https://github.com/rushter/selectolax/blob/master/examples/walkthrough.ipynb)
 * [Modest introduction](https://lexborisov.github.io/Modest/)
 * [Modest benchmark](https://lexborisov.github.io/benchmark-html-parsers/)
 * [Python benchmark](https://rushter.com/blog/python-fast-html-parser/)
@@ -150,4 +149,5 @@ Out[4]: '2021-08-15'
 ## License
 
 * Modest engine — [LGPL2.1](https://github.com/lexborisov/Modest/blob/master/LICENSE)
+* lexbor engine — [Apache-2.0 license][https://github.com/lexbor/lexbor?tab=Apache-2.0-1-ov-file#readme]
 * selectolax - [MIT](https://github.com/rushter/selectolax/blob/master/LICENSE)

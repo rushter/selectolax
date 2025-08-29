@@ -171,7 +171,7 @@ Ensure exactly one match exists, otherwise raise an error.
 
 .. code-block:: text
 
-    Error: Multiple elements found
+    ValueError: Expected 1 match, but found 2 matches
 
 DOM Navigation
 --------------
@@ -226,13 +226,8 @@ Walk all child nodes of an element.
 
 .. code-block:: text
 
-    div <div id="text">
-            <p class='p3' style='display:none;'>Excepteur <i>sint</i> occaecat cupidatat non proident</p>
-            <p class='p3' vid>Lorem ipsum</p>
-        </div>
-    p <p class='p3' style='display:none;'>Excepteur <i>sint</i> occaecat cupidatat non proident</p>
-    i <i>sint</i>
-    p <p class='p3' vid>Lorem ipsum</p>
+    p <p class="p3" style="display:none;">Excepteur <i>sint</i> occaecat cupidatat non proident</p>
+    p <p class="p3" vid>Lorem ipsum</p>
 
 DOM Modification
 ----------------
@@ -324,8 +319,8 @@ Add, modify, and remove element attributes.
     {'id': 'new_id', 'data': 'secret data'}
     {'data': 'secret data'}
     <div data="secret data">
-            <p class='p3' style='display:none;'>Excepteur <i>sint</i> occaecat cupidatat non proident</p>
-            <p class='p3' vid>Lorem ipsum</p>
+            <p class="p3" style="display:none;">Excepteur <i>sint</i> occaecat cupidatat non proident</p>
+            <p class="p3" vid>Lorem ipsum</p>
         </div>
 
 Tree Traversal
@@ -338,7 +333,7 @@ Walk  every node in the DOM tree and extract text content.
     parser = LexborHTMLParser(html)
 
     # Traverse the entire tree
-    for node in parser.root.traverse():
+    for node in parser.root.traverse(include_text=True):
         if node.tag == '-text':
             text = node.text(deep=True).strip()
             if text:
@@ -353,9 +348,6 @@ Walk  every node in the DOM tree and extract text content.
     html
     head
     body
-    span
-    h1
-    Welcome to selectolax tutorial
     div
     p
     Excepteur
@@ -398,7 +390,7 @@ Extract text content from HTML elements with various formatting options.
 .. code-block:: text
 
     Hello world!
-    Hello | world | !
+    Hello  | world | !
     Hello world!
 
 Clean HTML
@@ -429,13 +421,12 @@ Remove potentially dangerous or unwanted HTML elements.
 
 .. code-block:: text
 
-    <body>
-        <div>
-            <p>Good content</p>
+    <body><div>
+        <p>Good content</p>
 
 
-            <p>More content</p>
-        </div>
+        <p>More content</p>
+    </div>
     </body>
 
 Extract Links and Images

@@ -45,14 +45,14 @@ Here are some basic examples to get you started with selectolax:
 Parsing HTML and extracting text:
 
 ```python
-In [1]: from selectolax.parser import HTMLParser
+In [1]: from selectolax.lexbor import LexborHTMLParser
    ...:
    ...: html = """
    ...: <h1 id="title" data-updated="20201101">Hi there</h1>
    ...: <div class="post">Lorem Ipsum is simply dummy text of the printing and typesetting industry. </div>
    ...: <div class="post">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</div>
    ...: """
-   ...: tree = HTMLParser(html)
+   ...: tree = LexborHTMLParser(html)
 
 In [2]: tree.css_first('h1#title').text()
 Out[2]: 'Hi there'
@@ -72,7 +72,7 @@ Out[4]:
 In [1]: html = "<div><p id=p1><p id=p2><p id=p3><a>link</a><p id=p4><p id=p5>text<p id=p6></div>"
    ...: selector = "div > :nth-child(2n+1):not(:has(a))"
 
-In [2]: for node in HTMLParser(html).css(selector):
+In [2]: for node in LexborHTMLParser(html).css(selector):
    ...:     print(node.attributes, node.text(), node.tag)
    ...:     print(node.parent.tag)
    ...:     print(node.html)

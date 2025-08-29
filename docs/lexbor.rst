@@ -15,3 +15,9 @@ LexborNode
 
 .. autoclass:: LexborNode
     :members:
+
+Selector
+--------
+
+.. autoclass:: LexborSelector
+    :members:

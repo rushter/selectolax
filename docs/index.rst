@@ -1,12 +1,12 @@
-Welcome to selectolax's documentation!
-======================================
+selectolax
+==========
 
 Selectolax is a fast HTML5 parser with CSS selectors.
 
 It supports two backends:
 
-- Lexbor (preferred)
-- Modest (first generation of lexbor)
+- `Lexbor <https://github.com/lexbor/lexbor>`__ (preferred)
+- `Modest <https://github.com/lexborisov/Modest>`__ (first generation of lexbor)
 
 API
 ===

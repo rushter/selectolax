@@ -149,5 +149,5 @@ Out[4]: '2021-08-15'
 ## License
 
 * Modest engine — [LGPL2.1](https://github.com/lexborisov/Modest/blob/master/LICENSE)
-* lexbor engine — [Apache-2.0 license][https://github.com/lexbor/lexbor?tab=Apache-2.0-1-ov-file#readme]
+* lexbor engine — [Apache-2.0 license](https://github.com/lexbor/lexbor?tab=Apache-2.0-1-ov-file#readme)
 * selectolax - [MIT](https://github.com/rushter/selectolax/blob/master/LICENSE)

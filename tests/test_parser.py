@@ -320,7 +320,7 @@ def test_pseudo_class_contains():
 
 
 @pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_css_contains_returns_bool(parser):
+def test_css_matches_returns_bool(parser):
     res = parser("<div>test</div>").css_matches("div")
     assert isinstance(res, bool)
     assert res is True

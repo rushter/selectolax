@@ -317,3 +317,10 @@ def test_pseudo_class_contains():
     results = parser.css('p:lexbor-contains("awesome" i)')
     assert len(results) == 1
     assert results[0].text() == "AwesOme t3xt"
+
+
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_css_contains_returns_bool(parser):
+    res = parser("<div>test</div>").css_matches("div")
+    assert isinstance(res, bool)
+    assert res is True

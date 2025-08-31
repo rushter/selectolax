@@ -232,7 +232,7 @@ cdef class LexborNode:
 
     def css_matches(self, str selector):
         """Returns True if CSS selector matches a node."""
-        return self.parser.selector.any_matches(selector, self)
+        return bool(self.parser.selector.any_matches(selector, self))
 
     def __repr__(self):
         return '<LexborNode %s>' % self.tag

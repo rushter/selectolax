@@ -145,6 +145,7 @@ Out[4]: '2021-08-15'
 * [Modest benchmark](https://lexborisov.github.io/benchmark-html-parsers/)
 * [Python benchmark](https://rushter.com/blog/python-fast-html-parser/)
 * [Another Python benchmark](https://www.peterbe.com/plog/selectolax-or-pyquery)
+* [Universal interface to lxml and selectolax](https://github.com/lorien/domselect)
 
 ## License
 

@@ -59,8 +59,7 @@ environment = { LDFLAGS="-Wl,--strip-debug" }
 skip = [
     "*-manylinux_i686",
     "*-musllinux_i686",
-    "*-win32",
-    "*-musllinux*",
+    "*-win32*",
     "pp*"
 ]
 test-skip = "*-macosx_arm64"

@@ -22,7 +22,7 @@ jobs:
           - os: windows-arm
             runs-on: windows-11-arm
           - os: macos-intel
-            runs-on: macos-13
+            runs-on: macos-15-intel
           - os: macos-arm
             runs-on: macos-latest
 

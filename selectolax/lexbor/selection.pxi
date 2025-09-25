@@ -76,6 +76,7 @@ cdef class LexborCSSSelector:
 
         if selectors_list == NULL:
             PyErr_SetObject(SelectolaxError, "Can't parse CSS selector.")
+            return -1
 
         self.results = []
         status = lxb_selectors_find(self.selectors, node.node, selectors_list,
@@ -83,6 +84,8 @@ cdef class LexborCSSSelector:
         if status != LXB_STATUS_OK:
             lxb_css_selector_list_destroy_memory(selectors_list)
             PyErr_SetObject(SelectolaxError, "Can't parse CSS selector.")
+            return -1
+
         result = PyList_GET_SIZE(self.results) > 0
         self.results = []
         lxb_css_selector_list_destroy_memory(selectors_list)

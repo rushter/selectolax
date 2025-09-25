@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import pytest
 from selectolax.parser import HTMLParser
-from selectolax.lexbor import LexborHTMLParser
+from selectolax.lexbor import LexborHTMLParser, SelectolaxError
 
 """
 We'are testing only our own code.
@@ -667,6 +667,7 @@ def test_merge_text_nodes(parser):
 @pytest.mark.parametrize("parser", (HTMLParser, LexborHTMLParser))
 def test_merge_text_nodes_complex(parser):
     from textwrap import dedent
+
     html = dedent("""
         <article>
             <h1><em>H</em>ello <strong>W</strong>orld</h1>
@@ -693,7 +694,9 @@ def test_merge_text_nodes_complex(parser):
 def test_merge_text_nodes_three_plus(parser):
     html = """<div><em>O</em><strong>n</strong><b>e</b> <i>T</i><span>w</span><u>o</u> <small>T</small><big>h</big><mark>r</mark><sub>e</sub><sup>e</sup></div>"""
     tree = parser(html)
-    tree.unwrap_tags(["em", "strong", "b", "i", "span", "u", "small", "big", "mark", "sub", "sup"])
+    tree.unwrap_tags(
+        ["em", "strong", "b", "i", "span", "u", "small", "big", "mark", "sub", "sup"]
+    )
     div = tree.css_first("div", strict=True)
     div.merge_text_nodes()
     assert div.text() == "One Two Three"
@@ -705,3 +708,11 @@ def test_css_first_first(parser):
     selector = "h2.list-details__item__partial"
     find_first = parser(html).css_first(selector)
     assert find_first.css_first(selector) is not None
+
+
+@pytest.mark.parametrize("parser", (LexborHTMLParser,))
+def test_any_css_matches_fails(parser):
+    html = """<h1>Test</h1>"""
+    tree = parser(html)
+    with pytest.raises(SelectolaxError):
+        tree.any_css_matches(("##",))

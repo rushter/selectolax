@@ -194,7 +194,7 @@ cdef class LexborHTMLParser:
         query : str
         default : Any, default None
             Default value to return if there is no match.
-        strict: bool, default True
+        strict: bool, default False
             Set to True if you want to check if there is strictly only one match in the document.
 
 
@@ -211,7 +211,7 @@ cdef class LexborHTMLParser:
         ----------
         tags : list of str
             List of tags to remove.
-        recursive : bool, default True
+        recursive : bool, default False
             Whenever to delete all its child nodes
 
         Examples

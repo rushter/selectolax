@@ -173,7 +173,7 @@ class LexborNode:
         query : str
         default : bool, default None
             Default value to return if there is no match.
-        strict: bool, default True
+        strict: bool, default False
             Set to True if you want to check if there is strictly only one match in the document.
 
 
@@ -194,7 +194,7 @@ class LexborNode:
         query : str
         default : bool, default None
             Default value to return if there is no match.
-        strict: bool, default True
+        strict: bool, default False
             Set to True if you want to check if there is strictly only one match in the document.
 
 
@@ -215,7 +215,7 @@ class LexborNode:
         query : str
         default : bool, default None
             Default value to return if there is no match.
-        strict: bool, default True
+        strict: bool, default False
             Set to True if you want to check if there is strictly only one match in the document.
 
 
@@ -699,7 +699,7 @@ class LexborHTMLParser:
         query : str
         default : bool, default None
             Default value to return if there is no match.
-        strict: bool, default True
+        strict: bool, default False
             Set to True if you want to check if there is strictly only one match in the document.
 
 
@@ -720,7 +720,7 @@ class LexborHTMLParser:
         query : str
         default : bool, default None
             Default value to return if there is no match.
-        strict: bool, default True
+        strict: bool, default False
             Set to True if you want to check if there is strictly only one match in the document.
 
 
@@ -741,7 +741,7 @@ class LexborHTMLParser:
         query : str
         default : bool, default None
             Default value to return if there is no match.
-        strict: bool, default True
+        strict: bool, default False
             Set to True if you want to check if there is strictly only one match in the document.
 
 

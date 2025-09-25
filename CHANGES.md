@@ -1,5 +1,11 @@
 # selectolax Changelog
 
+
+- Fix incorrect default value in docstrings for strict argument
+- Fix incorrect exception handling for `any_css_matches`
+- Fix docstring for `css_first` method
+
+
 ## Version 0.3.34
 
 Released

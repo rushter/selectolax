@@ -518,9 +518,11 @@ cdef class LexborNode:
                     combined = (<bytes>left_text[:left_length]) + (<bytes>right_text[:right_length])
                     lxb_dom_node_text_content_set(node, combined, len(combined))
                     lxb_dom_node_remove(node.prev)
-                    
-                lxb_dom_document_destroy_text_noi(self.node.owner_document, left_text)
-                lxb_dom_document_destroy_text_noi(self.node.owner_document, right_text)
+
+                if left_text is not NULL:
+                    lxb_dom_document_destroy_text_noi(self.node.owner_document, left_text)
+                if right_text is not NULL:
+                    lxb_dom_document_destroy_text_noi(self.node.owner_document, right_text)
 
             if node.first_child:
                 LexborNode.new(node, self.parser).merge_text_nodes()

@@ -69,3 +69,5 @@ selectolax/lexbor.c
 # virtual env
 .venv/
 venv/
+
+tmp/

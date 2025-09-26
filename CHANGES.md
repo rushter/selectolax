@@ -4,6 +4,7 @@
 - Fix incorrect default value in docstrings for strict argument
 - Fix incorrect exception handling for `any_css_matches`
 - Fix docstring for `css_first` method
+- Fix memory leak in `merge_text_nodes` for lexbor backend
 
 
 ## Version 0.3.34

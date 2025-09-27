@@ -76,7 +76,7 @@ class LexborSelector:
         """Return HTML representation of the child nodes.
 
         Works similar to innerHTML in JavaScript.
-        Unlike `.html` propery, does not inlcude current node.
+        Unlike the `.html` property, does not include the current node.
         Can be used to set HTML as well. See the setter docstring.
 
         Returns
@@ -641,7 +641,7 @@ class LexborNode:
         """Return HTML representation of the child nodes.
 
         Works similar to innerHTML in JavaScript.
-        Unlike `.html` propery, does not inlcude current node.
+        Unlike the `.html` property, does not include the current node.
         Can be used to set HTML as well. See the setter docstring.
 
         Returns

@@ -343,6 +343,9 @@ cdef class LexborNode:
         cdef size_t str_len = 0
         attributes = dict()
 
+        if self.node.type != LXB_DOM_NODE_TYPE_ELEMENT:
+            return attributes
+
         while attr != NULL:
             key = lxb_dom_attr_local_name_noi(attr, &str_len)
             value = lxb_dom_attr_value_noi(attr, &str_len)

@@ -18,3 +18,14 @@ def test_sets_inner_html():
     parser.css_first("#main").inner_html = "<span>Test</span>"
     actual = parser.css_first("#main").inner_html
     assert actual == expected
+
+
+def test_checking_attributes_does_not_segfault():
+    parser = LexborHTMLParser("")
+    root_node = parser.root
+    assert root_node is not None
+    for node in root_node.traverse():
+        print(node.parent)
+        parent = node.parent
+        assert parent is not None
+        parent = parent.attributes.get("anything")

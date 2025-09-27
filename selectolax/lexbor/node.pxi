@@ -1004,7 +1004,7 @@ cdef lexbor_action_t text_callback(lxb_dom_node_t *node, void *ctx):
         return LEXBOR_ACTION_OK
 
     try:
-        py_str = text.decode(_ENCODING)
+        py_str = text.decode(_ENCODING, "replace")
 
     except Exception as e:
         PyErr_SetNone(e)

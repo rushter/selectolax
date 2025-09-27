@@ -11,6 +11,7 @@
 - Optimize performance for`css_first` in lexbor backend
 - Fix segfaults when accessing attributes. Resolves #135.
 - Add new `.clone` method to lexbor backend. Resolve #117.
+- Improve unicode handling for malformed text. Resolved #138.
 
 ## Version 0.3.34
 

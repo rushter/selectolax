@@ -39,6 +39,12 @@ cdef class LexborCSSSelector:
         return 0
 
     cpdef list find(self, str query, LexborNode node):
+        return self._find(query, node, 0)
+
+    cpdef list find_first(self, str query, LexborNode node):
+        return self._find(query, node, 1)
+
+    cpdef list _find(self, str query, LexborNode node, bint only_first):
         cdef lxb_css_selector_list_t* selectors
         cdef lxb_char_t* c_selector
         cdef lxb_css_selector_list_t * selectors_list
@@ -54,8 +60,12 @@ cdef class LexborCSSSelector:
 
         self.current_node = node
         self.results = []
-        status = lxb_selectors_find(self.selectors, node.node, selectors_list,
-                                    <lxb_selectors_cb_f>css_finder_callback, <void*>self)
+        if only_first:
+            status = lxb_selectors_find(self.selectors, node.node, selectors_list,
+                                        <lxb_selectors_cb_f>css_finder_callback_first, <void*>self)
+        else:
+            status = lxb_selectors_find(self.selectors, node.node, selectors_list,
+                                        <lxb_selectors_cb_f>css_finder_callback, <void*>self)
         results = list(self.results)
         self.results = []
         self.current_node = None
@@ -187,6 +197,15 @@ cdef lxb_status_t css_finder_callback(lxb_dom_node_t *node, lxb_css_selector_spe
     lxb_node = LexborNode.new(<lxb_dom_node_t *> node, cls.current_node.parser)
     cls.results.append(lxb_node)
     return LXB_STATUS_OK
+
+cdef lxb_status_t css_finder_callback_first(lxb_dom_node_t *node, lxb_css_selector_specificity_t *spec, void *ctx):
+    cdef LexborNode lxb_node
+    cdef LexborCSSSelector cls
+    cls = <LexborCSSSelector> ctx
+    lxb_node = LexborNode.new(<lxb_dom_node_t *> node, cls.current_node.parser)
+    cls.results.append(lxb_node)
+    return LXB_STATUS_STOP
+
 
 cdef lxb_status_t css_matcher_callback(lxb_dom_node_t *node, lxb_css_selector_specificity_t *spec, void *ctx):
     cdef LexborNode lxb_node

@@ -8,7 +8,7 @@
 - Update lexbor backend
 - Add `.inner_html` property. Allows to get and set inner HTML of a node.
 - Update various docstrings.
-
+- Optimize performance for`css_first` in lexbor backend
 
 ## Version 0.3.34
 

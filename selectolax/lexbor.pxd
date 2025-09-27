@@ -246,6 +246,8 @@ cdef class LexborCSSSelector:
     cdef public LexborNode current_node
     cdef int _create_css_parser(self) except -1
     cpdef list find(self, str query, LexborNode node)
+    cpdef list find_first(self, str query, LexborNode node)
+    cpdef list _find(self, str query, LexborNode node, bint only_first)
     cpdef int any_matches(self, str query, LexborNode node) except -1
 
 cdef class LexborHTMLParser:

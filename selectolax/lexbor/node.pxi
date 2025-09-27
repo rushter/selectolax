@@ -207,6 +207,8 @@ cdef class LexborNode:
     def css_first(self, str query, default=None, bool strict=False):
         """Same as `css` but returns only the first match.
 
+        When `strict=False` stops at the first match. Works faster.
+
         Parameters
         ----------
 
@@ -221,8 +223,10 @@ cdef class LexborNode:
         -------
         selector : `LexborNode` object
         """
-        # TODO: This can be improved.
-        results = self.css(query)
+        if strict:
+            results = self.parser.selector.find(query, self)
+        else:
+            results = self.parser.selector.find_first(query, self)
         n_results = len(results)
         if n_results > 0:
             if strict and n_results > 1:

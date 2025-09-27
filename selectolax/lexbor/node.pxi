@@ -959,7 +959,6 @@ cdef class LexborNode:
         return LexborNode.new(node, self.parser)
 
 
-
 @cython.internal
 @cython.final
 cdef class TextContainer:

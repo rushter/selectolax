@@ -3,9 +3,13 @@
 import io
 import os
 import platform
+import logging
 
 import sys
 from setuptools import setup, find_packages, Extension
+
+
+logging.basicConfig(level=logging.INFO)
 
 with io.open("README.md", mode="rt", encoding="utf-8") as readme_file:
     readme = readme_file.read()
@@ -15,6 +19,8 @@ USE_STATIC = False
 USE_CYTHON = False
 PLATFORM = "windows_nt" if platform.system() == "Windows" else "posix"
 INCLUDE_LEXBOR = bool(os.environ.get("USE_LEXBOR", True))
+INCLUDE_MODEST = bool(os.environ.get("USE_MODEST", True))
+
 ARCH = platform.architecture()[0]
 
 try:
@@ -32,6 +38,10 @@ if "--static" in sys.argv:
 if "--lexbor" in sys.argv:
     INCLUDE_LEXBOR = True
     sys.argv.remove("--lexbor")
+
+if "--disable-modest" in sys.argv:
+    INCLUDE_MODEST = False
+    sys.argv.remove("--disable-modest")
 
 if "--cython" in sys.argv:
     if HAS_CYTHON:
@@ -78,30 +88,40 @@ def find_modest_files(modest_path="modest/source"):
 
 
 def make_extensions():
+    logging.info(f"USE_CYTHON: {USE_CYTHON}")
+    logging.info(f"INCLUDE_LEXBOR: {INCLUDE_LEXBOR}")
+    logging.info(f"INCLUDE_MODEST: {INCLUDE_MODEST}")
+    logging.info(f"USE_STATIC: {USE_STATIC}")
+
     files_to_compile_lxb = []
+    files_to_compile = []
     extra_objects_lxb, extra_objects = [], []
 
     if USE_CYTHON:
-        files_to_compile = [
-            "selectolax/parser.pyx",
-        ]
+        if INCLUDE_MODEST:
+            files_to_compile = [
+                "selectolax/parser.pyx",
+            ]
         if INCLUDE_LEXBOR:
             files_to_compile_lxb = [
                 "selectolax/lexbor.pyx",
             ]
     else:
-        files_to_compile = ["selectolax/parser.c"]
+        if INCLUDE_MODEST:
+            files_to_compile = ["selectolax/parser.c"]
         if INCLUDE_LEXBOR:
             files_to_compile_lxb = [
                 "selectolax/lexbor.c",
             ]
 
     if USE_STATIC:
-        extra_objects = ["modest/lib/libmodest_static.a"]
+        if INCLUDE_MODEST:
+            extra_objects = ["modest/lib/libmodest_static.a"]
         if INCLUDE_LEXBOR:
             extra_objects_lxb = ["lexbor/liblexbor_static.a"]
     else:
-        files_to_compile.extend(find_modest_files("modest/source"))
+        if INCLUDE_MODEST:
+            files_to_compile.extend(find_modest_files("modest/source"))
         if INCLUDE_LEXBOR:
             files_to_compile_lxb.extend(find_modest_files("lexbor/source"))
 
@@ -135,18 +155,21 @@ def make_extensions():
             ]
         )
 
-    extensions = [
-        Extension(
-            "selectolax.parser",
-            files_to_compile,
-            language="c",
-            include_dirs=[
-                "modest/include/",
-            ],
-            extra_objects=extra_objects,
-            extra_compile_args=compile_arguments,
-        ),
-    ]
+    extensions = []
+    if INCLUDE_MODEST:
+        extensions.append(
+            Extension(
+                "selectolax.parser",
+                files_to_compile,
+                language="c",
+                include_dirs=[
+                    "modest/include/",
+                ],
+                extra_objects=extra_objects,
+                extra_compile_args=compile_arguments,
+            )
+        )
+
     if INCLUDE_LEXBOR:
         extensions.append(
             Extension(

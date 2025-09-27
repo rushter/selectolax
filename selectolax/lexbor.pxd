@@ -215,6 +215,8 @@ cdef extern from "lexbor/html/html.h" nogil:
 
         size_t  ref_count
 
+    ctypedef struct lxb_html_element_t
+
     # Functions
     lxb_html_document_t * lxb_html_document_create()
     lxb_status_t lxb_html_document_parse(lxb_html_document_t *document,  const lxb_char_t *html, size_t size)
@@ -223,6 +225,9 @@ cdef extern from "lexbor/html/html.h" nogil:
     lxb_dom_element_t * lxb_dom_document_element(lxb_dom_document_t *document)
 
     lxb_status_t lxb_html_serialize_tree_str(lxb_dom_node_t *node, lexbor_str_t *str)
+    lxb_status_t lxb_html_serialize_deep_str(lxb_dom_node_t *node, lexbor_str_t *str)
+    lxb_html_element_t* lxb_html_element_inner_html_set(lxb_html_element_t *element,
+                                                        const lxb_char_t *html, size_t size)
 
 cdef class LexborNode:
     cdef:

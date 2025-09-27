@@ -11,6 +11,10 @@ ctypedef fused str_or_LexborNode:
     bytes
     LexborNode
 
+ctypedef fused str_or_bytes:
+    str
+    bytes
+
 cdef inline bytes to_bytes(str_or_LexborNode value):
     cdef bytes bytes_val
     if isinstance(value, unicode):
@@ -888,6 +892,48 @@ cdef class LexborNode:
             py_text = text.decode(_ENCODING)
             container.append(py_text)
             return container.text
+
+    @property
+    def inner_html(self):
+        """Return HTML representation of the child nodes.
+
+        Works similar to innerHTML in JavaScript.
+        Unlike `.html` propery, does not inlcude current node.
+        Can be used to set HTML as well. See the setter docstring.
+
+        Returns
+        -------
+        text : str
+        """
+
+        cdef lexbor_str_t *lxb_str
+        cdef lxb_status_t status
+
+        lxb_str = lexbor_str_create()
+        status = lxb_html_serialize_deep_str(self.node, lxb_str)
+        if status == 0 and lxb_str.data:
+            html = lxb_str.data.decode(_ENCODING).replace('<-undef>', '')
+            lexbor_str_destroy(lxb_str,  self.node.owner_document.text, True)
+        return html
+
+    @inner_html.setter
+    def inner_html(self, str html):
+        """Set inner HTML to the specified HTML.
+
+        Replaces existing data inside the node.
+        Works similar to innerHTML in JavaScript.
+
+        Parameters
+        ----------
+        html : str
+
+        """
+        cdef bytes bytes_val
+        bytes_val = <bytes>html.encode("utf-8")
+        lxb_html_element_inner_html_set(
+                <lxb_html_element_t  *>self.node,
+                <lxb_char_t *> bytes_val, len(bytes_val)
+        )
 
 
 @cython.internal

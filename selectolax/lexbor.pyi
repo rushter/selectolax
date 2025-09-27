@@ -71,6 +71,34 @@ class LexborSelector:
         """
         ...
 
+    @property
+    def inner_html(self) -> str:
+        """Return HTML representation of the child nodes.
+
+        Works similar to innerHTML in JavaScript.
+        Unlike `.html` propery, does not inlcude current node.
+        Can be used to set HTML as well. See the setter docstring.
+
+        Returns
+        -------
+        text : str
+        """
+        ...
+
+    @inner_html.setter
+    def inner_html(self, html: str):
+        """Set inner HTML to the specified HTML.
+
+        Replaces existing data inside the node.
+        Works similar to innerHTML in JavaScript.
+
+        Parameters
+        ----------
+        html : str
+
+        """
+        ...
+
 class LexborCSSSelector:
     def __init__(self): ...
     def find(self, query: str, node: LexborNode) -> list[LexborNode]: ...
@@ -605,6 +633,34 @@ class LexborNode:
         Returns
         -------
         text : str or None.
+        """
+        ...
+
+    @property
+    def inner_html(self) -> str:
+        """Return HTML representation of the child nodes.
+
+        Works similar to innerHTML in JavaScript.
+        Unlike `.html` propery, does not inlcude current node.
+        Can be used to set HTML as well. See the setter docstring.
+
+        Returns
+        -------
+        text : str
+        """
+        ...
+
+    @inner_html.setter
+    def inner_html(self, html: str):
+        """Set inner HTML to the specified HTML.
+
+        Replaces existing data inside the node.
+        Works similar to innerHTML in JavaScript.
+
+        Parameters
+        ----------
+        html : str
+
         """
         ...
 

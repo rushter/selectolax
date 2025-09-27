@@ -386,3 +386,32 @@ cdef class LexborHTMLParser:
         # faster to check if the document is empty which should determine if we have a root
         if self.document != NULL:
             self.root.unwrap_tags(tags, delete_empty=delete_empty)
+
+    @property
+    def inner_html(self):
+        """Return HTML representation of the child nodes.
+
+        Works similar to innerHTML in JavaScript.
+        Unlike `.html` propery, does not inlcude current node.
+        Can be used to set HTML as well. See the setter docstring.
+
+        Returns
+        -------
+        text : str
+        """
+        return self.root.inner_html
+
+    @inner_html.setter
+    def inner_html(self, str html):
+        """Set inner HTML to the specified HTML.
+
+        Replaces existing data inside the node.
+        Works similar to innerHTML in JavaScript.
+
+        Parameters
+        ----------
+        html : str
+
+        """
+        self.root.inner_html = html
+

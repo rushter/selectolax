@@ -173,6 +173,82 @@ Ensure exactly one match exists, otherwise raise an error.
 
     ValueError: Expected 1 match, but found 2 matches
 
+HTML manipulation
+-----------------
+
+Getting HTML data back
+~~~~~~~~~~~~~~~~~~~~~~
+
+You can get HTML data back using `.html` or `.inner_html` properties.
+They can be called on any node.
+
+.. code-block:: python
+
+    from selectolax.lexbor import LexborHTMLParser
+    html = """
+    <div id="main">
+      <div>Hi there</div>
+      <div id="updated">2021-08-15</div>
+     </div>
+    """
+    parser = LexborHTMLParser(html)
+    node = parser.css_first("#main")
+    print("Inner html:\n")
+    print(node.inner_html)
+    print("\nOuter html:\n")
+    print(node.html)
+
+**Output:**
+
+.. code-block:: text
+    Inner html:
+
+      <div>Hi there</div>
+      <div id="updated">2021-08-15</div>
+
+    Outer html:
+
+    <div id="main">
+      <div>Hi there</div>
+      <div id="updated">2021-08-15</div>
+     </div>
+
+
+Changing HTML
+~~~~~~~~~~~~~~
+
+You can also change HTML by setting the `.inner_html` property.
+
+.. code-block:: python
+
+    from selectolax.lexbor import LexborHTMLParser
+    html = """
+    <div id="main">
+      <div>Hi there</div>
+     </div>
+    """
+    parser = LexborHTMLParser(html)
+    node = parser.css_first("#main")
+    print("Old html:\n")
+    print(node.html)
+
+    node.inner_html = "<span>Test</span>"
+    print("\nNew html:\n")
+    print(node.inner)
+
+**Output:**
+
+    Old html:
+
+    <div id="main">
+      <div>Hi there</div>
+     </div>
+
+    New html:
+
+    <div id="main"><span>Test</span></div>
+
+
 DOM Navigation
 --------------
 

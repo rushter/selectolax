@@ -414,4 +414,3 @@ cdef class LexborHTMLParser:
 
         """
         self.root.inner_html = html
-

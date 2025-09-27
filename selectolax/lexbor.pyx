@@ -388,7 +388,7 @@ cdef class LexborHTMLParser:
             self.root.unwrap_tags(tags, delete_empty=delete_empty)
 
     @property
-    def inner_html(self):
+    def inner_html(self) -> str:
         """Return HTML representation of the child nodes.
 
         Works similar to innerHTML in JavaScript.

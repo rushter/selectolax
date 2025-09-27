@@ -894,7 +894,7 @@ cdef class LexborNode:
             return container.text
 
     @property
-    def inner_html(self):
+    def inner_html(self) -> str:
         """Return HTML representation of the child nodes.
 
         Works similar to innerHTML in JavaScript.

@@ -334,7 +334,13 @@ cdef class LexborHTMLParser:
         return obj
 
     def clone(self):
-        """Clone the current tree."""
+        """Clone the current node.
+
+        You can use to do temporary modifications without affecting the original HTML tree.
+
+        It is tied to the current parser instance.
+        Gets destroyed when parser instance is destroyed.
+        """
         cdef lxb_html_document_t* cloned_document
         cdef lxb_dom_node_t* cloned_node
         cdef LexborHTMLParser cls

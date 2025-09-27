@@ -397,7 +397,10 @@ cdef class Node:
 
     @property
     def child(self):
-        """Return the child node."""
+        """Alias for the `first_child` property.
+
+        **Deprecated**. Please use `first_child` instead.
+        """
         cdef Node node
         if self.node.child:
             node = Node.new(self.node.child, self.parser)

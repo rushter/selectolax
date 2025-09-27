@@ -203,7 +203,10 @@ class Node:
         ...
     @property
     def child(self) -> Node | None:
-        """Return the child node."""
+        """Alias for the `first_child` property.
+
+        **Deprecated**. Please use `first_child` instead.
+        """
         ...
     @property
     def parent(self) -> Node | None:

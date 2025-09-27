@@ -112,7 +112,10 @@ class LexborNode:
     def mem_id(self) -> int: ...
     @property
     def child(self) -> LexborNode | None:
-        """Alias for the first_child property."""
+        """Alias for the `first_child` property.
+
+        **Deprecated**. Please use `first_child` instead.
+        """
         ...
     @property
     def first_child(self) -> LexborNode | None:

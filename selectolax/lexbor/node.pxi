@@ -41,7 +41,10 @@ cdef class LexborNode:
 
     @property
     def child(self):
-        """Alias for the `first_child` property."""
+        """Alias for the `first_child` property.
+
+        **Deprecated**. Please use `first_child` instead.
+        """
         return self.first_child
 
     @property

@@ -667,6 +667,16 @@ class LexborNode:
         """
         ...
 
+    def clone(self) -> LexborNode:
+        """Clone the current node.
+
+        You can use to do temporary modifications without affecting the original HTML tree.
+
+        It is tied to the current parser instance.
+        Gets destroyed when parser instance is destroyed.
+        """
+        ...
+
 class LexborHTMLParser:
     """The lexbor HTML parser.
 

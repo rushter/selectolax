@@ -946,6 +946,19 @@ cdef class LexborNode:
                 <lxb_char_t *> bytes_val, len(bytes_val)
         )
 
+    def clone(self) -> LexborNode:
+        """Clone the current node.
+
+        You can use to do temporary modifications without affecting the original HTML tree.
+
+        It is tied to the current parser instance.
+        Gets destroyed when parser instance is destroyed.
+        """
+        cdef lxb_dom_node_t* node
+        node = lxb_dom_node_clone(<lxb_dom_node_t *> self.node, 1)
+        return LexborNode.new(node, self.parser)
+
+
 
 @cython.internal
 @cython.final

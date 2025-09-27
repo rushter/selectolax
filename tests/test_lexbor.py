@@ -29,3 +29,11 @@ def test_checking_attributes_does_not_segfault():
         parent = node.parent
         assert parent is not None
         parent = parent.attributes.get("anything")
+
+
+def test_node_cloning():
+    parser = LexborHTMLParser("<div id='main'>123</div>")
+    new_node = parser.css_first("#main").clone()
+    new_node.inner_html = "<div>new</div>"
+    assert parser.css_first("#main").html != new_node.html
+    assert new_node.html == '<div id="main"><div>new</div></div>'

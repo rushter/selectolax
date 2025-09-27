@@ -325,6 +325,8 @@ cdef extern from "lexbor/dom/dom.h" nogil:
     void lxb_dom_node_insert_after(lxb_dom_node_t *to, lxb_dom_node_t *node)
     lxb_dom_text_t * lxb_dom_document_create_text_node(lxb_dom_document_t *document, const lxb_char_t *data, size_t len)
     void lxb_dom_node_simple_walk(lxb_dom_node_t *root, lxb_dom_node_simple_walker_f walker_cb, void *ctx)
+    lxb_dom_node_t* lxb_dom_node_clone(lxb_dom_node_t *node, bint deep)
+
 
 
 cdef extern from "lexbor/dom/interfaces/element.h" nogil:

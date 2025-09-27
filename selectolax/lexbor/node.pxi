@@ -903,7 +903,7 @@ cdef class LexborNode:
 
         Returns
         -------
-        text : str
+        text : str | None
         """
 
         cdef lexbor_str_t *lxb_str
@@ -914,7 +914,8 @@ cdef class LexborNode:
         if status == 0 and lxb_str.data:
             html = lxb_str.data.decode(_ENCODING).replace('<-undef>', '')
             lexbor_str_destroy(lxb_str,  self.node.owner_document.text, True)
-        return html
+            return html
+        return None
 
     @inner_html.setter
     def inner_html(self, str html):
@@ -925,7 +926,7 @@ cdef class LexborNode:
 
         Parameters
         ----------
-        html : str
+        html : str | None
 
         """
         cdef bytes bytes_val

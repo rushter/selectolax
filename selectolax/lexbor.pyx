@@ -397,7 +397,7 @@ cdef class LexborHTMLParser:
 
         Returns
         -------
-        text : str
+        text : str | None
         """
         return self.root.inner_html
 

@@ -72,7 +72,7 @@ class LexborSelector:
         ...
 
     @property
-    def inner_html(self) -> str:
+    def inner_html(self) -> str | None:
         """Return HTML representation of the child nodes.
 
         Works similar to innerHTML in JavaScript.
@@ -81,7 +81,7 @@ class LexborSelector:
 
         Returns
         -------
-        text : str
+        text : str or None
         """
         ...
 
@@ -637,7 +637,7 @@ class LexborNode:
         ...
 
     @property
-    def inner_html(self) -> str:
+    def inner_html(self) -> str | None:
         """Return HTML representation of the child nodes.
 
         Works similar to innerHTML in JavaScript.
@@ -646,7 +646,7 @@ class LexborNode:
 
         Returns
         -------
-        text : str
+        text : str or None
         """
         ...
 

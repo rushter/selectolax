@@ -382,6 +382,8 @@ class LexborNode:
     def unwrap(self, delete_empty: bool = False) -> None:
         """Replace node with whatever is inside this node.
 
+        Does nothing if you perform unwrapping second time on the same node.
+
         Parameters
         ----------
         delete_empty : bool, default False

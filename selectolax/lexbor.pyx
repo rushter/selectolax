@@ -1,6 +1,7 @@
 from cpython.bool cimport bool
 from cpython.exc cimport PyErr_SetObject
 
+
 _ENCODING = 'UTF-8'
 
 include "base.pxi"
@@ -9,6 +10,7 @@ include "lexbor/attrs.pxi"
 include "lexbor/node.pxi"
 include "lexbor/selection.pxi"
 include "lexbor/util.pxi"
+include "lexbor/node_remove.pxi"
 
 # We don't inherit from HTMLParser here, because it also includes all the C code from Modest.
 

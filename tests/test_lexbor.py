@@ -1,6 +1,6 @@
 """Tests for functionality that is only supported by lexbor backend."""
 
-from selectolax.lexbor import LexborHTMLParser
+from selectolax.lexbor import LexborHTMLParser, parse_fragment
 
 
 def test_reads_inner_html():
@@ -37,3 +37,16 @@ def test_node_cloning():
     new_node.inner_html = "<div>new</div>"
     assert parser.css_first("#main").html != new_node.html
     assert new_node.html == '<div id="main"><div>new</div></div>'
+
+
+def test_double_unwrap_does_not_segfault():
+    html = """<div><div><div></div></div></div>"""
+    outer_div = parse_fragment(html)[0]
+    some_set = set()
+
+    inner_div = outer_div.child
+    assert inner_div is not None
+    inner_div.unwrap()
+    inner_div.unwrap()
+    some_set.add(outer_div.parent)
+    some_set.add(outer_div.parent)

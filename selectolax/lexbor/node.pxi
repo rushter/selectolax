@@ -1,6 +1,8 @@
 cimport cython
 from cpython.exc cimport PyErr_SetNone
 
+import logging
+
 _TAG_TO_NAME = {
     0x0005: "- doctype",
     0x0002: "-text",
@@ -292,9 +294,9 @@ cdef class LexborNode:
             raise SelectolaxError("Decomposing the root node is not allowed.")
 
         if recursive:
-            lxb_dom_node_destroy_deep(<lxb_dom_node_t *> self.node)
+            node_remove_deep(<lxb_dom_node_t *> self.node)
         else:
-            lxb_dom_node_destroy(<lxb_dom_node_t *> self.node)
+            lxb_dom_node_remove(<lxb_dom_node_t *> self.node)
 
     def strip_tags(self, list tags, bool recursive = False):
         """Remove specified tags from the HTML tree.
@@ -438,6 +440,8 @@ cdef class LexborNode:
     def unwrap(self, bint delete_empty=False):
         """Replace node with whatever is inside this node.
 
+        Does nothing if you perform unwrapping second time on the same node.
+
         Parameters
         ----------
         delete_empty : bool, default False
@@ -453,9 +457,14 @@ cdef class LexborNode:
 
         Note: by default, empty tags are ignored, use "delete_empty" to change this.
         """
+
+        if node_is_removed(<lxb_dom_node_t *> self.node) == 1:
+            logging.error("Attempt to unwrap removed node. Does nothing.")
+            return
+
         if self.node.first_child == NULL:
             if delete_empty:
-                lxb_dom_node_destroy(<lxb_dom_node_t *> self.node)
+                lxb_dom_node_remove(<lxb_dom_node_t *> self.node)
             return
         cdef lxb_dom_node_t* next_node
         cdef lxb_dom_node_t* current_node
@@ -470,7 +479,7 @@ cdef class LexborNode:
                 current_node = next_node
         else:
             lxb_dom_node_insert_before(self.node, self.node.first_child)
-        lxb_dom_node_destroy(<lxb_dom_node_t *> self.node)
+        lxb_dom_node_remove(<lxb_dom_node_t *> self.node)
 
     def unwrap_tags(self, list tags, bint delete_empty = False):
         """Unwraps specified tags from the HTML tree.
@@ -610,7 +619,7 @@ cdef class LexborNode:
             if new_node == NULL:
                 raise SelectolaxError("Can't create a new node")
             lxb_dom_node_insert_before(self.node,  new_node)
-            lxb_dom_node_destroy(<lxb_dom_node_t *> self.node)
+            lxb_dom_node_remove(<lxb_dom_node_t *> self.node)
         elif isinstance(value, LexborNode):
             new_node = lxb_dom_document_import_node(
                 &self.parser.document.dom_document,
@@ -620,7 +629,7 @@ cdef class LexborNode:
             if new_node == NULL:
                 raise SelectolaxError("Can't create a new node")
             lxb_dom_node_insert_before(self.node, <lxb_dom_node_t *> new_node)
-            lxb_dom_node_destroy(<lxb_dom_node_t *> self.node)
+            lxb_dom_node_remove(<lxb_dom_node_t *> self.node)
         else:
             raise SelectolaxError("Expected a string or LexborNode instance, but %s found" % type(value).__name__)
 

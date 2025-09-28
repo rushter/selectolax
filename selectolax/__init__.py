@@ -3,6 +3,6 @@
 
 __author__ = """Artem Golubin"""
 __email__ = "me@rushter.com"
-__version__ = "0.3.34"
+__version__ = "0.4.0"
 
 from . import lexbor, modest, parser

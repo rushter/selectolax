@@ -1,6 +1,8 @@
 # selectolax Changelog
 
 
+# Version 0.4.0
+
 - Fix incorrect default value in docstrings for strict argument
 - Fix incorrect exception handling for `any_css_matches`
 - Fix docstring for `css_first` method

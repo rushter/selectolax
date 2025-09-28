@@ -6,7 +6,7 @@ import logging
 logger = logging.getLogger("selectolax")
 
 _TAG_TO_NAME = {
-    0x0005: "- doctype",
+    0x0005: "-doctype",
     0x0002: "-text",
     0x0004: "-comment",
 }
@@ -260,6 +260,14 @@ cdef class LexborNode:
     @property
     def tag(self):
         """Return the name of the current tag (e.g. div, p, img).
+
+        For for non-tag nodes, returns the following names:
+
+         * `-text` - text node
+         * `-document` - document node
+         * `-comment` - comment node
+
+        This
 
         Returns
         -------

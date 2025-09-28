@@ -267,6 +267,12 @@ class LexborNode:
     def tag(self) -> str | None:
         """Return the name of the current tag (e.g. div, p, img).
 
+        For for non-tag nodes, returns the following names:
+
+         * `-text` - text node
+         * `-document` - document node
+         * `-comment` - comment node
+
         Returns
         -------
         text : str

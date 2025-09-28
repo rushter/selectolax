@@ -14,6 +14,7 @@
 - Improve unicode handling for malformed text. Resolves #138.
 - Fix segfaults when doing double `.decompose`. Resolves #179.
 - Fix sefgaults when doing double `.unwrap`. Resolves #169.
+- Fix typo for tag names. Clarify available tag names.
 
 ## Version 0.3.34
 

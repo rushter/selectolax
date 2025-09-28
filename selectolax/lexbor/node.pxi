@@ -3,6 +3,8 @@ from cpython.exc cimport PyErr_SetNone
 
 import logging
 
+logger = logging.getLogger("selectolax")
+
 _TAG_TO_NAME = {
     0x0005: "- doctype",
     0x0002: "-text",
@@ -459,7 +461,7 @@ cdef class LexborNode:
         """
 
         if node_is_removed(<lxb_dom_node_t *> self.node) == 1:
-            logging.error("Attempt to unwrap removed node. Does nothing.")
+            logger.error("Attempt to unwrap removed node. Does nothing.")
             return
 
         if self.node.first_child == NULL:

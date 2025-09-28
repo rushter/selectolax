@@ -32,7 +32,7 @@ jobs:
           submodules: true
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v3.1.4
+        uses: pypa/cibuildwheel@v3.2.0
         env:
           CIBW_PLATFORM: ${{ matrix.platform || 'auto' }}
 

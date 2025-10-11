@@ -103,8 +103,8 @@ assert results[0].text() == "lexbor is AwesOme"
 
 ### Available backends
 
-Selectolax supports two backends: `Modest` and `Lexbor`. By default, all examples use the Modest backend.
-Most of the features between backends are almost identical, but there are still some differences.
+Selectolax supports two backends: `Modest` and `Lexbor`. By default, all examples use the `Lexbor` backend.
+Most of the features between backends are almost identical, but there are some differences.
 
 As of 2024, the preferred backend is `Lexbor`. The `Modest` backend is still available for compatibility reasons
 and the underlying C library that selectolax uses is not maintained anymore.

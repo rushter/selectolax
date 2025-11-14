@@ -1,8 +1,8 @@
 # selectolax Changelog
 
-Unreleased
+# Version 0.4.1
 
-- Fix CSS selectors that contain Unicode characters.
+- Fix parsing of CSS selectors that contain Unicode characters.
 
 # Version 0.4.0
 

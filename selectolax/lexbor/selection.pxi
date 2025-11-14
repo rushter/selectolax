@@ -53,7 +53,7 @@ cdef class LexborCSSSelector:
             raise TypeError("Query must be a string.")
 
         bytes_query = query.encode(_ENCODING)
-        selectors_list = lxb_css_selectors_parse(self.parser, <lxb_char_t *> bytes_query, <size_t>len(query))
+        selectors_list = lxb_css_selectors_parse(self.parser, <lxb_char_t *> bytes_query, <size_t>len(bytes_query))
 
         if selectors_list == NULL:
             raise SelectolaxError("Can't parse CSS selector.")

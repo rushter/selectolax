@@ -50,3 +50,10 @@ def test_double_unwrap_does_not_segfault():
     inner_div.unwrap()
     some_set.add(outer_div.parent)
     some_set.add(outer_div.parent)
+
+
+def test_unicode_selector_works():
+    html = '<span data-original-title="Pneu renforcé"></span>'
+    tree = LexborHTMLParser(html)
+    node = tree.css_first('span[data-original-title="Pneu renforcé"]')
+    assert node.tag == "span"

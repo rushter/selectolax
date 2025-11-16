@@ -32,6 +32,11 @@ cdef inline bytes to_bytes(str_or_LexborNode value):
 cdef class LexborNode:
     """A class that represents HTML node (element)."""
 
+    cdef inline bint _is_node_type(self, lxb_dom_node_type_t expected_type):
+        if self.node == NULL:
+            return False
+        return self.node.type == expected_type
+
     @staticmethod
     cdef LexborNode new(lxb_dom_node_t *node, LexborHTMLParser parser):
         cdef LexborNode lxbnode = LexborNode.__new__(LexborNode)
@@ -248,6 +253,22 @@ cdef class LexborNode:
     def css_matches(self, str selector):
         """Returns True if CSS selector matches a node."""
         return bool(self.parser.selector.any_matches(selector, self))
+
+    def is_element_node(self):
+        """Return True if the node represents an element node."""
+        return self._is_node_type(LXB_DOM_NODE_TYPE_ELEMENT)
+
+    def is_text_node(self):
+        """Return True if the node represents a text node."""
+        return self._is_node_type(LXB_DOM_NODE_TYPE_TEXT)
+
+    def is_comment_node(self):
+        """Return True if the node represents a comment node."""
+        return self._is_node_type(LXB_DOM_NODE_TYPE_COMMENT)
+
+    def is_document_node(self):
+        """Return True if the node represents a document node."""
+        return self._is_node_type(LXB_DOM_NODE_TYPE_DOCUMENT)
 
     def __repr__(self):
         return '<LexborNode %s>' % self.tag

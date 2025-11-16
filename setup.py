@@ -28,7 +28,7 @@ try:
 
     HAS_CYTHON = True
     USE_CYTHON = True
-except ImportError as err:
+except ImportError:
     HAS_CYTHON = False
 
 if "--static" in sys.argv:

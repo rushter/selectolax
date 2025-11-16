@@ -2,11 +2,15 @@
 
 
 
+# Version 0.4.3
+
+- Update `lexbor`
+- Fix missing description on PyPi.
+
 
 # Version 0.4.2
 
-- Update `lexbor`
-- Fix missing description on pypi
+- Broken release. Not published to PyPi.
 
 # Version 0.4.1
 

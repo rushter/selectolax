@@ -64,20 +64,20 @@ def test_node_type_helpers():
     parser = LexborHTMLParser(html)
 
     div_node = parser.css_first("#main")
-    assert div_node.is_element_node()
-    assert not div_node.is_text_node()
+    assert div_node.is_element_node
+    assert not div_node.is_text_node
 
     text_node = div_node.first_child
     assert text_node is not None
-    assert text_node.is_text_node()
-    assert not text_node.is_element_node()
+    assert text_node.is_text_node
+    assert not text_node.is_element_node
 
     comment_node = div_node.last_child
     assert comment_node is not None
-    assert comment_node.is_comment_node()
-    assert not comment_node.is_text_node()
+    assert comment_node.is_comment_node
+    assert not comment_node.is_text_node
 
     document_node = parser.root.parent
     assert document_node is not None
-    assert document_node.is_document_node()
-    assert not document_node.is_element_node()
+    assert document_node.is_document_node
+    assert not document_node.is_element_node

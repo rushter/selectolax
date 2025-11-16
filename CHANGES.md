@@ -1,5 +1,13 @@
 # selectolax Changelog
 
+
+
+
+# Version 0.4.2
+
+- Update `lexbor`
+- Fix missing description on pypi
+
 # Version 0.4.1
 
 - Fix parsing of CSS selectors that contain Unicode characters.

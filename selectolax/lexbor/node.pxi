@@ -27,6 +27,7 @@ cdef inline bytes to_bytes(str_or_LexborNode value):
         bytes_val = <bytes> value
     return bytes_val
 
+
 @cython.final
 cdef class LexborNode:
     """A class that represents HTML node (element)."""
@@ -999,6 +1000,7 @@ cdef class LexborNode:
     def is_document_node(self) -> bool:
         """Return True if the node represents a document node."""
         return self._is_node_type(LXB_DOM_NODE_TYPE_DOCUMENT)
+
 
 @cython.internal
 @cython.final

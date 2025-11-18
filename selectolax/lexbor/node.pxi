@@ -157,7 +157,7 @@ cdef class LexborNode:
 
         if not deep:
             container = TextContainer(separator, strip)
-            if self.is_text_node:
+            if self._is_node_type(LXB_DOM_NODE_TYPE_TEXT):
                 text = <unsigned char *> lexbor_str_data_noi(&(<lxb_dom_character_data_t *> self.node).data)
                 if text != NULL:
                     py_text = text.decode(_ENCODING)
@@ -173,7 +173,7 @@ cdef class LexborNode:
             return container.text
         else:
             container = TextContainer(separator, strip)
-            if self.is_text_node:
+            if self._is_node_type(LXB_DOM_NODE_TYPE_TEXT):
                 text = <unsigned char *> lexbor_str_data_noi(&(<lxb_dom_character_data_t *> self.node).data)
                 if text != NULL:
                     container.append(text.decode(_ENCODING))
@@ -355,7 +355,7 @@ cdef class LexborNode:
         cdef size_t str_len = 0
         attributes = dict()
 
-        if not self.is_element_node:
+        if not self._is_node_type(LXB_DOM_NODE_TYPE_ELEMENT):
             return attributes
 
         while attr != NULL:
@@ -912,7 +912,7 @@ cdef class LexborNode:
         cdef unsigned char * text
         cdef lxb_dom_node_t * node = <lxb_dom_node_t *> self.node.first_child
         cdef TextContainer container
-        if not self.is_text_node:
+        if not self._is_node_type(LXB_DOM_NODE_TYPE_TEXT):
             return None
 
         text = <unsigned char *> lexbor_str_data_noi(&(<lxb_dom_character_data_t *> self.node).data)

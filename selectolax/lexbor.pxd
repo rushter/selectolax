@@ -233,6 +233,7 @@ cdef class LexborNode:
     cdef:
         lxb_dom_node_t *node
         public LexborHTMLParser parser
+    cdef bint _is_node_type(self, lxb_dom_node_type_t expected_type)
 
     @staticmethod
     cdef LexborNode new(lxb_dom_node_t *node, LexborHTMLParser parser)

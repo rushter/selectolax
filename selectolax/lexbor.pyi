@@ -40,20 +40,24 @@ class LexborSelector:
     def matches(self) -> list[LexborNode]:
         """Returns all possible matches"""
         ...
+
     @property
     def any_matches(self) -> bool:
         """Returns True if there are any matches"""
         ...
+
     def text_contains(
         self, text: str, deep: bool = True, separator: str = "", strip: bool = False
     ) -> LexborSelector:
         """Filter all current matches given text."""
         ...
+
     def any_text_contains(
         self, text: str, deep: bool = True, separator: str = "", strip: bool = False
     ) -> bool:
         """Returns True if any node in the current search scope contains specified text"""
         ...
+
     def attribute_longer_than(
         self, attribute: str, length: int, start: str | None = None
     ) -> LexborSelector:
@@ -62,6 +66,7 @@ class LexborSelector:
         Similar to string-length in XPath.
         """
         ...
+
     def any_attribute_longer_than(
         self, attribute: str, length: int, start: str | None = None
     ) -> bool:
@@ -108,6 +113,7 @@ class LexborNode:
     """A class that represents HTML node (element)."""
 
     parser: LexborHTMLParser
+
     @property
     def mem_id(self) -> int: ...
     @property
@@ -117,26 +123,32 @@ class LexborNode:
         **Deprecated**. Please use `first_child` instead.
         """
         ...
+
     @property
     def first_child(self) -> LexborNode | None:
         """Return the first child node."""
         ...
+
     @property
     def parent(self) -> LexborNode | None:
         """Return the parent node."""
         ...
+
     @property
     def next(self) -> LexborNode | None:
         """Return next node."""
         ...
+
     @property
     def prev(self) -> LexborNode | None:
         """Return previous node."""
         ...
+
     @property
     def last_child(self) -> LexborNode | None:
         """Return last child node."""
         ...
+
     @property
     def html(self) -> str | None:
         """Return HTML representation of the current node including all its child nodes.
@@ -146,6 +158,7 @@ class LexborNode:
         text : str
         """
         ...
+
     def __hash__(self) -> int: ...
     def text_lexbor(self) -> str:
         """Returns the text of the node including text of all its child nodes.
@@ -153,6 +166,7 @@ class LexborNode:
         Uses builtin method from lexbor.
         """
         ...
+
     def text(self, deep: bool = True, separator: str = "", strip: bool = False) -> str:
         """Returns the text of the node including text of all its child nodes.
 
@@ -170,6 +184,7 @@ class LexborNode:
         text : str
         """
         ...
+
     def css(self, query: str) -> list[LexborNode]:
         """Evaluate CSS selector against current node and its child nodes.
 
@@ -192,6 +207,7 @@ class LexborNode:
         selector : list of `Node` objects
         """
         ...
+
     @overload
     def css_first(
         self, query: str, default: Any = ..., strict: Literal[True] = ...
@@ -213,6 +229,7 @@ class LexborNode:
         selector : `LexborNode` object
         """
         ...
+
     @overload
     def css_first(
         self, query: str, default: DefaultT, strict: bool = False
@@ -234,6 +251,7 @@ class LexborNode:
         selector : `LexborNode` object
         """
         ...
+
     @overload
     def css_first(
         self, query: str, default: None = ..., strict: bool = False
@@ -255,12 +273,15 @@ class LexborNode:
         selector : `LexborNode` object
         """
         ...
+
     def any_css_matches(self, selectors: tuple[str]) -> bool:
         """Returns True if any of CSS selectors matches a node"""
         ...
+
     def css_matches(self, selector: str) -> bool:
         """Returns True if CSS selector matches a node."""
         ...
+
     @property
     def tag_id(self) -> int: ...
     @property
@@ -278,6 +299,7 @@ class LexborNode:
         text : str
         """
         ...
+
     def decompose(self, recursive: bool = True) -> None:
         """Remove the current node from the tree.
 
@@ -294,6 +316,7 @@ class LexborNode:
         >>>     tag.decompose()
         """
         ...
+
     def strip_tags(self, tags: list[str], recursive: bool = False) -> None:
         """Remove specified tags from the HTML tree.
 
@@ -314,6 +337,7 @@ class LexborNode:
         '<html><body><div>Hello world!</div></body></html>'
         """
         ...
+
     @property
     def attributes(self) -> dict[str, str | None]:
         """Get all attributes that belong to the current node.
@@ -333,6 +357,7 @@ class LexborNode:
         {'data': None, 'id': 'my_id'}
         """
         ...
+
     @property
     def attrs(self) -> LexborAttributes:
         """A dict-like object that is similar to the ``attributes`` property, but operates directly on the Node data.
@@ -361,6 +386,7 @@ class LexborNode:
         '<div foo="bar" id="new_id"></div>'
         """
         ...
+
     @property
     def id(self) -> str | None:
         """Get the id attribute of the node.
@@ -372,6 +398,7 @@ class LexborNode:
         text : str
         """
         ...
+
     def iter(self, include_text: bool = False) -> Iterator[LexborNode]:
         """Iterate over nodes on the current level.
 
@@ -385,6 +412,7 @@ class LexborNode:
         node
         """
         ...
+
     def unwrap(self, delete_empty: bool = False) -> None:
         """Replace node with whatever is inside this node.
 
@@ -406,6 +434,7 @@ class LexborNode:
         Note: by default, empty tags are ignored, use "delete_empty" to change this.
         """
         ...
+
     def unwrap_tags(self, tags: list[str], delete_empty: bool = False) -> None:
         """Unwraps specified tags from the HTML tree.
 
@@ -429,6 +458,7 @@ class LexborNode:
         Note: by default, empty tags are ignored, use "delete_empty" to change this.
         """
         ...
+
     def merge_text_nodes(self) -> None:
         """Iterates over all text nodes and merges all text nodes that are close to each other.
 
@@ -448,6 +478,7 @@ class LexborNode:
         "John Doe"
         """
         ...
+
     def traverse(self, include_text: bool = False) -> Iterator[LexborNode]:
         """Iterate over all child and next nodes starting from the current level.
 
@@ -461,6 +492,7 @@ class LexborNode:
         node
         """
         ...
+
     def replace_with(self, value: bytes | str | LexborNode) -> None:
         """Replace current Node with specified value.
 
@@ -489,6 +521,7 @@ class LexborNode:
         '<div>Get <span alt="Laptop"><div>Test</div> <div></div></span></div>'
         """
         ...
+
     def insert_before(self, value: bytes | str | LexborNode) -> None:
         """Insert a node before the current Node.
 
@@ -517,6 +550,7 @@ class LexborNode:
         <div>Get <span alt="Laptop"><div>Test</div><img src="/jpg"> <div></div></span></div>'
         """
         ...
+
     def insert_after(self, value: bytes | str | LexborNode) -> None:
         """Insert a node after the current Node.
 
@@ -545,6 +579,7 @@ class LexborNode:
         <div>Get <span alt="Laptop"><img src="/jpg"><div>Test</div> <div></div></span></div>'
         """
         ...
+
     def insert_child(self, value: bytes | str | LexborNode) -> None:
         """Insert a node inside (at the end of) the current Node.
 
@@ -573,6 +608,7 @@ class LexborNode:
         <div>Get <span alt="Laptop"> <div>Laptop</div> <div>Test</div> </span></div>'
         """
         ...
+
     @property
     def raw_value(self) -> NoReturn:
         """Return the raw (unparsed, original) value of a node.
@@ -595,6 +631,7 @@ class LexborNode:
         b'&#x3C;test&#x3E;'
         """
         ...
+
     def scripts_contain(self, query: str) -> bool:
         """Returns True if any of the script tags contain specified text.
 
@@ -606,6 +643,7 @@ class LexborNode:
             The query to check.
         """
         ...
+
     def script_srcs_contain(self, queries: tuple[str]) -> bool:
         """Returns True if any of the script SRCs attributes contain on of the specified text.
 
@@ -616,9 +654,11 @@ class LexborNode:
         queries : tuple of str
         """
         ...
+
     def remove(self, recursive: bool = True) -> None:
         """An alias for the decompose method."""
         ...
+
     def select(self, query: str | None = None) -> LexborSelector:
         """Select nodes given a CSS selector.
 
@@ -634,6 +674,7 @@ class LexborNode:
         selector : The `Selector` class.
         """
         ...
+
     @property
     def text_content(self) -> str | None:
         """Returns the text of the node if it is a text node.
@@ -685,6 +726,26 @@ class LexborNode:
         """
         ...
 
+    @property
+    def is_element_node(self) -> bool:
+        """Return True if the node represents an element node."""
+        ...
+
+    @property
+    def is_text_node(self) -> bool:
+        """Return True if the node represents a text node."""
+        ...
+
+    @property
+    def is_comment_node(self) -> bool:
+        """Return True if the node represents a comment node."""
+        ...
+
+    @property
+    def is_document_node(self) -> bool:
+        """Return True if the node represents a document node."""
+        ...
+
 class LexborHTMLParser:
     """The lexbor HTML parser.
 
@@ -705,14 +766,17 @@ class LexborHTMLParser:
     def root(self) -> LexborNode | None:
         """Returns root node."""
         ...
+
     @property
     def body(self) -> LexborNode | None:
         """Returns document body."""
         ...
+
     @property
     def head(self) -> LexborNode | None:
         """Returns document head."""
         ...
+
     def tags(self, name: str) -> list[LexborNode]:
         """Returns a list of tags that match specified name.
 
@@ -721,6 +785,7 @@ class LexborHTMLParser:
         name : str (e.g. div)
         """
         ...
+
     def text(self, deep: bool = True, separator: str = "", strip: bool = False) -> str:
         """Returns the text of the node including text of all its child nodes.
 
@@ -738,10 +803,12 @@ class LexborHTMLParser:
         text : str
         """
         ...
+
     @property
     def html(self) -> str | None:
         """Return HTML representation of the page."""
         ...
+
     def css(self, query: str) -> list[LexborNode]:
         """A CSS selector.
 
@@ -764,6 +831,7 @@ class LexborHTMLParser:
         selector : list of `Node` objects
         """
         ...
+
     @overload
     def css_first(
         self, query: str, default: Any = ..., strict: Literal[True] = ...
@@ -785,6 +853,7 @@ class LexborHTMLParser:
         selector : `LexborNode` object
         """
         ...
+
     @overload
     def css_first(
         self, query: str, default: DefaultT, strict: bool = False
@@ -806,6 +875,7 @@ class LexborHTMLParser:
         selector : `LexborNode` object
         """
         ...
+
     @overload
     def css_first(
         self, query: str, default: None = ..., strict: bool = False
@@ -827,6 +897,7 @@ class LexborHTMLParser:
         selector : `LexborNode` object
         """
         ...
+
     def strip_tags(self, tags: list[str], recursive: bool = False) -> None:
         """Remove specified tags from the node.
 
@@ -847,6 +918,7 @@ class LexborHTMLParser:
         '<html><body><div>Hello world!</div></body></html>'
         """
         ...
+
     def select(self, query: str | None = None) -> LexborSelector | None:
         """Select nodes give a CSS selector.
 
@@ -862,9 +934,11 @@ class LexborHTMLParser:
         selector : The `Selector` class.
         """
         ...
+
     def any_css_matches(self, selectors: tuple[str]) -> bool:
         """Returns True if any of the specified CSS selectors matches a node."""
         ...
+
     def scripts_contain(self, query: str) -> bool:
         """Returns True if any of the script tags contain specified text.
 
@@ -876,6 +950,7 @@ class LexborHTMLParser:
             The query to check.
         """
         ...
+
     def script_srcs_contain(self, queries: tuple[str]) -> bool:
         """Returns True if any of the script SRCs attributes contain on of the specified text.
 
@@ -886,6 +961,7 @@ class LexborHTMLParser:
         queries : tuple of str
         """
         ...
+
     def css_matches(self, selector: str) -> bool: ...
     def merge_text_nodes(self) -> None:
         """Iterates over all text nodes and merges all text nodes that are close to each other.
@@ -906,9 +982,11 @@ class LexborHTMLParser:
         "John Doe"
         """
         ...
+
     def clone(self) -> LexborHTMLParser:
         """Clone the current tree."""
         ...
+
     def unwrap_tags(self, tags: list[str], delete_empty: bool = False) -> None:
         """Unwraps specified tags from the HTML tree.
 

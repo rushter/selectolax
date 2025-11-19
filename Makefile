@@ -47,7 +47,8 @@ clean-test: ## remove test and coverage artifacts
 	rm -fr htmlcov/
 
 lint: ## check style with ruff
-	ruff selectolax tests
+	ruff format selectolax tests
+	ruff check --fix selectolax tests
 	mypy selectolax tests
 
 test: ## run tests quickly with the default Python

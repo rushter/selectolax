@@ -218,9 +218,9 @@ cdef extern from "lexbor/html/html.h" nogil:
 
     # Functions
     lxb_html_document_t * lxb_html_document_create()
-    # lxb_html_element_t * lxb_html_document_create_element(lxb_html_document_t *document,
-    #                                                       const lxb_char_t *local_name, size_t lname_len,
-    #                                                       void *reserved_for_opt)
+    lxb_html_element_t * lxb_html_document_create_element(lxb_html_document_t *document,
+                                                          const lxb_char_t *local_name, size_t lname_len,
+                                                          void *reserved_for_opt)
     lxb_status_t lxb_html_document_parse(lxb_html_document_t *document, const lxb_char_t *html, size_t size)
     lxb_dom_node_t * lxb_html_document_parse_fragment(lxb_html_document_t *document,
                                                       lxb_dom_element_t *element,
@@ -258,10 +258,12 @@ cdef class LexborCSSSelector:
     cpdef int any_matches(self, str query, LexborNode node) except -1
 
 cdef class LexborHTMLParser:
-    cdef lxb_html_document_t *document
+    cdef lxb_html_document_t * document
+    cdef bint _with_top_level_tags
     cdef public bytes raw_html
     cdef LexborCSSSelector _selector
-    cdef int _parse_html(self, char * html, size_t html_len, bint with_top_level_tags = *) except -1
+    cdef inline void _new_html_document(self)
+    cdef int _parse_html(self, char * html, size_t html_len) except -1
     cdef object cached_script_texts
     cdef object cached_script_srcs
 

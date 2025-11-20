@@ -1,5 +1,6 @@
 from cpython.bool cimport bool
 from cpython.exc cimport PyErr_SetObject
+from docutils.io import NullInput
 
 
 _ENCODING = 'UTF-8'
@@ -26,13 +27,27 @@ cdef class LexborHTMLParser:
 
     html : str (unicode) or bytes
     """
-    def __init__(self, html: str, with_top_level_tags: bool = True):
+    def __init__(self, html: str | bytes, with_top_level_tags: bool = True):
         cdef size_t html_len
         cdef object bytes_html
-        bytes_html, html_len = preprocess_input(html)
-        self._parse_html(bytes_html, html_len, with_top_level_tags=with_top_level_tags)
-        self.raw_html = bytes_html
+        self._with_top_level_tags = with_top_level_tags
         self._selector = None
+        self._new_html_document()
+        bytes_html, html_len = preprocess_input(html)
+        self._parse_html(bytes_html, html_len)
+        self.raw_html = bytes_html
+
+    cdef inline void _new_html_document(self):
+        with nogil:
+            self.document = lxb_html_document_create()
+
+        if self.document == NULL:
+            PyErr_SetObject(SelectolaxError,
+                "Failed to initialize object for HTML Document.")
+
+    def __dealloc__(self):
+        if self.document != NULL:
+            lxb_html_document_destroy(self.document)
 
     @property
     def selector(self):
@@ -40,36 +55,34 @@ cdef class LexborHTMLParser:
             self._selector = LexborCSSSelector()
         return self._selector
 
-    cdef int _parse_html(self, char *html, size_t html_len, bint with_top_level_tags = True) except -1:
+    cdef int _parse_html(self, char *html, size_t html_len) except -1:
         cdef lxb_status_t status
-
-        with nogil:
-            self.document = lxb_html_document_create()
+        cdef const lxb_char_t *root_name = <const lxb_char_t *> "div"
+        cdef size_t root_len = 3
+        cdef lxb_html_element_t *root = NULL
+        cdef lxb_dom_node_t *fragment_html_node
 
         if self.document == NULL:
-            PyErr_SetObject(SelectolaxError, "Failed to initialize object for HTML Document.")
             return -1
 
-        lxb_dom_node_t * fragment
         with nogil:
-            status = lxb_html_document_parse(self.document, <lxb_char_t *> html, html_len)
-            if with_top_level_tags:
+            if self._with_top_level_tags:
                 status = lxb_html_document_parse(self.document, <lxb_char_t *> html, html_len)
             else:
-                fragment = lxb_html_document_parse_fragment(
+                root = lxb_html_document_create_element(self.document,
+                    root_name,
+                    root_len,
+                    NULL
+                )
+                if root == NULL:
+                    return -1
+                fragment_html_node = lxb_html_document_parse_fragment(
                     self.document,
-                    lxb_dom_interface_element(lxb_dom_document_root(&self.document.dom_document)),
+                    <lxb_dom_element_t *> root,
                     <lxb_char_t *> html,
                     html_len
                 )
-                status = LXB_STATUS_OK if fragment == NULL else LXB_STATUS_ERROR
-
-                # TODO:
-                # cloned_node = lxb_dom_document_import_node(
-                #     &cloned_document.dom_document,
-                #     <lxb_dom_node_t *> lxb_dom_document_root(&self.document.dom_document),
-                #     <bint> True
-                # )
+                status = LXB_STATUS_OK if fragment_html_node != NULL else LXB_STATUS_ERROR
 
         if status != LXB_STATUS_OK:
             PyErr_SetObject(SelectolaxError, "Can't parse HTML.")
@@ -80,9 +93,74 @@ cdef class LexborHTMLParser:
             return -1
         return 0
 
-    def __dealloc__(self):
-        if self.document != NULL:
-            lxb_html_document_destroy(self.document)
+    # cdef int _parse_html(self, char *html, size_t html_len) except -1:
+    #     cdef lxb_status_t status
+    #     cdef const lxb_char_t *root_name = <const lxb_char_t *> "div"
+    #     cdef size_t root_len = 3
+    #     cdef lxb_html_element_t *root = NULL
+    #     cdef lxb_dom_node_t *fragment_html_node
+    #
+    #     if self.document == NULL:
+    #         return -1
+    #
+    #     with nogil:
+    #         if self._with_top_level_tags:
+    #             status = lxb_html_document_parse(self.document, <lxb_char_t *> html, html_len)
+    #         else:
+    #             root = lxb_html_document_create_element(self.document,
+    #                 root_name,
+    #                 root_len,
+    #                 NULL
+    #             )
+    #             if root == NULL:
+    #                 return -1
+    #             fragment_html_node = lxb_html_document_parse_fragment(
+    #                 self.document,
+    #                 <lxb_dom_element_t *> root,
+    #                 <lxb_char_t *> html,
+    #                 html_len
+    #             )
+    #             status = LXB_STATUS_OK if fragment_html_node != NULL else LXB_STATUS_ERROR
+    #             # fragment_html_node = lxb_html_document_parse_fragment(
+    #             #     self.document,
+    #             #     lxb_dom_interface_element(lxb_dom_document_root(&self.document.dom_document)),
+    #             #     <lxb_char_t *> html,
+    #             #     html_len
+    #             # )
+    #             # if fragment_html_node == NULL:
+    #             # PyErr_SetObject(SelectolaxError, "Failed to create a dummy element object for HTML Document.")
+    #             # return -1
+    #             # lxb_html_document_destroy(fragment_html_node)
+    #
+    #     if status != LXB_STATUS_OK:
+    #         PyErr_SetObject(SelectolaxError, "Can't parse HTML.")
+    #         return -1
+    #
+    #     if self.document == NULL:
+    #         PyErr_SetObject(RuntimeError, "document is NULL even after html was parsed correctly")
+    #         return -1
+    #     return 0
+
+    # with nogil:
+    #     if self._with_top_level_tags:
+    #         status = lxb_html_document_parse(self.document, <lxb_char_t *> html, html_len)
+    #     else:
+    #         fragment = lxb_html_document_parse_fragment(
+    #             self.document,
+    #             lxb_dom_interface_element(lxb_dom_document_root(&self.document.dom_document)),
+    #             <lxb_char_t *> html,
+    #             html_len
+    #         )
+    #         status = LXB_STATUS_OK if fragment != NULL else LXB_STATUS_ERROR
+    #         lxb_html_document_destroy(fragment)
+
+    # if status != LXB_STATUS_OK:
+    #     PyErr_SetObject(SelectolaxError, "Can't parse HTML.")
+    #     return -1
+
+    # if self.document == NULL:
+    #     PyErr_SetObject(RuntimeError, "document is NULL even after html was parsed correctly")
+    #     return -1
 
     def __repr__(self):
         return '<LexborHTMLParser chars=%s>' % len(self.root.html)
@@ -347,7 +425,7 @@ cdef class LexborHTMLParser:
         return self.root.merge_text_nodes()
 
     @staticmethod
-    cdef LexborHTMLParser from_document(lxb_html_document_t *document, bytes raw_html):
+    cdef LexborHTMLParser from_document(lxb_html_document_t * document, bytes raw_html):
         obj = <LexborHTMLParser> LexborHTMLParser.__new__(LexborHTMLParser)
         obj.document = document
         obj.raw_html = raw_html

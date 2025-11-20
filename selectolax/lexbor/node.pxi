@@ -136,20 +136,26 @@ cdef class LexborNode:
         return unicode_text
 
     def text(self, bool deep=True, str separator='', bool strip=False, bool skip_empty=True):
-        """Returns the text of the node including text of all its child nodes.
+        """Return concatenated text from this node.
 
         Parameters
         ----------
-        strip : bool, default False
-            If true, calls ``str.strip()`` on each text part to remove extra white spaces.
-        separator : str, default ''
-            The separator to use when joining text from different nodes.
-        deep : bool, default True
-            If True, includes text from all child nodes.
+        deep : bool, optional
+            When ``True`` (default), include text from all descendant nodes; when
+            ``False``, only include direct children.
+        separator : str, optional
+            String inserted between successive text fragments.
+        strip : bool, optional
+            If ``True``, apply ``str.strip()`` to each fragment before joining to
+            remove surrounding whitespace. Defaults to ``False``.
+        skip_empty : bool, optional
+            Exclude text nodes that ``lxb_dom_node_is_empty`` considers empty when
+            ``True`` (default). Set to ``False`` to keep empty text nodes.
 
         Returns
         -------
         text : str
+            Combined textual content assembled according to the provided options.
 
         """
         cdef unsigned char * text
@@ -1018,7 +1024,14 @@ cdef class LexborNode:
 
     @property
     def is_empty_text_node(self) -> bool:
-        """Return True if the node represents an empty text node."""
+        """Check whether the current node is an empty text node.
+
+        Returns
+        -------
+        bool
+            ``True`` when the node is a text node and ``lxb_dom_node_is_empty``
+            reports that it contains no characters.
+        """
         return self.is_text_node and lxb_dom_node_is_empty(self.node)
 
 @cython.internal

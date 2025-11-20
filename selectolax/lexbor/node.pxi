@@ -1,6 +1,7 @@
 cimport cython
 from cpython.exc cimport PyErr_SetNone
 
+from typing import Iterator
 import logging
 
 logger = logging.getLogger("selectolax")
@@ -26,7 +27,6 @@ cdef inline bytes to_bytes(str_or_LexborNode value):
     elif isinstance(value, bytes):
         bytes_val = <bytes> value
     return bytes_val
-
 
 @cython.final
 cdef class LexborNode:
@@ -135,7 +135,7 @@ cdef class LexborNode:
         lxb_dom_document_destroy_text_noi(self.node.owner_document, text)
         return unicode_text
 
-    def text(self, bool deep=True, str separator='', bool strip=False):
+    def text(self, bool deep=True, str separator='', bool strip=False, bool is_empty=True):
         """Returns the text of the node including text of all its child nodes.
 
         Parameters
@@ -159,14 +159,14 @@ cdef class LexborNode:
             container = TextContainer(separator, strip)
             if self._is_node_type(LXB_DOM_NODE_TYPE_TEXT):
                 text = <unsigned char *> lexbor_str_data_noi(&(<lxb_dom_character_data_t *> self.node).data)
-                if text != NULL:
+                if text != NULL and (not skip_empty or not lxb_dom_node_is_empty(node)):
                     py_text = text.decode(_ENCODING)
                     container.append(py_text)
 
             while node != NULL:
                 if node.type == LXB_DOM_NODE_TYPE_TEXT:
                     text = <unsigned char *> lexbor_str_data_noi(&(<lxb_dom_character_data_t *> node).data)
-                    if text != NULL:
+                    if text != NULL and (not skip_empty or not lxb_dom_node_is_empty(node)):
                         py_text = text.decode(_ENCODING)
                         container.append(py_text)
                 node = node.next
@@ -175,7 +175,7 @@ cdef class LexborNode:
             container = TextContainer(separator, strip)
             if self._is_node_type(LXB_DOM_NODE_TYPE_TEXT):
                 text = <unsigned char *> lexbor_str_data_noi(&(<lxb_dom_character_data_t *> self.node).data)
-                if text != NULL:
+                if text != NULL and (not skip_empty or not lxb_dom_node_is_empty(node)):
                     container.append(text.decode(_ENCODING))
 
             lxb_dom_node_simple_walk(
@@ -422,7 +422,7 @@ cdef class LexborNode:
             return value.decode(_ENCODING) if value else None
         return None
 
-    def iter(self, include_text=False):
+    def iter(self, bool include_text = False, bool skip_empty = True):
         """Iterate over nodes on the current level.
 
         Parameters
@@ -442,10 +442,19 @@ cdef class LexborNode:
             if node.type == LXB_DOM_NODE_TYPE_TEXT and not include_text:
                 node = node.next
                 continue
+            if node.type == LXB_DOM_NODE_TYPE_TEXT and include_text and skip_empty and lxb_dom_node_is_empty(node):
+                node = node.next
+                continue
 
             next_node = LexborNode.new(<lxb_dom_node_t *> node, self.parser)
             yield next_node
             node = node.next
+
+    def __iter__(self):
+        return self.iter()
+
+    def __next__(self):
+        return self.next
 
     def unwrap(self, bint delete_empty=False):
         """Replace node with whatever is inside this node.
@@ -561,7 +570,7 @@ cdef class LexborNode:
                 LexborNode.new(node, self.parser).merge_text_nodes()
             node = next_node
 
-    def traverse(self, include_text=False):
+    def traverse(self, bool include_text = False, bool skip_empty = True) -> Iterator[LexborNode]:
         """Iterate over all child and next nodes starting from the current level.
 
         Parameters
@@ -578,9 +587,15 @@ cdef class LexborNode:
         cdef LexborNode lxb_node
 
         while node != NULL:
-            if not (not include_text and node.type == LXB_DOM_NODE_TYPE_TEXT):
+            # if not (not include_text and node.type == LXB_DOM_NODE_TYPE_TEXT):
+            if include_text or node.type != LXB_DOM_NODE_TYPE_TEXT:
                 lxb_node = LexborNode.new(<lxb_dom_node_t *> node, self.parser)
                 yield lxb_node
+
+            if node.type == LXB_DOM_NODE_TYPE_TEXT and include_text and skip_empty:
+                if lxb_dom_node_is_empty(node):
+                    node = node.next
+                    continue
 
             if node.first_child != NULL:
                 node = node.first_child
@@ -1001,6 +1016,10 @@ cdef class LexborNode:
         """Return True if the node represents a document node."""
         return self._is_node_type(LXB_DOM_NODE_TYPE_DOCUMENT)
 
+    @property
+    def is_empty_text_node(self) -> bool:
+        """Return True if the node represents an empty text node."""
+        return self.is_text_node and lxb_dom_node_is_empty(node)
 
 @cython.internal
 @cython.final

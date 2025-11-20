@@ -99,8 +99,19 @@ def test_iter_includes_text_nodes_when_requested():
     parser = LexborHTMLParser("<div><span>value</span><title>\n   \n</title></div>")
     div = parser.css_first("div")
     children = [node for node in div.iter(include_text=True, skip_empty=True)]
-    assert ", ".join(node.tag for node in children[0].iter(include_text=True, skip_empty=True)) == '-text'
-    assert ", ".join(node.tag for node in children[1].iter(include_text=True, skip_empty=True)) == ""
+    assert (
+        ", ".join(
+            node.tag for node in children[0].iter(include_text=True, skip_empty=True)
+        )
+        == "-text"
+    )
+    assert (
+        ", ".join(
+            node.tag for node in children[1].iter(include_text=True, skip_empty=True)
+        )
+        == ""
+    )
+
 
 def test_traverse_respects_skip_empty_on_text_nodes():
     parser = LexborHTMLParser("<div><span>value</span><title>\n   \n</title></div>")

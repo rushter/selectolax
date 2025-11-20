@@ -27,6 +27,7 @@ cdef inline bytes to_bytes(str_or_LexborNode value):
         bytes_val = <bytes> value
     return bytes_val
 
+
 @cython.final
 cdef class LexborNode:
     """A class that represents HTML node (element)."""
@@ -1054,6 +1055,7 @@ cdef class LexborNode:
         if node.parent != NULL:
             return lxb_dom_node_is_empty(node.parent)
         return lxb_dom_node_is_empty(node)
+
 
 @cython.internal
 @cython.final

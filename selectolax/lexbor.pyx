@@ -50,18 +50,28 @@ cdef class LexborHTMLParser:
             PyErr_SetObject(SelectolaxError, "Failed to initialize object for HTML Document.")
             return -1
 
+        lxb_dom_node_t * fragment
         with nogil:
+            status = lxb_html_document_parse(self.document, <lxb_char_t *> html, html_len)
             if with_top_level_tags:
                 status = lxb_html_document_parse(self.document, <lxb_char_t *> html, html_len)
             else:
-                status = lxb_html_document_parse_fragment(
+                fragment = lxb_html_document_parse_fragment(
                     self.document,
                     lxb_dom_interface_element(lxb_dom_document_root(&self.document.dom_document)),
                     <lxb_char_t *> html,
                     html_len
                 )
+                status = LXB_STATUS_OK if fragment == NULL else LXB_STATUS_ERROR
 
-        if status != 0x0000:
+                # TODO:
+                # cloned_node = lxb_dom_document_import_node(
+                #     &cloned_document.dom_document,
+                #     <lxb_dom_node_t *> lxb_dom_document_root(&self.document.dom_document),
+                #     <bint> True
+                # )
+
+        if status != LXB_STATUS_OK:
             PyErr_SetObject(SelectolaxError, "Can't parse HTML.")
             return -1
 

@@ -218,11 +218,14 @@ cdef extern from "lexbor/html/html.h" nogil:
 
     # Functions
     lxb_html_document_t * lxb_html_document_create()
+    # lxb_html_element_t * lxb_html_document_create_element(lxb_html_document_t *document,
+    #                                                       const lxb_char_t *local_name, size_t lname_len,
+    #                                                       void *reserved_for_opt)
     lxb_status_t lxb_html_document_parse(lxb_html_document_t *document, const lxb_char_t *html, size_t size)
-    lxb_status_t lxb_html_document_parse_fragment(lxb_html_document_t *document,
-                                                  lxb_dom_element_t *element,
-                                                  const lxb_char_t *html,
-                                                  size_t size)
+    lxb_dom_node_t * lxb_html_document_parse_fragment(lxb_html_document_t *document,
+                                                      lxb_dom_element_t *element,
+                                                      const lxb_char_t *html,
+                                                      size_t size)
     lxb_html_body_element_t * lxb_html_document_body_element_noi(lxb_html_document_t *document)
     lxb_html_head_element_t * lxb_html_document_head_element_noi(lxb_html_document_t *document)
     lxb_dom_element_t * lxb_dom_document_element(lxb_dom_document_t *document)

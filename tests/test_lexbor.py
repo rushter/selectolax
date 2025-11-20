@@ -112,12 +112,16 @@ def test_traverse_respects_skip_empty_on_text_nodes():
 
     nodes_with_text = list(root.traverse(include_text=True, skip_empty=False))
     # div, text "outer", span, text "inner"
-    assert [node.tag if not node.is_text_node else "#text" for node in nodes_with_text] == [
+    actual_tags = [
+        node.tag if not node.is_text_node else "#text" for node in nodes_with_text
+    ]
+    expected_tags = [
         "div",
         "#text",
         "span",
         "#text",
     ]
+    assert actual_tags == expected_tags
     assert nodes_with_text[1].text(deep=False, skip_empty=False) == "outer"
     assert nodes_with_text[3].text(deep=False, skip_empty=False) == "inner"
 

@@ -411,7 +411,9 @@ class LexborNode:
         """
         ...
 
-    def iter(self, include_text: bool = False, skip_empty: bool = False) -> Iterator[LexborNode]:
+    def iter(
+        self, include_text: bool = False, skip_empty: bool = False
+    ) -> Iterator[LexborNode]:
         """Iterate over direct children of this node.
 
         Parameters
@@ -497,7 +499,9 @@ class LexborNode:
         """
         ...
 
-    def traverse(self, include_text: bool = False, skip_empty: bool = False) -> Iterator[LexborNode]:
+    def traverse(
+        self, include_text: bool = False, skip_empty: bool = False
+    ) -> Iterator[LexborNode]:
         """Depth-first traversal starting at the current node.
 
         Parameters

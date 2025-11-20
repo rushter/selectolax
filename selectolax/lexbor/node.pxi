@@ -429,16 +429,22 @@ cdef class LexborNode:
         return None
 
     def iter(self, bool include_text = False, bool skip_empty = True):
-        """Iterate over nodes on the current level.
+        """Iterate over direct children of this node.
 
         Parameters
         ----------
-        include_text : bool
-            If True, includes text nodes as well.
+        include_text : bool, optional
+            When ``True``, yield text nodes in addition to element nodes. Defaults
+            to ``False``.
+        skip_empty : bool, optional
+            When ``include_text`` is ``True``, ignore text nodes that
+            ``lxb_dom_node_is_empty`` deems empty. Defaults to ``True``.
 
         Yields
-        -------
-        node
+        ------
+        LexborNode
+            Child nodes on the same tree level as this node, filtered according
+            to the provided options.
         """
 
         cdef lxb_dom_node_t *node = self.node.first_child
@@ -577,16 +583,22 @@ cdef class LexborNode:
             node = next_node
 
     def traverse(self, bool include_text = False, bool skip_empty = True) -> Iterator[LexborNode]:
-        """Iterate over all child and next nodes starting from the current level.
+        """Depth-first traversal starting at the current node.
 
         Parameters
         ----------
-        include_text : bool
-            If True, includes text nodes as well.
+        include_text : bool, optional
+            When ``True``, include text nodes in the traversal sequence. Defaults
+            to ``False``.
+        skip_empty : bool, optional
+            Skip empty text nodes (as determined by ``lxb_dom_node_is_empty``)
+            when ``include_text`` is ``True``. Defaults to ``True``.
 
         Yields
-        -------
-        node
+        ------
+        LexborNode
+            Nodes encountered in depth-first order beginning with the current
+            node, filtered according to the provided options.
         """
         cdef lxb_dom_node_t * root = self.node
         cdef lxb_dom_node_t * node = root

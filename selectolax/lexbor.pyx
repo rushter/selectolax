@@ -136,7 +136,7 @@ cdef class LexborHTMLParser:
         lxb_dom_collection_destroy(collection, <bint> True)
         return result
 
-    def text(self, bool deep=True, str separator='', bool strip=False):
+    def text(self, bool deep = True, str separator = '', bool strip = False, bool skip_empty = False) -> str:
         """Returns the text of the node including text of all its child nodes.
 
         Parameters
@@ -147,15 +147,18 @@ cdef class LexborHTMLParser:
             The separator to use when joining text from different nodes.
         deep : bool, default True
             If True, includes text from all child nodes.
+        skip_empty : bool, optional
+            Exclude text nodes that ``lxb_dom_node_is_empty`` considers empty when
+            ``True``. Defaults to ``False``.
 
         Returns
         -------
         text : str
-
+            Combined textual content assembled according to the provided options.
         """
         if self.body is None:
             return ""
-        return self.body.text(deep=deep, separator=separator, strip=strip)
+        return self.body.text(deep=deep, separator=separator, strip=strip, skip_empty=skip_empty)
 
     @property
     def html(self):

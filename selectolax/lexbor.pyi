@@ -826,7 +826,7 @@ class LexborHTMLParser:
         """
         ...
 
-    def text(self, deep: bool = True, separator: str = "", strip: bool = False) -> str:
+    def text(self, deep: bool = True, separator: str = "", strip: bool = False, skip_empty: bool = False) -> str:
         """Returns the text of the node including text of all its child nodes.
 
         Parameters
@@ -837,10 +837,15 @@ class LexborHTMLParser:
             The separator to use when joining text from different nodes.
         deep : bool, default True
             If True, includes text from all child nodes.
+        skip_empty : bool, optional
+            Exclude text nodes that ``lxb_dom_node_is_empty`` considers empty when
+            ``True``. Defaults to ``False``.
 
         Returns
         -------
         text : str
+            Combined textual content assembled according to the provided options.
+
         """
         ...
 

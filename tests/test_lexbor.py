@@ -84,50 +84,29 @@ def test_node_type_helpers():
 
 
 def test_text_honors_skip_empty_flag():
-    parser = LexborHTMLParser("<div><span>value</span></div>")
+    parser = LexborHTMLParser("<div><span>value</span><title>\n   \n</title></div>")
     span = parser.css_first("span")
     assert span is not None
-
     assert span.text(deep=False, skip_empty=False) == "value"
-    assert span.text(deep=False, skip_empty=True) == ""
+    assert span.text(deep=False, skip_empty=True) == "value"
+    title = parser.css_first("title")
+    assert title is not None
+    assert title.text(deep=False, skip_empty=False) == "\n   \n"
+    assert title.text(deep=False, skip_empty=True) == ""
 
 
 def test_iter_includes_text_nodes_when_requested():
-    parser = LexborHTMLParser("<div>hello</div>")
-    div_node = parser.css_first("div")
-    assert div_node is not None
-
-    assert list(div_node.iter()) == []
-
-    text_nodes = list(div_node.iter(include_text=True, skip_empty=False))
-    assert len(text_nodes) == 1
-    assert text_nodes[0].is_text_node
-    assert text_nodes[0].text(deep=False, skip_empty=False) == "hello"
-
+    parser = LexborHTMLParser("<div><span>value</span><title>\n   \n</title></div>")
+    div = parser.css_first("div")
+    children = [node for node in div.iter(include_text=True, skip_empty=True)]
+    assert ", ".join(node.tag for node in children[0].iter(include_text=True, skip_empty=True)) == '-text'
+    assert ", ".join(node.tag for node in children[1].iter(include_text=True, skip_empty=True)) == ""
 
 def test_traverse_respects_skip_empty_on_text_nodes():
-    parser = LexborHTMLParser("<div>outer<span>inner</span></div>")
-    root = parser.css_first("div")
-    assert root is not None
-
-    nodes_with_text = list(root.traverse(include_text=True, skip_empty=False))
-    # div, text "outer", span, text "inner"
-    actual_tags = [
-        node.tag if not node.is_text_node else "#text" for node in nodes_with_text
-    ]
-    expected_tags = [
-        "div",
-        "#text",
-        "span",
-        "#text",
-    ]
-    assert actual_tags == expected_tags
-    assert nodes_with_text[1].text(deep=False, skip_empty=False) == "outer"
-    assert nodes_with_text[3].text(deep=False, skip_empty=False) == "inner"
-
-    nodes_without_text = list(root.traverse(include_text=False, skip_empty=True))
-    # When text nodes are not requested, only element nodes are yielded.
-    assert [node.tag for node in nodes_without_text] == ["div", "span"]
+    parser = LexborHTMLParser("<div><span>value</span><title>\n   \n</title></div>")
+    div = parser.css_first("div")
+    children = [node.tag for node in div.traverse(include_text=True, skip_empty=True)]
+    assert ", ".join(children) == "div, span, -text, title"
 
 
 def test_is_empty_text_node_property():

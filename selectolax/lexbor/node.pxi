@@ -164,24 +164,27 @@ cdef class LexborNode:
             container = TextContainer(separator, strip)
             if self._is_node_type(LXB_DOM_NODE_TYPE_TEXT):
                 text = <unsigned char *> lexbor_str_data_noi(&(<lxb_dom_character_data_t *> self.node).data)
-                if text != NULL and (not skip_empty or not lxb_dom_node_is_empty(self.node)):
-                    py_text = text.decode(_ENCODING)
-                    container.append(py_text)
+                if text != NULL:
+                    if not skip_empty or not self.is_empty_text_node:
+                        py_text = text.decode(_ENCODING)
+                        container.append(py_text)
 
             while node != NULL:
                 if node.type == LXB_DOM_NODE_TYPE_TEXT:
                     text = <unsigned char *> lexbor_str_data_noi(&(<lxb_dom_character_data_t *> node).data)
-                    if text != NULL and (not skip_empty or not lxb_dom_node_is_empty(node)):
-                        py_text = text.decode(_ENCODING)
-                        container.append(py_text)
+                    if text != NULL:
+                        if not skip_empty or not self._is_empty_text_node(node):
+                            py_text = text.decode(_ENCODING)
+                            container.append(py_text)
                 node = node.next
             return container.text
         else:
             container = TextContainer(separator, strip)
             if self._is_node_type(LXB_DOM_NODE_TYPE_TEXT):
                 text = <unsigned char *> lexbor_str_data_noi(&(<lxb_dom_character_data_t *> self.node).data)
-                if text != NULL and (not skip_empty or not lxb_dom_node_is_empty(self.node)):
-                    container.append(text.decode(_ENCODING))
+                if text != NULL:
+                    if not skip_empty or not self.is_empty_text_node:
+                        container.append(text.decode(_ENCODING))
 
             lxb_dom_node_simple_walk(
                 <lxb_dom_node_t *> self.node,
@@ -453,7 +456,7 @@ cdef class LexborNode:
             if node.type == LXB_DOM_NODE_TYPE_TEXT and not include_text:
                 node = node.next
                 continue
-            if node.type == LXB_DOM_NODE_TYPE_TEXT and include_text and skip_empty and lxb_dom_node_is_empty(node):
+            if node.type == LXB_DOM_NODE_TYPE_TEXT and include_text and skip_empty and self._is_empty_text_node(node):
                 node = node.next
                 continue
 
@@ -605,12 +608,9 @@ cdef class LexborNode:
 
         while node != NULL:
             if include_text or node.type != LXB_DOM_NODE_TYPE_TEXT:
-                lxb_node = LexborNode.new(<lxb_dom_node_t *> node, self.parser)
-                yield lxb_node
-
-            if node.type == LXB_DOM_NODE_TYPE_TEXT and include_text and skip_empty and lxb_dom_node_is_empty(node):
-                node = node.next
-                continue
+                if not skip_empty or not self._is_empty_text_node(node):
+                    lxb_node = LexborNode.new(<lxb_dom_node_t *> node, self.parser)
+                    yield lxb_node
 
             if node.first_child != NULL:
                 node = node.first_child
@@ -1042,15 +1042,18 @@ cdef class LexborNode:
             ``lxb_dom_node_is_empty`` reports that its parent subtree contains
             only whitespace (or nothing).
         """
-        if not self.is_text_node:
+        return self._is_empty_text_node(self.node)
+
+    cdef inline bint _is_empty_text_node(self, lxb_dom_node_t *node):
+        if node.type != LXB_DOM_NODE_TYPE_TEXT:
             return False
 
         # lexbor's emptiness check walks children of the passed node; for a
         # text node we need to evaluate its parent so the text itself is
         # inspected.
-        if self.node.parent != NULL:
-            return lxb_dom_node_is_empty(self.node.parent)
-        return lxb_dom_node_is_empty(self.node)
+        if node.parent != NULL:
+            return lxb_dom_node_is_empty(node.parent)
+        return lxb_dom_node_is_empty(node)
 
 @cython.internal
 @cython.final

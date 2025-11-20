@@ -234,6 +234,7 @@ cdef class LexborNode:
         lxb_dom_node_t *node
         public LexborHTMLParser parser
     cdef bint _is_node_type(self, lxb_dom_node_type_t expected_type)
+    cdef bint _is_empty_text_node(self, lxb_dom_node_t *node)
 
     @staticmethod
     cdef LexborNode new(lxb_dom_node_t *node, LexborHTMLParser parser)

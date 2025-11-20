@@ -135,7 +135,7 @@ cdef class LexborNode:
         lxb_dom_document_destroy_text_noi(self.node.owner_document, text)
         return unicode_text
 
-    def text(self, bool deep=True, str separator='', bool strip=False, bool is_empty=True):
+    def text(self, bool deep=True, str separator='', bool strip=False, bool skip_empty=True):
         """Returns the text of the node including text of all its child nodes.
 
         Parameters
@@ -1019,7 +1019,7 @@ cdef class LexborNode:
     @property
     def is_empty_text_node(self) -> bool:
         """Return True if the node represents an empty text node."""
-        return self.is_text_node and lxb_dom_node_is_empty(node)
+        return self.is_text_node and lxb_dom_node_is_empty(self.node)
 
 @cython.internal
 @cython.final

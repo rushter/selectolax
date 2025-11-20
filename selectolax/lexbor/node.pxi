@@ -135,7 +135,7 @@ cdef class LexborNode:
         lxb_dom_document_destroy_text_noi(self.node.owner_document, text)
         return unicode_text
 
-    def text(self, bool deep=True, str separator='', bool strip=False, bool skip_empty=True):
+    def text(self, bool deep=True, str separator='', bool strip=False, bool skip_empty=False):
         """Return concatenated text from this node.
 
         Parameters
@@ -150,7 +150,7 @@ cdef class LexborNode:
             remove surrounding whitespace. Defaults to ``False``.
         skip_empty : bool, optional
             Exclude text nodes that ``lxb_dom_node_is_empty`` considers empty when
-            ``True`` (default). Set to ``False`` to keep empty text nodes.
+            ``True``. Defaults to ``False``.
 
         Returns
         -------
@@ -165,7 +165,7 @@ cdef class LexborNode:
             container = TextContainer(separator, strip)
             if self._is_node_type(LXB_DOM_NODE_TYPE_TEXT):
                 text = <unsigned char *> lexbor_str_data_noi(&(<lxb_dom_character_data_t *> self.node).data)
-                if text != NULL and (not skip_empty or not lxb_dom_node_is_empty(node)):
+                if text != NULL and (not skip_empty or not lxb_dom_node_is_empty(self.node)):
                     py_text = text.decode(_ENCODING)
                     container.append(py_text)
 
@@ -181,7 +181,7 @@ cdef class LexborNode:
             container = TextContainer(separator, strip)
             if self._is_node_type(LXB_DOM_NODE_TYPE_TEXT):
                 text = <unsigned char *> lexbor_str_data_noi(&(<lxb_dom_character_data_t *> self.node).data)
-                if text != NULL and (not skip_empty or not lxb_dom_node_is_empty(node)):
+                if text != NULL and (not skip_empty or not lxb_dom_node_is_empty(self.node)):
                     container.append(text.decode(_ENCODING))
 
             lxb_dom_node_simple_walk(
@@ -428,7 +428,7 @@ cdef class LexborNode:
             return value.decode(_ENCODING) if value else None
         return None
 
-    def iter(self, bool include_text = False, bool skip_empty = True):
+    def iter(self, bool include_text = False, bool skip_empty = False):
         """Iterate over direct children of this node.
 
         Parameters
@@ -438,7 +438,7 @@ cdef class LexborNode:
             to ``False``.
         skip_empty : bool, optional
             When ``include_text`` is ``True``, ignore text nodes that
-            ``lxb_dom_node_is_empty`` deems empty. Defaults to ``True``.
+            ``lxb_dom_node_is_empty`` deems empty. Defaults to ``False``.
 
         Yields
         ------
@@ -582,7 +582,7 @@ cdef class LexborNode:
                 LexborNode.new(node, self.parser).merge_text_nodes()
             node = next_node
 
-    def traverse(self, bool include_text = False, bool skip_empty = True) -> Iterator[LexborNode]:
+    def traverse(self, bool include_text = False, bool skip_empty = False) -> Iterator[LexborNode]:
         """Depth-first traversal starting at the current node.
 
         Parameters
@@ -592,7 +592,7 @@ cdef class LexborNode:
             to ``False``.
         skip_empty : bool, optional
             Skip empty text nodes (as determined by ``lxb_dom_node_is_empty``)
-            when ``include_text`` is ``True``. Defaults to ``True``.
+            when ``include_text`` is ``True``. Defaults to ``False``.
 
         Yields
         ------
@@ -605,7 +605,6 @@ cdef class LexborNode:
         cdef LexborNode lxb_node
 
         while node != NULL:
-            # if not (not include_text and node.type == LXB_DOM_NODE_TYPE_TEXT):
             if include_text or node.type != LXB_DOM_NODE_TYPE_TEXT:
                 lxb_node = LexborNode.new(<lxb_dom_node_t *> node, self.parser)
                 yield lxb_node

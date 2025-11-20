@@ -172,7 +172,7 @@ class LexborNode:
         deep: bool = True,
         separator: str = "",
         strip: bool = False,
-        skip_empty: bool = True,
+        skip_empty: bool = False,
     ) -> str:
         """Return concatenated text from this node.
 
@@ -188,7 +188,7 @@ class LexborNode:
             remove surrounding whitespace. Defaults to ``False``.
         skip_empty : bool, optional
             Exclude text nodes that ``lxb_dom_node_is_empty`` considers empty when
-            ``True`` (default). Set to ``False`` to keep empty text nodes.
+            ``True``. Defaults to ``False``.
 
         Returns
         -------
@@ -411,7 +411,7 @@ class LexborNode:
         """
         ...
 
-    def iter(self, include_text: bool = False, skip_empty: bool = True) -> Iterator[LexborNode]:
+    def iter(self, include_text: bool = False, skip_empty: bool = False) -> Iterator[LexborNode]:
         """Iterate over direct children of this node.
 
         Parameters
@@ -421,7 +421,7 @@ class LexborNode:
             to ``False``.
         skip_empty : bool, optional
             When ``include_text`` is ``True``, ignore text nodes that
-            ``lxb_dom_node_is_empty`` deems empty. Defaults to ``True``.
+            ``lxb_dom_node_is_empty`` deems empty. Defaults to ``False``.
 
         Yields
         ------
@@ -497,7 +497,7 @@ class LexborNode:
         """
         ...
 
-    def traverse(self, include_text: bool = False, skip_empty: bool = True) -> Iterator[LexborNode]:
+    def traverse(self, include_text: bool = False, skip_empty: bool = False) -> Iterator[LexborNode]:
         """Depth-first traversal starting at the current node.
 
         Parameters
@@ -507,7 +507,7 @@ class LexborNode:
             to ``False``.
         skip_empty : bool, optional
             Skip empty text nodes (as determined by ``lxb_dom_node_is_empty``)
-            when ``include_text`` is ``True``. Defaults to ``True``.
+            when ``include_text`` is ``True``. Defaults to ``False``.
 
         Yields
         ------

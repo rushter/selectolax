@@ -299,6 +299,7 @@ cdef extern from "lexbor/dom/dom.h" nogil:
     lxb_dom_collection_t * lxb_dom_collection_make(lxb_dom_document_t *document, size_t start_list_size)
     lxb_char_t * lxb_dom_node_text_content(lxb_dom_node_t *node, size_t *len)
     lxb_status_t lxb_dom_node_text_content_set(lxb_dom_node_t *node, const lxb_char_t *content, size_t len)
+    bint lxb_dom_node_is_empty(lxb_dom_node_t *node)
     void lxb_dom_node_remove(lxb_dom_node_t *node)
     void * lxb_dom_document_destroy_text_noi(lxb_dom_document_t *document, lxb_char_t *text)
     lxb_dom_node_t * lxb_dom_document_root(lxb_dom_document_t *document)

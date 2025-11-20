@@ -81,3 +81,54 @@ def test_node_type_helpers():
     assert document_node is not None
     assert document_node.is_document_node
     assert not document_node.is_element_node
+
+
+def test_text_honors_skip_empty_flag():
+    parser = LexborHTMLParser("<div><span>value</span></div>")
+    span = parser.css_first("span")
+    assert span is not None
+
+    assert span.text(deep=False, skip_empty=False) == "value"
+    assert span.text(deep=False, skip_empty=True) == ""
+
+
+def test_iter_includes_text_nodes_when_requested():
+    parser = LexborHTMLParser("<div>hello</div>")
+    div_node = parser.css_first("div")
+    assert div_node is not None
+
+    assert list(div_node.iter()) == []
+
+    text_nodes = list(div_node.iter(include_text=True, skip_empty=False))
+    assert len(text_nodes) == 1
+    assert text_nodes[0].is_text_node
+    assert text_nodes[0].text(deep=False, skip_empty=False) == "hello"
+
+
+def test_traverse_respects_skip_empty_on_text_nodes():
+    parser = LexborHTMLParser("<div>outer<span>inner</span></div>")
+    root = parser.css_first("div")
+    assert root is not None
+
+    nodes_with_text = list(root.traverse(include_text=True, skip_empty=False))
+    # div, text "outer", span, text "inner"
+    assert [node.tag if not node.is_text_node else "#text" for node in nodes_with_text] == [
+        "div",
+        "#text",
+        "span",
+        "#text",
+    ]
+    assert nodes_with_text[1].text(deep=False, skip_empty=False) == "outer"
+    assert nodes_with_text[3].text(deep=False, skip_empty=False) == "inner"
+
+    nodes_without_text = list(root.traverse(include_text=False, skip_empty=True))
+    # When text nodes are not requested, only element nodes are yielded.
+    assert [node.tag for node in nodes_without_text] == ["div", "span"]
+
+
+def test_is_empty_text_node_property():
+    parser = LexborHTMLParser("<div><span>\n \n</span><span>X</span></div>")
+    text_node = parser.root.first_child.first_child
+    assert text_node.is_empty_text_node
+    text_node = parser.root.last_child.first_child
+    assert not text_node.is_empty_text_node

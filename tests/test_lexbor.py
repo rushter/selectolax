@@ -128,3 +128,9 @@ def test_is_empty_text_node_property():
     text_node = parser.css_first("title").first_child
     assert text_node.text_content == "X"
     assert not text_node.is_empty_text_node
+
+def test_parser_without_top_level_tags():
+    parser = LexborHTMLParser("<div><span>\n \n</span><title>X</title></div>", with_top_level_tags=True)
+    assert parser.html == "<html><head></head><body><div><span>\n \n</span><title>X</title></div></body></html>"
+    parser = LexborHTMLParser("<div><span>\n \n</span><title>X</title></div>", with_top_level_tags=False)
+    assert parser.html == "<div><span>\n \n</span><title>X</title></div>"

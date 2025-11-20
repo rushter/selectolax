@@ -1,7 +1,6 @@
 cimport cython
 from cpython.exc cimport PyErr_SetNone
 
-from typing import Iterator
 import logging
 
 logger = logging.getLogger("selectolax")
@@ -582,7 +581,7 @@ cdef class LexborNode:
                 LexborNode.new(node, self.parser).merge_text_nodes()
             node = next_node
 
-    def traverse(self, bool include_text = False, bool skip_empty = False) -> Iterator[LexborNode]:
+    def traverse(self, bool include_text = False, bool skip_empty = False):
         """Depth-first traversal starting at the current node.
 
         Parameters
@@ -1040,10 +1039,19 @@ cdef class LexborNode:
         Returns
         -------
         bool
-            ``True`` when the node is a text node and ``lxb_dom_node_is_empty``
-            reports that it contains no characters.
+            ``True`` when the node is a text node and
+            ``lxb_dom_node_is_empty`` reports that its parent subtree contains
+            only whitespace (or nothing).
         """
-        return self.is_text_node and lxb_dom_node_is_empty(self.node)
+        if not self.is_text_node:
+            return False
+
+        # lexbor's emptiness check walks children of the passed node; for a
+        # text node we need to evaluate its parent so the text itself is
+        # inspected.
+        if self.node.parent != NULL:
+            return lxb_dom_node_is_empty(self.node.parent)
+        return lxb_dom_node_is_empty(self.node)
 
 @cython.internal
 @cython.final

@@ -81,3 +81,50 @@ def test_node_type_helpers():
     assert document_node is not None
     assert document_node.is_document_node
     assert not document_node.is_element_node
+
+
+def test_text_honors_skip_empty_flag():
+    parser = LexborHTMLParser("<div><span>value</span><title>\n   \n</title></div>")
+    span = parser.css_first("span")
+    assert span is not None
+    assert span.text(deep=False, skip_empty=False) == "value"
+    assert span.text(deep=False, skip_empty=True) == "value"
+    title = parser.css_first("title")
+    assert title is not None
+    assert title.text(deep=False, skip_empty=False) == "\n   \n"
+    assert title.text(deep=False, skip_empty=True) == ""
+
+
+def test_iter_includes_text_nodes_when_requested():
+    parser = LexborHTMLParser("<div><span>value</span><title>\n   \n</title></div>")
+    div = parser.css_first("div")
+    children = [node for node in div.iter(include_text=True, skip_empty=True)]
+    assert (
+        ", ".join(
+            node.tag for node in children[0].iter(include_text=True, skip_empty=True)
+        )
+        == "-text"
+    )
+    assert (
+        ", ".join(
+            node.tag for node in children[1].iter(include_text=True, skip_empty=True)
+        )
+        == ""
+    )
+
+
+def test_traverse_respects_skip_empty_on_text_nodes():
+    parser = LexborHTMLParser("<div><span>value</span><title>\n   \n</title></div>")
+    div = parser.css_first("div")
+    children = [node.tag for node in div.traverse(include_text=True, skip_empty=True)]
+    assert ", ".join(children) == "div, span, -text, title"
+
+
+def test_is_empty_text_node_property():
+    parser = LexborHTMLParser("<div><span>\n \n</span><title>X</title></div>")
+    text_node = parser.css_first("span").first_child
+    assert text_node.text_content == "\n \n"
+    assert text_node.is_empty_text_node
+    text_node = parser.css_first("title").first_child
+    assert text_node.text_content == "X"
+    assert not text_node.is_empty_text_node

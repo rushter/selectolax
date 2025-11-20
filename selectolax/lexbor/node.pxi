@@ -135,21 +135,27 @@ cdef class LexborNode:
         lxb_dom_document_destroy_text_noi(self.node.owner_document, text)
         return unicode_text
 
-    def text(self, bool deep=True, str separator='', bool strip=False):
-        """Returns the text of the node including text of all its child nodes.
+    def text(self, bool deep=True, str separator='', bool strip=False, bool skip_empty=False):
+        """Return concatenated text from this node.
 
         Parameters
         ----------
-        strip : bool, default False
-            If true, calls ``str.strip()`` on each text part to remove extra white spaces.
-        separator : str, default ''
-            The separator to use when joining text from different nodes.
-        deep : bool, default True
-            If True, includes text from all child nodes.
+        deep : bool, optional
+            When ``True`` (default), include text from all descendant nodes; when
+            ``False``, only include direct children.
+        separator : str, optional
+            String inserted between successive text fragments.
+        strip : bool, optional
+            If ``True``, apply ``str.strip()`` to each fragment before joining to
+            remove surrounding whitespace. Defaults to ``False``.
+        skip_empty : bool, optional
+            Exclude text nodes that ``lxb_dom_node_is_empty`` considers empty when
+            ``True``. Defaults to ``False``.
 
         Returns
         -------
         text : str
+            Combined textual content assembled according to the provided options.
 
         """
         cdef unsigned char * text
@@ -160,15 +166,17 @@ cdef class LexborNode:
             if self._is_node_type(LXB_DOM_NODE_TYPE_TEXT):
                 text = <unsigned char *> lexbor_str_data_noi(&(<lxb_dom_character_data_t *> self.node).data)
                 if text != NULL:
-                    py_text = text.decode(_ENCODING)
-                    container.append(py_text)
+                    if not skip_empty or not self.is_empty_text_node:
+                        py_text = text.decode(_ENCODING)
+                        container.append(py_text)
 
             while node != NULL:
                 if node.type == LXB_DOM_NODE_TYPE_TEXT:
                     text = <unsigned char *> lexbor_str_data_noi(&(<lxb_dom_character_data_t *> node).data)
                     if text != NULL:
-                        py_text = text.decode(_ENCODING)
-                        container.append(py_text)
+                        if not skip_empty or not self._is_empty_text_node(node):
+                            py_text = text.decode(_ENCODING)
+                            container.append(py_text)
                 node = node.next
             return container.text
         else:
@@ -176,7 +184,8 @@ cdef class LexborNode:
             if self._is_node_type(LXB_DOM_NODE_TYPE_TEXT):
                 text = <unsigned char *> lexbor_str_data_noi(&(<lxb_dom_character_data_t *> self.node).data)
                 if text != NULL:
-                    container.append(text.decode(_ENCODING))
+                    if not skip_empty or not self.is_empty_text_node:
+                        container.append(text.decode(_ENCODING))
 
             lxb_dom_node_simple_walk(
                 <lxb_dom_node_t *> self.node,
@@ -422,17 +431,23 @@ cdef class LexborNode:
             return value.decode(_ENCODING) if value else None
         return None
 
-    def iter(self, include_text=False):
-        """Iterate over nodes on the current level.
+    def iter(self, bool include_text = False, bool skip_empty = False):
+        """Iterate over direct children of this node.
 
         Parameters
         ----------
-        include_text : bool
-            If True, includes text nodes as well.
+        include_text : bool, optional
+            When ``True``, yield text nodes in addition to element nodes. Defaults
+            to ``False``.
+        skip_empty : bool, optional
+            When ``include_text`` is ``True``, ignore text nodes that
+            ``lxb_dom_node_is_empty`` deems empty. Defaults to ``False``.
 
         Yields
-        -------
-        node
+        ------
+        LexborNode
+            Child nodes on the same tree level as this node, filtered according
+            to the provided options.
         """
 
         cdef lxb_dom_node_t *node = self.node.first_child
@@ -442,10 +457,19 @@ cdef class LexborNode:
             if node.type == LXB_DOM_NODE_TYPE_TEXT and not include_text:
                 node = node.next
                 continue
+            if node.type == LXB_DOM_NODE_TYPE_TEXT and include_text and skip_empty and self._is_empty_text_node(node):
+                node = node.next
+                continue
 
             next_node = LexborNode.new(<lxb_dom_node_t *> node, self.parser)
             yield next_node
             node = node.next
+
+    def __iter__(self):
+        return self.iter()
+
+    def __next__(self):
+        return self.next
 
     def unwrap(self, bint delete_empty=False):
         """Replace node with whatever is inside this node.
@@ -561,26 +585,33 @@ cdef class LexborNode:
                 LexborNode.new(node, self.parser).merge_text_nodes()
             node = next_node
 
-    def traverse(self, include_text=False):
-        """Iterate over all child and next nodes starting from the current level.
+    def traverse(self, bool include_text = False, bool skip_empty = False):
+        """Depth-first traversal starting at the current node.
 
         Parameters
         ----------
-        include_text : bool
-            If True, includes text nodes as well.
+        include_text : bool, optional
+            When ``True``, include text nodes in the traversal sequence. Defaults
+            to ``False``.
+        skip_empty : bool, optional
+            Skip empty text nodes (as determined by ``lxb_dom_node_is_empty``)
+            when ``include_text`` is ``True``. Defaults to ``False``.
 
         Yields
-        -------
-        node
+        ------
+        LexborNode
+            Nodes encountered in depth-first order beginning with the current
+            node, filtered according to the provided options.
         """
         cdef lxb_dom_node_t * root = self.node
         cdef lxb_dom_node_t * node = root
         cdef LexborNode lxb_node
 
         while node != NULL:
-            if not (not include_text and node.type == LXB_DOM_NODE_TYPE_TEXT):
-                lxb_node = LexborNode.new(<lxb_dom_node_t *> node, self.parser)
-                yield lxb_node
+            if include_text or node.type != LXB_DOM_NODE_TYPE_TEXT:
+                if not skip_empty or not self._is_empty_text_node(node):
+                    lxb_node = LexborNode.new(<lxb_dom_node_t *> node, self.parser)
+                    yield lxb_node
 
             if node.first_child != NULL:
                 node = node.first_child
@@ -1000,6 +1031,30 @@ cdef class LexborNode:
     def is_document_node(self) -> bool:
         """Return True if the node represents a document node."""
         return self._is_node_type(LXB_DOM_NODE_TYPE_DOCUMENT)
+
+    @property
+    def is_empty_text_node(self) -> bool:
+        """Check whether the current node is an empty text node.
+
+        Returns
+        -------
+        bool
+            ``True`` when the node is a text node and
+            ``lxb_dom_node_is_empty`` reports that its parent subtree contains
+            only whitespace (or nothing).
+        """
+        return self._is_empty_text_node(self.node)
+
+    cdef inline bint _is_empty_text_node(self, lxb_dom_node_t *node):
+        if node.type != LXB_DOM_NODE_TYPE_TEXT:
+            return False
+
+        # lexbor's emptiness check walks children of the passed node; for a
+        # text node we need to evaluate its parent so the text itself is
+        # inspected.
+        if node.parent != NULL:
+            return lxb_dom_node_is_empty(node.parent)
+        return lxb_dom_node_is_empty(node)
 
 
 @cython.internal

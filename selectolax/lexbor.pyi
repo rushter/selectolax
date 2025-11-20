@@ -167,21 +167,33 @@ class LexborNode:
         """
         ...
 
-    def text(self, deep: bool = True, separator: str = "", strip: bool = False) -> str:
-        """Returns the text of the node including text of all its child nodes.
+    def text(
+        self,
+        deep: bool = True,
+        separator: str = "",
+        strip: bool = False,
+        skip_empty: bool = True,
+    ) -> str:
+        """Return concatenated text from this node.
 
         Parameters
         ----------
-        strip : bool, default False
-            If true, calls ``str.strip()`` on each text part to remove extra white spaces.
-        separator : str, default ''
-            The separator to use when joining text from different nodes.
-        deep : bool, default True
-            If True, includes text from all child nodes.
+        deep : bool, optional
+            When ``True`` (default), include text from all descendant nodes; when
+            ``False``, only include direct children.
+        separator : str, optional
+            String inserted between successive text fragments.
+        strip : bool, optional
+            If ``True``, apply ``str.strip()`` to each fragment before joining to
+            remove surrounding whitespace. Defaults to ``False``.
+        skip_empty : bool, optional
+            Exclude text nodes that ``lxb_dom_node_is_empty`` considers empty when
+            ``True`` (default). Set to ``False`` to keep empty text nodes.
 
         Returns
         -------
         text : str
+            Combined textual content assembled according to the provided options.
         """
         ...
 
@@ -399,17 +411,23 @@ class LexborNode:
         """
         ...
 
-    def iter(self, include_text: bool = False) -> Iterator[LexborNode]:
-        """Iterate over nodes on the current level.
+    def iter(self, include_text: bool = False, skip_empty: bool = True) -> Iterator[LexborNode]:
+        """Iterate over direct children of this node.
 
         Parameters
         ----------
-        include_text : bool
-            If True, includes text nodes as well.
+        include_text : bool, optional
+            When ``True``, yield text nodes in addition to element nodes. Defaults
+            to ``False``.
+        skip_empty : bool, optional
+            When ``include_text`` is ``True``, ignore text nodes that
+            ``lxb_dom_node_is_empty`` deems empty. Defaults to ``True``.
 
         Yields
-        -------
-        node
+        ------
+        LexborNode
+            Child nodes on the same tree level as this node, filtered according
+            to the provided options.
         """
         ...
 
@@ -479,17 +497,23 @@ class LexborNode:
         """
         ...
 
-    def traverse(self, include_text: bool = False) -> Iterator[LexborNode]:
-        """Iterate over all child and next nodes starting from the current level.
+    def traverse(self, include_text: bool = False, skip_empty: bool = True) -> Iterator[LexborNode]:
+        """Depth-first traversal starting at the current node.
 
         Parameters
         ----------
-        include_text : bool
-            If True, includes text nodes as well.
+        include_text : bool, optional
+            When ``True``, include text nodes in the traversal sequence. Defaults
+            to ``False``.
+        skip_empty : bool, optional
+            Skip empty text nodes (as determined by ``lxb_dom_node_is_empty``)
+            when ``include_text`` is ``True``. Defaults to ``True``.
 
         Yields
-        -------
-        node
+        ------
+        LexborNode
+            Nodes encountered in depth-first order beginning with the current
+            node, filtered according to the provided options.
         """
         ...
 
@@ -744,6 +768,18 @@ class LexborNode:
     @property
     def is_document_node(self) -> bool:
         """Return True if the node represents a document node."""
+        ...
+
+    @property
+    def is_empty_text_node(self) -> bool:
+        """Check whether the current node is an empty text node.
+
+        Returns
+        -------
+        bool
+            ``True`` when the node is a text node and ``lxb_dom_node_is_empty``
+            reports that it contains no characters.
+        """
         ...
 
 class LexborHTMLParser:

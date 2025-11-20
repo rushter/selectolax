@@ -127,8 +127,10 @@ def test_traverse_respects_skip_empty_on_text_nodes():
 
 
 def test_is_empty_text_node_property():
-    parser = LexborHTMLParser("<div><span>\n \n</span><span>X</span></div>")
-    text_node = parser.root.first_child.first_child
+    parser = LexborHTMLParser("<div><span>\n \n</span><title>X</title></div>")
+    text_node = parser.css_first("span").first_child
+    assert text_node.text_content == "\n \n"
     assert text_node.is_empty_text_node
-    text_node = parser.root.last_child.first_child
+    text_node = parser.css_first("title").first_child
+    assert text_node.text_content == "X"
     assert not text_node.is_empty_text_node

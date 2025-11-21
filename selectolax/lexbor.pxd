@@ -27,8 +27,8 @@ cdef extern from "lexbor/core/core.h" nogil:
         LXB_STATUS_NEXT
         LXB_STATUS_STOP
 
-    lexbor_str_t * lexbor_str_destroy(lexbor_str_t *str, lexbor_mraw_t *mraw, bint destroy_obj)
-    lexbor_str_t * lexbor_str_create()
+    lexbor_str_t* lexbor_str_destroy(lexbor_str_t *str, lexbor_mraw_t *mraw, bint destroy_obj)
+    lexbor_str_t* lexbor_str_create()
     lxb_char_t * lexbor_str_data_noi(lexbor_str_t *str)
 
 cdef extern from "lexbor/html/html.h" nogil:
@@ -63,14 +63,14 @@ cdef extern from "lexbor/html/html.h" nogil:
         uintptr_t              prefix
         uintptr_t              ns
 
-        lxb_dom_document_t *owner_document
+        lxb_dom_document_t     *owner_document
 
-        lxb_dom_node_t *next
-        lxb_dom_node_t *prev
-        lxb_dom_node_t *parent
-        lxb_dom_node_t *first_child
-        lxb_dom_node_t *last_child
-        void *user
+        lxb_dom_node_t         *next
+        lxb_dom_node_t         *prev
+        lxb_dom_node_t         *parent
+        lxb_dom_node_t         *first_child
+        lxb_dom_node_t         *last_child
+        void                   *user
 
         lxb_dom_node_type_t    type
 
@@ -111,32 +111,32 @@ cdef extern from "lexbor/html/html.h" nogil:
         lxb_html_document_opt_t         opt
 
     ctypedef  enum lxb_html_document_ready_state_t:
-        LXB_HTML_DOCUMENT_READY_STATE_UNDEF = 0x00
-        LXB_HTML_DOCUMENT_READY_STATE_LOADING = 0x01
+        LXB_HTML_DOCUMENT_READY_STATE_UNDEF       = 0x00
+        LXB_HTML_DOCUMENT_READY_STATE_LOADING     = 0x01
         LXB_HTML_DOCUMENT_READY_STATE_INTERACTIVE = 0x02
-        LXB_HTML_DOCUMENT_READY_STATE_COMPLETE = 0x03
+        LXB_HTML_DOCUMENT_READY_STATE_COMPLETE    = 0x03
 
     ctypedef enum lxb_html_parser_state_t:
-        LXB_HTML_PARSER_STATE_BEGIN = 0x00
-        LXB_HTML_PARSER_STATE_PROCESS = 0x01
-        LXB_HTML_PARSER_STATE_END = 0x02
+        LXB_HTML_PARSER_STATE_BEGIN            = 0x00
+        LXB_HTML_PARSER_STATE_PROCESS          = 0x01
+        LXB_HTML_PARSER_STATE_END              = 0x02
         LXB_HTML_PARSER_STATE_FRAGMENT_PROCESS = 0x03
-        LXB_HTML_PARSER_STATE_ERROR = 0x04
+        LXB_HTML_PARSER_STATE_ERROR            = 0x04
 
     ctypedef enum lxb_dom_node_type_t:
-        LXB_DOM_NODE_TYPE_ELEMENT = 0x01
-        LXB_DOM_NODE_TYPE_ATTRIBUTE = 0x02
-        LXB_DOM_NODE_TYPE_TEXT = 0x03
-        LXB_DOM_NODE_TYPE_CDATA_SECTION = 0x04
-        LXB_DOM_NODE_TYPE_ENTITY_REFERENCE = 0x05
-        LXB_DOM_NODE_TYPE_ENTITY = 0x06
+        LXB_DOM_NODE_TYPE_ELEMENT                = 0x01
+        LXB_DOM_NODE_TYPE_ATTRIBUTE              = 0x02
+        LXB_DOM_NODE_TYPE_TEXT                   = 0x03
+        LXB_DOM_NODE_TYPE_CDATA_SECTION          = 0x04
+        LXB_DOM_NODE_TYPE_ENTITY_REFERENCE       = 0x05
+        LXB_DOM_NODE_TYPE_ENTITY                 = 0x06
         LXB_DOM_NODE_TYPE_PROCESSING_INSTRUCTION = 0x07
-        LXB_DOM_NODE_TYPE_COMMENT = 0x08
-        LXB_DOM_NODE_TYPE_DOCUMENT = 0x09
-        LXB_DOM_NODE_TYPE_DOCUMENT_TYPE = 0x0A
-        LXB_DOM_NODE_TYPE_DOCUMENT_FRAGMENT = 0x0B
-        LXB_DOM_NODE_TYPE_NOTATION = 0x0C
-        LXB_DOM_NODE_TYPE_LAST_ENTRY = 0x0D
+        LXB_DOM_NODE_TYPE_COMMENT                = 0x08
+        LXB_DOM_NODE_TYPE_DOCUMENT               = 0x09
+        LXB_DOM_NODE_TYPE_DOCUMENT_TYPE          = 0x0A
+        LXB_DOM_NODE_TYPE_DOCUMENT_FRAGMENT      = 0x0B
+        LXB_DOM_NODE_TYPE_NOTATION               = 0x0C
+        LXB_DOM_NODE_TYPE_LAST_ENTRY             = 0x0D
 
     ctypedef enum lxb_dom_document_cmode_t:
         LXB_DOM_DOCUMENT_CMODE_NO_QUIRKS = 0x00
@@ -159,7 +159,7 @@ cdef extern from "lexbor/html/html.h" nogil:
         LXB_HTML_SERIALIZE_OPT_FULL_DOCTYPE = 0x40
 
     ctypedef struct lexbor_array_t:
-        void ** list
+        void **list
         size_t size
         size_t length
 
@@ -174,6 +174,7 @@ cdef extern from "lexbor/html/html.h" nogil:
     ctypedef lxb_status_t lxb_html_tree_append_attr_f
 
     ctypedef struct lxb_html_tree_t:
+
         lxb_html_tokenizer_t *tkz_ref
 
         lxb_html_document_t *document
@@ -232,8 +233,8 @@ cdef extern from "lexbor/html/html.h" nogil:
 
     lxb_status_t lxb_html_serialize_tree_str(lxb_dom_node_t *node, lexbor_str_t *str)
     lxb_status_t lxb_html_serialize_deep_str(lxb_dom_node_t *node, lexbor_str_t *str)
-    lxb_html_element_t * lxb_html_element_inner_html_set(lxb_html_element_t *element,
-                                                         const lxb_char_t *html, size_t size)
+    lxb_html_element_t* lxb_html_element_inner_html_set(lxb_html_element_t *element,
+                                                        const lxb_char_t *html, size_t size)
 
 cdef class LexborNode:
     cdef:
@@ -245,8 +246,9 @@ cdef class LexborNode:
     @staticmethod
     cdef LexborNode new(lxb_dom_node_t *node, LexborHTMLParser parser)
 
+
 cdef class LexborCSSSelector:
-    cdef lxb_css_parser_t * parser
+    cdef lxb_css_parser_t* parser
     cdef lxb_selectors_t * selectors
     cdef lxb_css_selectors_t * css_selectors
     cdef public list results
@@ -275,9 +277,9 @@ cdef class LexborHTMLParser:
 
 cdef extern from "lexbor/dom/dom.h" nogil:
     ctypedef enum lexbor_action_t:
-        LEXBOR_ACTION_OK = 0x00
-        LEXBOR_ACTION_STOP = 0x01
-        LEXBOR_ACTION_NEXT = 0x02
+        LEXBOR_ACTION_OK    = 0x00
+        LEXBOR_ACTION_STOP  = 0x01
+        LEXBOR_ACTION_NEXT  = 0x02
 
     ctypedef lexbor_action_t (*lxb_dom_node_simple_walker_f)(lxb_dom_node_t *node, void *ctx)
 
@@ -338,7 +340,7 @@ cdef extern from "lexbor/dom/dom.h" nogil:
     void lxb_dom_node_insert_after(lxb_dom_node_t *to, lxb_dom_node_t *node)
     lxb_dom_text_t * lxb_dom_document_create_text_node(lxb_dom_document_t *document, const lxb_char_t *data, size_t len)
     void lxb_dom_node_simple_walk(lxb_dom_node_t *root, lxb_dom_node_simple_walker_f walker_cb, void *ctx)
-    lxb_dom_node_t * lxb_dom_node_clone(lxb_dom_node_t *node, bint deep)
+    lxb_dom_node_t* lxb_dom_node_clone(lxb_dom_node_t *node, bint deep)
 
 
 cdef extern from "lexbor/dom/interfaces/element.h" nogil:
@@ -359,7 +361,7 @@ cdef extern from "lexbor/dom/collection.h" nogil:
 
 cdef extern from "lexbor/css/css.h" nogil:
     ctypedef struct lxb_css_parser_t:
-        lxb_css_memory_t * memory
+        lxb_css_memory_t* memory
     ctypedef struct lxb_css_syntax_tokenizer_t
     ctypedef struct lxb_css_memory_t
 

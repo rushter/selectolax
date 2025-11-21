@@ -135,7 +135,7 @@ cdef class LexborNode:
         lxb_dom_document_destroy_text_noi(self.node.owner_document, text)
         return unicode_text
 
-    def text(self, bool deep = True, str separator = '', bool strip = False, bool skip_empty = False) -> str:
+    def text(self, bool deep=True, str separator='', bool strip=False, bool skip_empty=False):
         """Return concatenated text from this node.
 
         Parameters

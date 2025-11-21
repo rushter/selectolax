@@ -74,13 +74,13 @@ def find_modest_files(modest_path="modest/source"):
 
                     # Filter platform specific files
                     if (file_path.find("myport") >= 0) and (
-                        not file_path.find(PLATFORM) >= 0
+                            not file_path.find(PLATFORM) >= 0
                     ):
                         continue
 
                     if INCLUDE_LEXBOR:
                         if (file_path.find("ports") >= 0) and (
-                            not file_path.find(PLATFORM) >= 0
+                                not file_path.find(PLATFORM) >= 0
                         ):
                             continue
                     c_files.append(file_path)
@@ -192,7 +192,7 @@ def make_extensions():
 setup(
     name="selectolax",
     version="0.4.3",
-    description="Fast HTML5 parser with CSS selectors.",
+    description="An extremely fast HTML5 parser with CSS selectors, written in Cython, using Modest and Lexbor engines!",
     long_description=readme,
     author="Artem Golubin",
     author_email="me@rushter.com",

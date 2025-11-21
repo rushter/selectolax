@@ -2,9 +2,31 @@
 
 ---
 
-[![PyPI version](https://img.shields.io/pypi/v/selectolax.svg)](https://pypi.python.org/pypi/selectolax)
+An extremely fast HTML5 parser with CSS selectors, written in Cython,
+using [Modest](https://github.com/lexborisov/Modest/) and [Lexbor](https://github.com/lexbor/lexbor) engines!
 
-A fast HTML5 parser with CSS selectors using [Modest](https://github.com/lexborisov/Modest/) and [Lexbor](https://github.com/lexbor/lexbor) engines.
+---
+
+[![PyPI - Version](https://img.shields.io/pypi/v/selectolax?logo=pypi&label=Pypi&logoColor=fff)](https://pypi.org/project/selectolax)
+[![PyPI Total Downloads](https://static.pepy.tech/badge/selectolax)](https://pepy.tech/projects/selectolax)
+[![PyPI Monthly Downloads](https://static.pepy.tech/badge/selectolax/month)](https://pepy.tech/projects/selectolax)
+[![PyPI Weekly Downloads](https://static.pepy.tech/badge/selectolax/week)](https://pepy.tech/projects/selectolax)
+
+![Running on](https://img.shields.io/badge/Running%20on:-magenta?labelColor=black&logo=hotwire&logoColor=yellow)
+![Windows](https://custom-icon-badges.demolab.com/badge/Windows%2011-%230079d5?logo=windows11&logoColor=white)
+![macOS](https://img.shields.io/badge/MacOS-000000?logo=apple&logoColor=white&color=2e2e2e)
+![Ubuntu](https://img.shields.io/badge/Ubuntu-E95420?logo=ubuntu&logoColor=white&color=orange)
+[![Python Versions](https://img.shields.io/pypi/pyversions/selectolax?logo=python&logoColor=fff&label=Python)](https://pypi.org/project/selectolax)
+
+[![CI](https://img.shields.io/github/actions/workflow/status/rushter/selectolax/pythonpackage.yml?branch=master&logo=githubactions&label=CI)](https://github.com/rushter/selectolax/actions/workflows/pythonpackage.yml?query=branch%3Amaster+event%3Apush)
+[![GitHub License](https://img.shields.io/github/license/rushter/selectolax?logo=github&label=License)](https://github.com/rushter/selectolax/blob/master/LICENSE)
+[![GitHub Release Date](https://img.shields.io/github/release-date/rushter/selectolax?logo=github&label=Release%20Date)](https://github.com/rushter/selectolax/releases/latest)
+![GitHub commit activity](https://img.shields.io/github/commit-activity/t/rushter/selectolax?logo=github&label=Commits)
+![GitHub commits since latest release](https://img.shields.io/github/commits-since/rushter/selectolax/latest?logo=github)
+[![GitHub last commit](https://img.shields.io/github/last-commit/rushter/selectolax?logo=github&label=Last%20Commit)](https://github.com/rushter/selectolax/commit/master)
+[![GitHub contributors](https://img.shields.io/github/contributors/rushter/selectolax?logo=github&label=Contributors)](https://github.com/rushter/selectolax/graphs/contributors)
+
+---
 
 ## Installation
 
@@ -45,22 +67,24 @@ Here are some basic examples to get you started with selectolax:
 Parsing HTML and extracting text:
 
 ```python
-In [1]: from selectolax.lexbor import LexborHTMLParser
-   ...:
-   ...: html = """
+In[1]:
+from selectolax.lexbor import LexborHTMLParser
+
+...:
+...: html = """
    ...: <h1 id="title" data-updated="20201101">Hi there</h1>
    ...: <div class="post">Lorem Ipsum is simply dummy text of the printing and typesetting industry. </div>
    ...: <div class="post">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</div>
    ...: """
-   ...: tree = LexborHTMLParser(html)
+...: tree = LexborHTMLParser(html)
 
-In [2]: tree.css_first('h1#title').text()
+In[2]: tree.css_first('h1#title').text()
 Out[2]: 'Hi there'
 
-In [3]: tree.css_first('h1#title').attributes
+In[3]: tree.css_first('h1#title').attributes
 Out[3]: {'id': 'title', 'data-updated': '20201101'}
 
-In [4]: [node.text() for node in tree.css('.post')]
+In[4]: [node.text() for node in tree.css('.post')]
 Out[4]:
 ['Lorem Ipsum is simply dummy text of the printing and typesetting industry. ',
  'Lorem ipsum dolor sit amet, consectetur adipiscing elit.']
@@ -69,26 +93,33 @@ Out[4]:
 ### Using advanced CSS selectors
 
 ```python
-In [1]: html = "<div><p id=p1><p id=p2><p id=p3><a>link</a><p id=p4><p id=p5>text<p id=p6></div>"
-   ...: selector = "div > :nth-child(2n+1):not(:has(a))"
+In[1]: html = "<div><p id=p1><p id=p2><p id=p3><a>link</a><p id=p4><p id=p5>text<p id=p6></div>"
+...: selector = "div > :nth-child(2n+1):not(:has(a))"
 
-In [2]: for node in LexborHTMLParser(html).css(selector):
-   ...:     print(node.attributes, node.text(), node.tag)
-   ...:     print(node.parent.tag)
-   ...:     print(node.html)
-   ...:
-{'id': 'p1'}  p
+In[2]:
+for node in LexborHTMLParser(html).css(selector):
+    ...: print(node.attributes, node.text(), node.tag)
+    ...: print(node.parent.tag)
+    ...: print(node.html)
+    ...:
+{'id': 'p1'}
+p
 div
-<p id="p1"></p>
-{'id': 'p5'} text p
+< p
+id = "p1" > < / p >
+{'id': 'p5'}
+text
+p
 div
-<p id="p5">text</p>
+< p
+id = "p5" > text < / p >
 ```
 
 #### Using `lexbor-contains` CSS pseudo-class to match text
 
 ```python
 from selectolax.lexbor import LexborHTMLParser
+
 html = "<div><p>hello </p><p id='main'>lexbor is AwesOme</p></div>"
 parser = LexborHTMLParser(html)
 # Case-insensitive search
@@ -112,29 +143,31 @@ and the underlying C library that selectolax uses is not maintained anymore.
 To use `lexbor`, just import the parser and use it in the similar way to the `HTMLParser`.
 
 ```python
-In [1]: from selectolax.lexbor import LexborHTMLParser
+In[1]:
+from selectolax.lexbor import LexborHTMLParser
 
-In [2]: html = """
+In[2]: html = """
    ...: <title>Hi there</title>
    ...: <div id="updated">2021-08-15</div>
    ...: """
 
-In [3]: parser = LexborHTMLParser(html)
-In [4]: parser.root.css_first("#updated").text()
+In[3]: parser = LexborHTMLParser(html)
+In[4]: parser.root.css_first("#updated").text()
 Out[4]: '2021-08-15'
 ```
 
 ## Simple Benchmark
 
-* Extract title, links, scripts and a meta tag from main pages of top 754 domains. See `examples/benchmark.py` for more information.
+* Extract title, links, scripts and a meta tag from main pages of top 754 domains. See `examples/benchmark.py` for more
+  information.
 
-| Package                       | Time      |
-|-------------------------------|-----------|
-| Beautiful Soup (html.parser)  | 61.02 sec.|
-| lxml / Beautiful Soup (lxml)  | 9.09 sec. |
-| html5_parser                  | 16.10 sec.|
-| selectolax (Modest)           | 2.94 sec. |
-| selectolax (Lexbor)           | 2.39 sec. |
+| Package                      | Time       |
+|------------------------------|------------|
+| Beautiful Soup (html.parser) | 61.02 sec. |
+| lxml / Beautiful Soup (lxml) | 9.09 sec.  |
+| html5_parser                 | 16.10 sec. |
+| selectolax (Modest)          | 2.94 sec.  |
+| selectolax (Lexbor)          | 2.39 sec.  |
 
 ## Links
 
@@ -152,3 +185,28 @@ Out[4]: '2021-08-15'
 * Modest engine — [LGPL2.1](https://github.com/lexborisov/Modest/blob/master/LICENSE)
 * lexbor engine — [Apache-2.0 license](https://github.com/lexbor/lexbor?tab=Apache-2.0-1-ov-file#readme)
 * selectolax - [MIT](https://github.com/rushter/selectolax/blob/master/LICENSE)
+
+
+## Contributors
+
+Thanks to all the contributors of selectolax!
+
+<a href="https://github.com/rushter/selectolax/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=rushter/selectolax" />
+</a>
+
+## PyPI Stats
+
+- [pypistats](https://pypistats.org/packages/selectolax)
+- [libraries.io](https://libraries.io/pypi/selectolax)
+- [deps.dev](https://deps.dev/pypi/selectolax)
+
+## Star History
+
+<a href="https://www.star-history.com/#rushter/selectolax&type=date&legend=top-left">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=rushter/selectolax&type=date&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=rushter/selectolax&type=date&legend=top-left" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=rushter/selectolax&type=date&legend=top-left" />
+ </picture>
+</a>

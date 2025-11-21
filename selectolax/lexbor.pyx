@@ -25,6 +25,16 @@ cdef class LexborHTMLParser:
     html : str (unicode) or bytes
     """
     def __init__(self, html: str | bytes, with_top_level_tags: bool = True):
+        """Create a parser and load HTML.
+
+        Parameters
+        ----------
+        html : str or bytes
+            HTML content to parse.
+        with_top_level_tags : bool, optional
+            When ``True`` (default), parse expecting a full document with
+            top-level tags. When ``False``, parse the content as a fragment.
+        """
         cdef size_t html_len
         cdef object bytes_html
         self._with_top_level_tags = with_top_level_tags
@@ -98,24 +108,50 @@ cdef class LexborHTMLParser:
             lxb_html_document_destroy(self.document)
 
     def __repr__(self):
+        """Return a concise representation of the parsed document.
+
+        Returns
+        -------
+        str
+            A string showing the number of characters in the parsed HTML.
+        """
         return f"<LexborHTMLParser chars='{len(self.root.html)}'>"
 
     @property
     def selector(self):
+        """Return a lazily created CSS selector helper.
+
+        Returns
+        -------
+        LexborCSSSelector
+            Selector instance bound to this parser.
+        """
         if self._selector is None:
             self._selector = LexborCSSSelector()
         return self._selector
 
     @property
     def root(self):
-        """Returns root node."""
+        """Return the document root node.
+
+        Returns
+        -------
+        LexborNode or None
+            Root of the parsed document, or ``None`` if unavailable.
+        """
         if self.document == NULL:
             return None
         return LexborNode.new(<lxb_dom_node_t *> lxb_dom_document_root(&self.document.dom_document), self)
 
     @property
     def body(self):
-        """Returns document body."""
+        """Return document body.
+
+        Returns
+        -------
+        LexborNode or None
+            ``<body>`` element when present, otherwise ``None``.
+        """
         cdef lxb_html_body_element_t * body
         body = lxb_html_document_body_element_noi(self.document)
         if body == NULL:
@@ -124,7 +160,13 @@ cdef class LexborHTMLParser:
 
     @property
     def head(self):
-        """Returns document head."""
+        """Return document head.
+
+        Returns
+        -------
+        LexborNode or None
+            ``<head>`` element when present, otherwise ``None``.
+        """
         cdef lxb_html_head_element_t * head
         head = lxb_html_document_head_element_noi(self.document)
         if head == NULL:
@@ -132,12 +174,24 @@ cdef class LexborHTMLParser:
         return LexborNode.new(<lxb_dom_node_t *> head, self)
 
     def tags(self, str name):
-        """Returns a list of tags that match specified name.
+        """Return all tags that match the provided name.
 
         Parameters
         ----------
-        name : str (e.g. div)
+        name : str
+            Tag name to search for (e.g., ``"div"``).
 
+        Returns
+        -------
+        list of LexborNode
+            Matching elements in document order.
+
+        Raises
+        ------
+        ValueError
+            If ``name`` is empty or longer than 100 characters.
+        SelectolaxError
+            If Lexbor cannot locate the elements.
         """
 
         if not name:
@@ -199,7 +253,13 @@ cdef class LexborHTMLParser:
 
     @property
     def html(self):
-        """Return HTML representation of the page."""
+        """Return HTML representation of the page.
+
+        Returns
+        -------
+        str or None
+            Serialized HTML of the current document.
+        """
         if self.document == NULL:
             return None
         if self._with_top_level_tags:
@@ -267,6 +327,9 @@ cdef class LexborHTMLParser:
         >>> tree.html
         '<html><body><div>Hello world!</div></body></html>'
 
+        Returns
+        -------
+        None
         """
         cdef lxb_dom_collection_t * collection = NULL
         cdef lxb_status_t status
@@ -297,7 +360,7 @@ cdef class LexborHTMLParser:
             lxb_dom_collection_destroy(collection, <bint> True)
 
     def select(self, query=None):
-        """Select nodes give a CSS selector.
+        """Select nodes given a CSS selector.
 
         Works similarly to the ``css`` method, but supports chained filtering and extra features.
 
@@ -308,7 +371,8 @@ cdef class LexborHTMLParser:
 
         Returns
         -------
-        selector : The `Selector` class.
+        LexborSelector or None
+            Selector bound to the root node, or ``None`` if the document is empty.
         """
         cdef LexborNode node
         node = self.root
@@ -317,35 +381,67 @@ cdef class LexborHTMLParser:
         return None
 
     def any_css_matches(self, tuple selectors):
-        """Returns True if any of the specified CSS selectors matches a node."""
+        """Return ``True`` if any of the specified CSS selectors match.
+
+        Parameters
+        ----------
+        selectors : tuple[str]
+            CSS selectors to evaluate.
+
+        Returns
+        -------
+        bool
+            ``True`` when at least one selector matches.
+        """
         return self.root.any_css_matches(selectors)
 
     def scripts_contain(self, str query):
-        """Returns True if any of the script tags contain specified text.
+        """Return ``True`` if any script tag contains the given text.
 
         Caches script tags on the first call to improve performance.
 
         Parameters
         ----------
         query : str
-            The query to check.
+            Text to search for within script contents.
 
+        Returns
+        -------
+        bool
+            ``True`` when a matching script tag is found.
         """
         return self.root.scripts_contain(query)
 
     def script_srcs_contain(self, tuple queries):
-        """Returns True if any of the script SRCs attributes contain on of the specified text.
+        """Return ``True`` if any script ``src`` contains one of the strings.
 
         Caches values on the first call to improve performance.
 
         Parameters
         ----------
         queries : tuple of str
+            Strings to look for inside ``src`` attributes.
 
+        Returns
+        -------
+        bool
+            ``True`` when a matching source value is found.
         """
         return self.root.script_srcs_contain(queries)
 
     def css_matches(self, str selector):
+        """Return ``True`` if the document matches the selector at least once.
+
+        Parameters
+        ----------
+        selector : str
+            CSS selector to test.
+
+        Returns
+        -------
+        bool
+            ``True`` when a match exists.
+        """
         return self.root.css_matches(selector)
 
     def merge_text_nodes(self):
@@ -365,6 +461,10 @@ cdef class LexborHTMLParser:
         >>> node.merge_text_nodes()
         >>> tree.text(deep=True, separator=" ", strip=True)
         "John Doe"
+
+        Returns
+        -------
+        None
         """
         return self.root.merge_text_nodes()
 
@@ -379,12 +479,12 @@ cdef class LexborHTMLParser:
         return obj
 
     def clone(self):
-        """Clone the current node.
+        """Clone the current document tree.
 
-        You can use to do temporary modifications without affecting the original HTML tree.
-
-        It is tied to the current parser instance.
-        Gets destroyed when parser instance is destroyed.
+        Returns
+        -------
+        LexborHTMLParser
+            A parser instance backed by a deep-copied document.
         """
         cdef lxb_html_document_t * cloned_document
         cdef lxb_dom_node_t * cloned_node
@@ -433,6 +533,10 @@ cdef class LexborHTMLParser:
         >>> tree.body.unwrap_tags(['i','a'])
         >>> tree.body.html
         '<body><div>Hello world!</div></body>'
+
+        Returns
+        -------
+        None
         """
         # faster to check if the document is empty which should determine if we have a root
         if self.document != NULL:
@@ -463,5 +567,8 @@ cdef class LexborHTMLParser:
         ----------
         html : str
 
+        Returns
+        -------
+        None
         """
         self.root.inner_html = html

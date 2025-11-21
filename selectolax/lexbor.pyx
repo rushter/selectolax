@@ -45,6 +45,17 @@ cdef class LexborHTMLParser:
         self.raw_html = bytes_html
 
     cdef inline void _new_html_document(self):
+        """Initialize a fresh Lexbor HTML document.
+
+        Returns
+        -------
+        None
+
+        Raises
+        ------
+        SelectolaxError
+            If the underlying Lexbor document cannot be created.
+        """
         with nogil:
             self.document = lxb_html_document_create()
 
@@ -52,6 +63,27 @@ cdef class LexborHTMLParser:
             PyErr_SetObject(SelectolaxError, "Failed to initialize object for HTML Document.")
 
     cdef int _parse_html(self, char *html, size_t html_len) except -1:
+        """Parse HTML content into the internal document.
+
+        Parameters
+        ----------
+        html : char *
+            Pointer to UTF-8 encoded HTML bytes.
+        html_len : size_t
+            Length of the HTML buffer.
+
+        Returns
+        -------
+        int
+            ``0`` on success; ``-1`` when parsing fails.
+
+        Raises
+        ------
+        SelectolaxError
+            If Lexbor returns a non-OK status.
+        RuntimeError
+            If the internal document is ``NULL`` after a successful parse.
+        """
         cdef lxb_status_t status
 
         if self.document == NULL:
@@ -73,11 +105,37 @@ cdef class LexborHTMLParser:
         return 0
 
     cdef inline lxb_status_t _parse_with_top_level_tags(self, char *html, size_t html_len) nogil:
-        """Parse HTML when top-level tags are expected."""
+        """Parse HTML when top-level tags are expected.
+
+        Parameters
+        ----------
+        html : char *
+            Pointer to UTF-8 encoded HTML bytes.
+        html_len : size_t
+            Length of the HTML buffer.
+
+        Returns
+        -------
+        lxb_status_t
+            Lexbor status code produced by ``lxb_html_document_parse``.
+        """
         return lxb_html_document_parse(self.document, <lxb_char_t *> html, html_len)
 
     cdef inline lxb_status_t _parse_without_top_level_tags(self, char *html, size_t html_len) nogil:
-        """Parse HTML fragments when top-level tags are absent."""
+        """Parse HTML fragments when top-level tags are absent.
+
+        Parameters
+        ----------
+        html : char *
+            Pointer to UTF-8 encoded HTML bytes.
+        html_len : size_t
+            Length of the HTML buffer.
+
+        Returns
+        -------
+        lxb_status_t
+            Lexbor status code; ``LXB_STATUS_OK`` when parsing the fragment succeeded.
+        """
         cdef const lxb_char_t *dummy_root_name = <const lxb_char_t *> ""
         cdef size_t dummy_root_len = 0
         cdef lxb_html_element_t *dummy_root = NULL

@@ -41,12 +41,6 @@ cdef class LexborHTMLParser:
         if self.document == NULL:
             PyErr_SetObject(SelectolaxError, "Failed to initialize object for HTML Document.")
 
-    @property
-    def selector(self):
-        if self._selector is None:
-            self._selector = LexborCSSSelector()
-        return self._selector
-
     cdef int _parse_html(self, char *html, size_t html_len) except -1:
         cdef lxb_status_t status
 
@@ -104,7 +98,13 @@ cdef class LexborHTMLParser:
             lxb_html_document_destroy(self.document)
 
     def __repr__(self):
-        return '<LexborHTMLParser chars=%s>' % len(self.root.html)
+        return f"<LexborHTMLParser chars='{len(self.root.html)}'>"
+
+    @property
+    def selector(self):
+        if self._selector is None:
+            self._selector = LexborCSSSelector()
+        return self._selector
 
     @property
     def root(self):

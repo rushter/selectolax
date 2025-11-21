@@ -162,6 +162,17 @@ cdef class LexborHTMLParser:
         return LXB_STATUS_OK
 
     def __dealloc__(self):
+        """Release the underlying Lexbor HTML document.
+
+        Returns
+        -------
+        None
+
+        Notes
+        -----
+        Safe to call multiple times; does nothing if the document is already
+        freed.
+        """
         if self.document != NULL:
             lxb_html_document_destroy(self.document)
 
@@ -528,6 +539,20 @@ cdef class LexborHTMLParser:
 
     @staticmethod
     cdef LexborHTMLParser from_document(lxb_html_document_t * document, bytes raw_html):
+        """Construct a parser from an existing Lexbor document.
+
+        Parameters
+        ----------
+        document : lxb_html_document_t *
+            Borrowed pointer to an initialized Lexbor HTML document.
+        raw_html : bytes
+            Original HTML bytes backing the document.
+
+        Returns
+        -------
+        LexborHTMLParser
+            Parser instance wrapping the provided document.
+        """
         obj = <LexborHTMLParser> LexborHTMLParser.__new__(LexborHTMLParser)
         obj.document = document
         obj.raw_html = raw_html

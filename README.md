@@ -58,24 +58,22 @@ Here are some basic examples to get you started with selectolax:
 Parsing HTML and extracting text:
 
 ```python
-In[1]:
-from selectolax.lexbor import LexborHTMLParser
-
-...:
-...: html = """
+In [1]: from selectolax.lexbor import LexborHTMLParser
+   ...:
+   ...: html = """
    ...: <h1 id="title" data-updated="20201101">Hi there</h1>
    ...: <div class="post">Lorem Ipsum is simply dummy text of the printing and typesetting industry. </div>
    ...: <div class="post">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</div>
    ...: """
-...: tree = LexborHTMLParser(html)
+   ...: tree = LexborHTMLParser(html)
 
-In[2]: tree.css_first('h1#title').text()
+In [2]: tree.css_first('h1#title').text()
 Out[2]: 'Hi there'
 
-In[3]: tree.css_first('h1#title').attributes
+In [3]: tree.css_first('h1#title').attributes
 Out[3]: {'id': 'title', 'data-updated': '20201101'}
 
-In[4]: [node.text() for node in tree.css('.post')]
+In [4]: [node.text() for node in tree.css('.post')]
 Out[4]:
 ['Lorem Ipsum is simply dummy text of the printing and typesetting industry. ',
  'Lorem ipsum dolor sit amet, consectetur adipiscing elit.']
@@ -84,33 +82,26 @@ Out[4]:
 ### Using advanced CSS selectors
 
 ```python
-In[1]: html = "<div><p id=p1><p id=p2><p id=p3><a>link</a><p id=p4><p id=p5>text<p id=p6></div>"
-...: selector = "div > :nth-child(2n+1):not(:has(a))"
+In [1]: html = "<div><p id=p1><p id=p2><p id=p3><a>link</a><p id=p4><p id=p5>text<p id=p6></div>"
+   ...: selector = "div > :nth-child(2n+1):not(:has(a))"
 
-In[2]:
-for node in LexborHTMLParser(html).css(selector):
-    ...: print(node.attributes, node.text(), node.tag)
-    ...: print(node.parent.tag)
-    ...: print(node.html)
-    ...:
-{'id': 'p1'}
-p
+In [2]: for node in LexborHTMLParser(html).css(selector):
+   ...:     print(node.attributes, node.text(), node.tag)
+   ...:     print(node.parent.tag)
+   ...:     print(node.html)
+   ...:
+{'id': 'p1'}  p
 div
-< p
-id = "p1" > < / p >
-{'id': 'p5'}
-text
-p
+<p id="p1"></p>
+{'id': 'p5'} text p
 div
-< p
-id = "p5" > text < / p >
+<p id="p5">text</p>
 ```
 
 #### Using `lexbor-contains` CSS pseudo-class to match text
 
 ```python
 from selectolax.lexbor import LexborHTMLParser
-
 html = "<div><p>hello </p><p id='main'>lexbor is AwesOme</p></div>"
 parser = LexborHTMLParser(html)
 # Case-insensitive search
@@ -134,31 +125,29 @@ and the underlying C library that selectolax uses is not maintained anymore.
 To use `lexbor`, just import the parser and use it in the similar way to the `HTMLParser`.
 
 ```python
-In[1]:
-from selectolax.lexbor import LexborHTMLParser
+In [1]: from selectolax.lexbor import LexborHTMLParser
 
-In[2]: html = """
+In [2]: html = """
    ...: <title>Hi there</title>
    ...: <div id="updated">2021-08-15</div>
    ...: """
 
-In[3]: parser = LexborHTMLParser(html)
-In[4]: parser.root.css_first("#updated").text()
+In [3]: parser = LexborHTMLParser(html)
+In [4]: parser.root.css_first("#updated").text()
 Out[4]: '2021-08-15'
 ```
 
 ## Simple Benchmark
 
-* Extract title, links, scripts and a meta tag from main pages of top 754 domains. See `examples/benchmark.py` for more
-  information.
+* Extract title, links, scripts and a meta tag from main pages of top 754 domains. See `examples/benchmark.py` for more information.
 
-| Package                      | Time       |
-|------------------------------|------------|
-| Beautiful Soup (html.parser) | 61.02 sec. |
-| lxml / Beautiful Soup (lxml) | 9.09 sec.  |
-| html5_parser                 | 16.10 sec. |
-| selectolax (Modest)          | 2.94 sec.  |
-| selectolax (Lexbor)          | 2.39 sec.  |
+| Package                       | Time      |
+|-------------------------------|-----------|
+| Beautiful Soup (html.parser)  | 61.02 sec.|
+| lxml / Beautiful Soup (lxml)  | 9.09 sec. |
+| html5_parser                  | 16.10 sec.|
+| selectolax (Modest)           | 2.94 sec. |
+| selectolax (Lexbor)           | 2.39 sec. |
 
 ## Links
 

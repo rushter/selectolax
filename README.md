@@ -12,19 +12,10 @@ using [Modest](https://github.com/lexborisov/Modest/) and [Lexbor](https://githu
 [![PyPI Monthly Downloads](https://static.pepy.tech/badge/selectolax/month)](https://pepy.tech/projects/selectolax)
 [![PyPI Weekly Downloads](https://static.pepy.tech/badge/selectolax/week)](https://pepy.tech/projects/selectolax)
 
-![Running on](https://img.shields.io/badge/Running%20on:-magenta?labelColor=black&logo=hotwire&logoColor=yellow)
-![Windows](https://custom-icon-badges.demolab.com/badge/Windows%2011-%230079d5?logo=windows11&logoColor=white)
-![macOS](https://img.shields.io/badge/MacOS-000000?logo=apple&logoColor=white&color=2e2e2e)
-![Ubuntu](https://img.shields.io/badge/Ubuntu-E95420?logo=ubuntu&logoColor=white&color=orange)
 [![Python Versions](https://img.shields.io/pypi/pyversions/selectolax?logo=python&logoColor=fff&label=Python)](https://pypi.org/project/selectolax)
 
 [![CI](https://img.shields.io/github/actions/workflow/status/rushter/selectolax/pythonpackage.yml?branch=master&logo=githubactions&label=CI)](https://github.com/rushter/selectolax/actions/workflows/pythonpackage.yml?query=branch%3Amaster+event%3Apush)
 [![GitHub License](https://img.shields.io/github/license/rushter/selectolax?logo=github&label=License)](https://github.com/rushter/selectolax/blob/master/LICENSE)
-[![GitHub Release Date](https://img.shields.io/github/release-date/rushter/selectolax?logo=github&label=Release%20Date)](https://github.com/rushter/selectolax/releases/latest)
-![GitHub commit activity](https://img.shields.io/github/commit-activity/t/rushter/selectolax?logo=github&label=Commits)
-![GitHub commits since latest release](https://img.shields.io/github/commits-since/rushter/selectolax/latest?logo=github)
-[![GitHub last commit](https://img.shields.io/github/last-commit/rushter/selectolax?logo=github&label=Last%20Commit)](https://github.com/rushter/selectolax/commit/master)
-[![GitHub contributors](https://img.shields.io/github/contributors/rushter/selectolax?logo=github&label=Contributors)](https://github.com/rushter/selectolax/graphs/contributors)
 
 ---
 
@@ -193,20 +184,4 @@ Thanks to all the contributors of selectolax!
 
 <a href="https://github.com/rushter/selectolax/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=rushter/selectolax" />
-</a>
-
-## PyPI Stats
-
-- [pypistats](https://pypistats.org/packages/selectolax)
-- [libraries.io](https://libraries.io/pypi/selectolax)
-- [deps.dev](https://deps.dev/pypi/selectolax)
-
-## Star History
-
-<a href="https://www.star-history.com/#rushter/selectolax&type=date&legend=top-left">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=rushter/selectolax&type=date&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=rushter/selectolax&type=date&legend=top-left" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=rushter/selectolax&type=date&legend=top-left" />
- </picture>
 </a>

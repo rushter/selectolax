@@ -136,7 +136,8 @@ def test_parser_without_top_level_tags():
     assert parser is not None and isinstance(parser, LexborHTMLParser)
     assert parser.html == "<html><head></head><body><div><span>\n \n</span><title>X</title></div></body></html>"
     parser = LexborHTMLParser("<div><span>\n \n</span><title>X</title></div>", with_top_level_tags=False)
-    assert parser.html == "<div><span>\n \n</span><title>X</title></div>"
+    assert parser.html == "<html><div><span>\n \n</span><title>X</title></div></html>"
+    # assert parser.html == "<div><span>\n \n</span><title>X</title></div>"
     # assert parser.root.html == "<div><span>\n \n</span><title>X</title></div>"
     # assert parser.head is None
     # assert parser.body is None

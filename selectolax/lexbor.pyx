@@ -57,10 +57,10 @@ cdef class LexborHTMLParser:
 
     cdef int _parse_html(self, char *html, size_t html_len) except -1:
         cdef lxb_status_t status
-        cdef const lxb_char_t *root_name = <const lxb_char_t *> "div"
-        cdef size_t root_len = 3
+        cdef const lxb_char_t *root_name = <const lxb_char_t *> ""
+        cdef size_t root_len = 0
         cdef lxb_html_element_t *root = NULL
-        cdef lxb_dom_node_t *fragment_html_node
+        cdef lxb_dom_node_t *fragment_html_node = NULL
 
         if self.document == NULL:
             return -1
@@ -82,7 +82,12 @@ cdef class LexborHTMLParser:
                     <lxb_char_t *> html,
                     html_len
                 )
-                status = LXB_STATUS_OK if fragment_html_node != NULL else LXB_STATUS_ERROR
+                if fragment_html_node != NULL:
+                    # Use the fragment document returned by lexbor when parsing without top-level tags.
+                    self.document = <lxb_html_document_t *> fragment_html_node
+                    status = LXB_STATUS_OK
+                else:
+                    status = LXB_STATUS_ERROR
 
         if status != LXB_STATUS_OK:
             PyErr_SetObject(SelectolaxError, "Can't parse HTML.")

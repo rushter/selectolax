@@ -263,6 +263,8 @@ cdef class LexborHTMLParser:
     cdef public bytes raw_html
     cdef LexborCSSSelector _selector
     cdef inline void _new_html_document(self)
+    cdef inline lxb_status_t _parse_with_top_level_tags(self, char * html, size_t html_len) nogil
+    cdef inline lxb_status_t _parse_without_top_level_tags(self, char * html, size_t html_len) nogil
     cdef int _parse_html(self, char * html, size_t html_len) except -1
     cdef object cached_script_texts
     cdef object cached_script_srcs

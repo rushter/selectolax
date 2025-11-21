@@ -57,37 +57,15 @@ cdef class LexborHTMLParser:
 
     cdef int _parse_html(self, char *html, size_t html_len) except -1:
         cdef lxb_status_t status
-        cdef const lxb_char_t *root_name = <const lxb_char_t *> ""
-        cdef size_t root_len = 0
-        cdef lxb_html_element_t *root = NULL
-        cdef lxb_dom_node_t *fragment_html_node = NULL
 
         if self.document == NULL:
             return -1
 
         with nogil:
             if self._with_top_level_tags:
-                status = lxb_html_document_parse(self.document, <lxb_char_t *> html, html_len)
+                status = self._parse_with_top_level_tags(html, html_len)
             else:
-                root = lxb_html_document_create_element(self.document,
-                    root_name,
-                    root_len,
-                    NULL
-                )
-                if root == NULL:
-                    return -1
-                fragment_html_node = lxb_html_document_parse_fragment(
-                    self.document,
-                    <lxb_dom_element_t *> root,
-                    <lxb_char_t *> html,
-                    html_len
-                )
-                if fragment_html_node != NULL:
-                    # Use the fragment document returned by lexbor when parsing without top-level tags.
-                    self.document = <lxb_html_document_t *> fragment_html_node
-                    status = LXB_STATUS_OK
-                else:
-                    status = LXB_STATUS_ERROR
+                status = self._parse_without_top_level_tags(html, html_len)
 
         if status != LXB_STATUS_OK:
             PyErr_SetObject(SelectolaxError, "Can't parse HTML.")
@@ -97,6 +75,37 @@ cdef class LexborHTMLParser:
             PyErr_SetObject(RuntimeError, "document is NULL even after html was parsed correctly")
             return -1
         return 0
+
+    cdef inline lxb_status_t _parse_with_top_level_tags(self, char *html, size_t html_len) nogil:
+        """Parse HTML when top-level tags are expected."""
+        return lxb_html_document_parse(self.document, <lxb_char_t *> html, html_len)
+
+    cdef inline lxb_status_t _parse_without_top_level_tags(self, char *html, size_t html_len) nogil:
+        """Parse HTML fragments when top-level tags are absent."""
+        cdef const lxb_char_t *dummy_root_name = <const lxb_char_t *> ""
+        cdef size_t dummy_root_len = 0
+        cdef lxb_html_element_t *dummy_root = NULL
+        cdef lxb_dom_node_t *fragment_html_node = NULL
+
+        dummy_root = lxb_html_document_create_element(
+            self.document,
+            dummy_root_name,
+            dummy_root_len,
+            NULL
+        )
+        if dummy_root == NULL:
+            return LXB_STATUS_ERROR
+        fragment_html_node = lxb_html_document_parse_fragment(
+            self.document,
+            <lxb_dom_element_t *> dummy_root,
+            <lxb_char_t *> html,
+            html_len
+        )
+        if fragment_html_node == NULL:
+            return LXB_STATUS_ERROR
+        # Use the fragment document returned by lexbor when parsing without top-level tags.
+        self.document = <lxb_html_document_t *> fragment_html_node
+        return LXB_STATUS_OK
 
     # cdef int _parse_html(self, char *html, size_t html_len) except -1:
     #     cdef lxb_status_t status
@@ -257,17 +266,19 @@ cdef class LexborHTMLParser:
         text : str
             Combined textual content assembled according to the provided options.
         """
-        if self.body is None:
+        if self.root is None:
             return ""
-        return self.body.text(deep=deep, separator=separator, strip=strip, skip_empty=skip_empty)
+        return self.root.text(deep=deep, separator=separator, strip=strip, skip_empty=skip_empty)
 
     @property
     def html(self):
         """Return HTML representation of the page."""
         if self.document == NULL:
             return None
-        node = LexborNode.new(<lxb_dom_node_t *> &self.document.dom_document, self)
-        return node.html
+        if self._with_top_level_tags:
+            node = LexborNode.new(<lxb_dom_node_t *> &self.document.dom_document, self)
+            return node.html
+        return self.root.html
 
     def css(self, str query):
         """A CSS selector.
@@ -376,6 +387,7 @@ cdef class LexborHTMLParser:
         node = self.root
         if node:
             return LexborSelector(node, query)
+        return None
 
     def any_css_matches(self, tuple selectors):
         """Returns True if any of the specified CSS selectors matches a node."""

@@ -132,12 +132,13 @@ def test_is_empty_text_node_property():
 
 def test_parser_without_top_level_tags():
     parser = LexborHTMLParser("<div><span>\n \n</span><title>X</title></div>", with_top_level_tags=True)
-    print("\nXXXXXXXXXX")
     assert parser is not None and isinstance(parser, LexborHTMLParser)
     assert parser.html == "<html><head></head><body><div><span>\n \n</span><title>X</title></div></body></html>"
+    assert parser.root.html == "<html><head></head><body><div><span>\n \n</span><title>X</title></div></body></html>"
+    assert parser.head is not None
+    assert parser.body is not None
     parser = LexborHTMLParser("<div><span>\n \n</span><title>X</title></div>", with_top_level_tags=False)
-    assert parser.html == "<html><div><span>\n \n</span><title>X</title></div></html>"
-    # assert parser.html == "<div><span>\n \n</span><title>X</title></div>"
-    # assert parser.root.html == "<div><span>\n \n</span><title>X</title></div>"
-    # assert parser.head is None
-    # assert parser.body is None
+    assert parser.html == "<div><span>\n \n</span><title>X</title></div>"
+    assert parser.root.html == "<div><span>\n \n</span><title>X</title></div>"
+    assert parser.head is None
+    assert parser.body is None

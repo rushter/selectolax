@@ -811,8 +811,8 @@ class LexborHTMLParser:
         html : str or bytes
             HTML content to parse.
         with_top_level_tags : bool, optional
-            When ``True`` (default), parse expecting a full document with
-            top-level tags. When ``False``, parse the content as a fragment.
+            When ``True`` (default), parse the content as a full document with
+            top-level tags('<html>', '<head>', '<body>'). When ``False``, parse the content as a fragment.
         """
         ...
 

@@ -100,16 +100,16 @@ def test_iter_includes_text_nodes_when_requested():
     div = parser.css_first("div")
     children = [node for node in div.iter(include_text=True, skip_empty=True)]
     assert (
-            ", ".join(
-                node.tag for node in children[0].iter(include_text=True, skip_empty=True)
-            )
-            == "-text"
+        ", ".join(
+            node.tag for node in children[0].iter(include_text=True, skip_empty=True)
+        )
+        == "-text"
     )
     assert (
-            ", ".join(
-                node.tag for node in children[1].iter(include_text=True, skip_empty=True)
-            )
-            == ""
+        ", ".join(
+            node.tag for node in children[1].iter(include_text=True, skip_empty=True)
+        )
+        == ""
     )
 
 
@@ -131,13 +131,23 @@ def test_is_empty_text_node_property():
 
 
 def test_parser_without_top_level_tags():
-    parser = LexborHTMLParser("<div><span>\n \n</span><title>X</title></div>", with_top_level_tags=True)
+    parser = LexborHTMLParser(
+        "<div><span>\n \n</span><title>X</title></div>", with_top_level_tags=True
+    )
     assert parser is not None and isinstance(parser, LexborHTMLParser)
-    assert parser.html == "<html><head></head><body><div><span>\n \n</span><title>X</title></div></body></html>"
-    assert parser.root.html == "<html><head></head><body><div><span>\n \n</span><title>X</title></div></body></html>"
+    assert (
+        parser.html
+        == "<html><head></head><body><div><span>\n \n</span><title>X</title></div></body></html>"
+    )
+    assert (
+        parser.root.html
+        == "<html><head></head><body><div><span>\n \n</span><title>X</title></div></body></html>"
+    )
     assert parser.head is not None
     assert parser.body is not None
-    parser = LexborHTMLParser("<div><span>\n \n</span><title>X</title></div>", with_top_level_tags=False)
+    parser = LexborHTMLParser(
+        "<div><span>\n \n</span><title>X</title></div>", with_top_level_tags=False
+    )
     assert parser.html == "<div><span>\n \n</span><title>X</title></div>"
     assert parser.root.html == "<div><span>\n \n</span><title>X</title></div>"
     assert parser.head is None

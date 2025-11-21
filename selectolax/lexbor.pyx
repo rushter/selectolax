@@ -1,7 +1,4 @@
 from cpython.bool cimport bool
-from cpython.exc cimport PyErr_SetObject
-from docutils.io import NullInput
-
 
 _ENCODING = 'UTF-8'
 
@@ -42,12 +39,7 @@ cdef class LexborHTMLParser:
             self.document = lxb_html_document_create()
 
         if self.document == NULL:
-            PyErr_SetObject(SelectolaxError,
-                "Failed to initialize object for HTML Document.")
-
-    def __dealloc__(self):
-        if self.document != NULL:
-            lxb_html_document_destroy(self.document)
+            PyErr_SetObject(SelectolaxError, "Failed to initialize object for HTML Document.")
 
     @property
     def selector(self):
@@ -175,6 +167,10 @@ cdef class LexborHTMLParser:
     # if self.document == NULL:
     #     PyErr_SetObject(RuntimeError, "document is NULL even after html was parsed correctly")
     #     return -1
+
+    def __dealloc__(self):
+        if self.document != NULL:
+            lxb_html_document_destroy(self.document)
 
     def __repr__(self):
         return '<LexborHTMLParser chars=%s>' % len(self.root.html)

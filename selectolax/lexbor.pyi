@@ -2,45 +2,29 @@ from typing import Any, Iterator, Literal, NoReturn, Optional, TypeVar, overload
 
 DefaultT = TypeVar("DefaultT")
 
-
 class LexborAttributes:
     """A dict-like object that represents attributes."""
 
     @staticmethod
     def create(node: LexborAttributes) -> LexborAttributes: ...
-
     def keys(self) -> Iterator[str]: ...
-
     def items(self) -> Iterator[tuple[str, str | None]]: ...
-
     def values(self) -> Iterator[str | None]: ...
-
     def __iter__(self) -> Iterator[str]: ...
-
     def __len__(self) -> int: ...
-
     def __getitem__(self, key: str) -> str | None: ...
-
     def __setitem__(self, key: str, value: Optional[str]) -> None: ...
-
     def __delitem__(self, key: str) -> None: ...
-
     def __contains__(self, key: str) -> bool: ...
-
     def __repr__(self) -> str: ...
-
     @overload
     def get(self, key: str, default: DefaultT) -> DefaultT | str | None: ...
-
     @overload
     def get(self, key: str, default: None = ...) -> str | None: ...
-
     @overload
     def sget(self, key: str, default: str | DefaultT) -> str | DefaultT: ...
-
     @overload
     def sget(self, key: str, default: str = "") -> str: ...
-
 
 class LexborSelector:
     """An advanced CSS selector that supports additional operations.
@@ -51,9 +35,7 @@ class LexborSelector:
     """
 
     def __init__(self, node: LexborNode, query: str): ...
-
     def css(self, query: str) -> NoReturn: ...
-
     @property
     def matches(self) -> list[LexborNode]:
         """Returns all possible matches"""
@@ -122,14 +104,10 @@ class LexborSelector:
         """
         ...
 
-
 class LexborCSSSelector:
     def __init__(self): ...
-
     def find(self, query: str, node: LexborNode) -> list[LexborNode]: ...
-
     def any_matches(self, query: str, node: LexborNode) -> bool: ...
-
 
 class LexborNode:
     """A class that represents HTML node (element)."""
@@ -138,7 +116,6 @@ class LexborNode:
 
     @property
     def mem_id(self) -> int: ...
-
     @property
     def child(self) -> LexborNode | None:
         """Alias for the `first_child` property.
@@ -183,7 +160,6 @@ class LexborNode:
         ...
 
     def __hash__(self) -> int: ...
-
     def text_lexbor(self) -> str:
         """Returns the text of the node including text of all its child nodes.
 
@@ -320,7 +296,6 @@ class LexborNode:
 
     @property
     def tag_id(self) -> int: ...
-
     @property
     def tag(self) -> str | None:
         """Return the name of the current tag (e.g. div, p, img).
@@ -811,7 +786,6 @@ class LexborNode:
         """
         ...
 
-
 class LexborHTMLParser:
     """The lexbor HTML parser.
 
@@ -826,10 +800,8 @@ class LexborHTMLParser:
     """
 
     def __init__(self, html: str | bytes, with_top_level_tags: bool = True) -> None: ...
-
     @property
     def selector(self) -> "LexborCSSSelector": ...
-
     @property
     def root(self) -> LexborNode | None:
         """Returns root node."""
@@ -854,7 +826,13 @@ class LexborHTMLParser:
         """
         ...
 
-    def text(self, deep: bool = True, separator: str = "", strip: bool = False, skip_empty: bool = False) -> str:
+    def text(
+        self,
+        deep: bool = True,
+        separator: str = "",
+        strip: bool = False,
+        skip_empty: bool = False,
+    ) -> str:
         """Returns the text of the node including text of all its child nodes.
 
         Parameters
@@ -1036,7 +1014,6 @@ class LexborHTMLParser:
         ...
 
     def css_matches(self, selector: str) -> bool: ...
-
     def merge_text_nodes(self) -> None:
         """Iterates over all text nodes and merges all text nodes that are close to each other.
 
@@ -1083,14 +1060,12 @@ class LexborHTMLParser:
         """
         ...
 
-
 def create_tag(tag: str) -> LexborNode:
     """
     Given an HTML tag name, e.g. `"div"`, create a single empty node for that tag,
     e.g. `"<div></div>"`.
     """
     ...
-
 
 def parse_fragment(html: str) -> list[LexborNode]:
     """
@@ -1101,7 +1076,6 @@ def parse_fragment(html: str) -> list[LexborNode]:
     if they are missing. This function does not add these tags.
     """
     ...
-
 
 class SelectolaxError(Exception):
     """An exception that indicates error."""

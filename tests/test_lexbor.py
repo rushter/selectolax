@@ -152,3 +152,8 @@ def test_parser_without_top_level_tags():
     assert parser.root.html == "<div><span>\n \n</span><title>X</title></div>"
     assert parser.head is None
     assert parser.body is None
+    parser = LexborHTMLParser(
+        "<html><body><div><span>\n \n</span><title>X</title></div></body></html>",
+        with_top_level_tags=False,
+    )
+    assert parser.html == "<div><span>\n \n</span><title>X</title></div>"

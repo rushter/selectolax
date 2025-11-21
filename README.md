@@ -2,7 +2,7 @@
 
 ---
 
-An extremely fast HTML5 parser with CSS selectors, written in Cython,
+A fast HTML5 parser with CSS selectors, written in Cython,
 using [Modest](https://github.com/lexborisov/Modest/) and [Lexbor](https://github.com/lexbor/lexbor) engines!
 
 ---

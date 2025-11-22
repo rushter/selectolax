@@ -342,9 +342,9 @@ cdef class LexborHTMLParser:
         if self.document == NULL:
             return None
         if self._is_fragment:
-            node = LexborNode.new(<lxb_dom_node_t *> &self.document.dom_document, self)
-            return node.html
-        return self.root.html
+            return self.root.html
+        node = LexborNode.new(<lxb_dom_node_t *> &self.document.dom_document, self)
+        return node.html
 
     def css(self, str query):
         """A CSS selector.

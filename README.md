@@ -2,9 +2,22 @@
 
 ---
 
-[![PyPI version](https://img.shields.io/pypi/v/selectolax.svg)](https://pypi.python.org/pypi/selectolax)
+A fast HTML5 parser with CSS selectors, written in Cython,
+using [Modest](https://github.com/lexborisov/Modest/) and [Lexbor](https://github.com/lexbor/lexbor) engines.
 
-A fast HTML5 parser with CSS selectors using [Modest](https://github.com/lexborisov/Modest/) and [Lexbor](https://github.com/lexbor/lexbor) engines.
+---
+
+[![PyPI - Version](https://img.shields.io/pypi/v/selectolax?logo=pypi&label=Pypi&logoColor=fff)](https://pypi.org/project/selectolax)
+[![PyPI Total Downloads](https://static.pepy.tech/badge/selectolax)](https://pepy.tech/projects/selectolax)
+[![PyPI Monthly Downloads](https://static.pepy.tech/badge/selectolax/month)](https://pepy.tech/projects/selectolax)
+[![PyPI Weekly Downloads](https://static.pepy.tech/badge/selectolax/week)](https://pepy.tech/projects/selectolax)
+
+[![Python Versions](https://img.shields.io/pypi/pyversions/selectolax?logo=python&logoColor=fff&label=Python)](https://pypi.org/project/selectolax)
+
+[![CI](https://img.shields.io/github/actions/workflow/status/rushter/selectolax/pythonpackage.yml?branch=master&logo=githubactions&label=CI)](https://github.com/rushter/selectolax/actions/workflows/pythonpackage.yml?query=branch%3Amaster+event%3Apush)
+[![GitHub License](https://img.shields.io/github/license/rushter/selectolax?logo=github&label=License)](https://github.com/rushter/selectolax/blob/master/LICENSE)
+
+---
 
 ## Installation
 
@@ -152,3 +165,12 @@ Out[4]: '2021-08-15'
 * Modest engine — [LGPL2.1](https://github.com/lexborisov/Modest/blob/master/LICENSE)
 * lexbor engine — [Apache-2.0 license](https://github.com/lexbor/lexbor?tab=Apache-2.0-1-ov-file#readme)
 * selectolax - [MIT](https://github.com/rushter/selectolax/blob/master/LICENSE)
+
+
+## Contributors
+
+Thanks to all the contributors of selectolax!
+
+<a href="https://github.com/rushter/selectolax/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=rushter/selectolax" />
+</a>

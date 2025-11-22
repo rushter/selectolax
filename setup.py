@@ -192,7 +192,7 @@ def make_extensions():
 setup(
     name="selectolax",
     version="0.4.3",
-    description="Fast HTML5 parser with CSS selectors.",
+    description="A fast HTML5 parser with CSS selectors, written in Cython, using Modest and Lexbor engines.",
     long_description=readme,
     author="Artem Golubin",
     author_email="me@rushter.com",

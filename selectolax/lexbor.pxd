@@ -260,14 +260,14 @@ cdef class LexborCSSSelector:
     cpdef int any_matches(self, str query, LexborNode node) except -1
 
 cdef class LexborHTMLParser:
-    cdef lxb_html_document_t * document
+    cdef lxb_html_document_t *document
     cdef bint _is_fragment
     cdef public bytes raw_html
     cdef LexborCSSSelector _selector
     cdef inline void _new_html_document(self)
-    cdef inline lxb_status_t _parse_html_document(self, char * html, size_t html_len) nogil
-    cdef inline lxb_status_t _parse_html_fragment(self, char * html, size_t html_len) nogil
-    cdef int _parse_html(self, char * html, size_t html_len) except -1
+    cdef inline lxb_status_t _parse_html_document(self, char *html, size_t html_len) nogil
+    cdef inline lxb_status_t _parse_html_fragment(self, char *html, size_t html_len) nogil
+    cdef int _parse_html(self, char *html, size_t html_len) except -1
     cdef object cached_script_texts
     cdef object cached_script_srcs
 

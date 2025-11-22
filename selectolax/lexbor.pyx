@@ -231,7 +231,7 @@ cdef class LexborHTMLParser:
         LexborNode or None
             ``<body>`` element when present, otherwise ``None``.
         """
-        cdef lxb_html_body_element_t * body
+        cdef lxb_html_body_element_t* body
         body = lxb_html_document_body_element_noi(self.document)
         if body == NULL:
             return None
@@ -246,7 +246,7 @@ cdef class LexborHTMLParser:
         LexborNode or None
             ``<head>`` element when present, otherwise ``None``.
         """
-        cdef lxb_html_head_element_t * head
+        cdef lxb_html_head_element_t* head
         head = lxb_html_document_head_element_noi(self.document)
         if head == NULL:
             return None
@@ -278,7 +278,7 @@ cdef class LexborHTMLParser:
         if len(name) > 100:
             raise ValueError("Tag name is too long")
 
-        cdef lxb_dom_collection_t * collection = NULL
+        cdef lxb_dom_collection_t* collection = NULL
         cdef lxb_status_t status
         pybyte_name = name.encode('UTF-8')
 
@@ -299,14 +299,14 @@ cdef class LexborHTMLParser:
 
         for i in range(lxb_dom_collection_length_noi(collection)):
             node = LexborNode.new(
-                <lxb_dom_node_t *> lxb_dom_collection_element_noi(collection, i),
+                <lxb_dom_node_t*> lxb_dom_collection_element_noi(collection, i),
                 self
             )
             result.append(node)
         lxb_dom_collection_destroy(collection, <bint> True)
         return result
 
-    def text(self, bool deep = True, str separator = '', bool strip = False, bool skip_empty = False) -> str:
+    def text(self, bool deep=True, str separator='', bool strip=False):
         """Returns the text of the node including text of all its child nodes.
 
         Parameters
@@ -410,7 +410,7 @@ cdef class LexborHTMLParser:
         -------
         None
         """
-        cdef lxb_dom_collection_t * collection = NULL
+        cdef lxb_dom_collection_t* collection = NULL
         cdef lxb_status_t status
 
         for tag in tags:
@@ -548,7 +548,7 @@ cdef class LexborHTMLParser:
         return self.root.merge_text_nodes()
 
     @staticmethod
-    cdef LexborHTMLParser from_document(lxb_html_document_t * document, bytes raw_html):
+    cdef LexborHTMLParser from_document(lxb_html_document_t *document, bytes raw_html):
         """Construct a parser from an existing Lexbor document.
 
         Parameters
@@ -574,13 +574,17 @@ cdef class LexborHTMLParser:
     def clone(self):
         """Clone the current document tree.
 
+        You can use to do temporary modifications without affecting the original HTML tree.
+        It is tied to the current parser instance.
+        Gets destroyed when the parser instance is destroyed.
+
         Returns
         -------
         LexborHTMLParser
             A parser instance backed by a deep-copied document.
         """
-        cdef lxb_html_document_t * cloned_document
-        cdef lxb_dom_node_t * cloned_node
+        cdef lxb_html_document_t* cloned_document
+        cdef lxb_dom_node_t* cloned_node
         cdef LexborHTMLParser cls
 
         with nogil:
@@ -602,7 +606,7 @@ cdef class LexborHTMLParser:
             raise SelectolaxError("Can't create a new document")
 
         with nogil:
-            lxb_dom_node_insert_child(<lxb_dom_node_t *> cloned_document, cloned_node)
+            lxb_dom_node_insert_child(<lxb_dom_node_t * > cloned_document, cloned_node)
 
         cls = LexborHTMLParser.from_document(cloned_document, self.raw_html)
         return cls

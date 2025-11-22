@@ -803,16 +803,19 @@ class LexborHTMLParser:
 
     raw_html: bytes
 
-    def __init__(self, html: str | bytes, with_top_level_tags: bool = True) -> None:
+    def __init__(self, html: str | bytes, is_fragment: bool = False) -> None:
         """Create a parser and load HTML.
 
         Parameters
         ----------
         html : str or bytes
             HTML content to parse.
-        with_top_level_tags : bool, optional
-            When ``True`` (default), parse the content as a full document with
-            top-level tags('<html>', '<head>', '<body>'). When ``False``, parse the content as a fragment.
+        is_fragment : bool, optional
+            When ``False`` (default), the input is parsed as a full HTML document. If the input is only a fragment,
+             the parser still accepts it and inserts any missing required elements (such as `<html>`, `<head>`, and `<body>`)
+              into the tree according to the HTML parsing rules in the HTML Standard.
+               This matches how browsers construct the DOM when they load an HTML page.
+            When ``True``, the input is parsed as an HTML fragment. The parser does not insert any missing required HTML elements.
         """
         ...
 

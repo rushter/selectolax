@@ -24,20 +24,23 @@ cdef class LexborHTMLParser:
 
     html : str (unicode) or bytes
     """
-    def __init__(self, html: str | bytes, with_top_level_tags: bool = True):
+    def __init__(self, html: str | bytes, is_fragment: bool = False):
         """Create a parser and load HTML.
 
         Parameters
         ----------
         html : str or bytes
             HTML content to parse.
-        with_top_level_tags : bool, optional
-            When ``True`` (default), parse the content as a full document with
-            top-level tags('<html>', '<head>', '<body>'). When ``False``, parse the content as a fragment.
+        is_fragment : bool, optional
+            When ``False`` (default), the input is parsed as a full HTML document. If the input is only a fragment,
+             the parser still accepts it and inserts any missing required elements (such as `<html>`, `<head>`, and `<body>`)
+              into the tree according to the HTML parsing rules in the HTML Standard.
+               This matches how browsers construct the DOM when they load an HTML page.
+            When ``True``, the input is parsed as an HTML fragment. The parser does not insert any missing required HTML elements.
         """
         cdef size_t html_len
         cdef object bytes_html
-        self._with_top_level_tags = with_top_level_tags
+        self._is_fragment = is_fragment
         self._selector = None
         self._new_html_document()
         bytes_html, html_len = preprocess_input(html)
@@ -90,10 +93,10 @@ cdef class LexborHTMLParser:
             return -1
 
         with nogil:
-            if self._with_top_level_tags:
-                status = self._parse_with_top_level_tags(html, html_len)
+            if self._is_fragment:
+                status = self._parse_html_fragment(html, html_len)
             else:
-                status = self._parse_without_top_level_tags(html, html_len)
+                status = self._parse_html_document(html, html_len)
 
         if status != LXB_STATUS_OK:
             PyErr_SetObject(SelectolaxError, "Can't parse HTML.")
@@ -104,8 +107,11 @@ cdef class LexborHTMLParser:
             return -1
         return 0
 
-    cdef inline lxb_status_t _parse_with_top_level_tags(self, char *html, size_t html_len) nogil:
-        """Parse HTML when top-level tags are expected.
+    cdef inline lxb_status_t _parse_html_document(self, char *html, size_t html_len) nogil:
+        """Parse HTML as a full HTML document.
+         If the input is only a fragment, the parser still accepts it and inserts any missing required elements
+          (such as `<html>`, `<head>`, and `<body>`) into the tree according to the HTML parsing rules in the HTML Standard.
+               This matches how browsers construct the DOM when they load an HTML page.
 
         Parameters
         ----------
@@ -121,9 +127,10 @@ cdef class LexborHTMLParser:
         """
         return lxb_html_document_parse(self.document, <lxb_char_t *> html, html_len)
 
-    cdef inline lxb_status_t _parse_without_top_level_tags(self, char *html, size_t html_len) nogil:
-        """Parse HTML fragments when top-level tags are absent.
-
+    cdef inline lxb_status_t _parse_html_fragment(self, char *html, size_t html_len) nogil:
+        """Parse HTML as an HTML fragment.
+        The parser does not insert any missing required HTML elements.
+        
         Parameters
         ----------
         html : char *
@@ -157,7 +164,7 @@ cdef class LexborHTMLParser:
         )
         if fragment_html_node == NULL:
             return LXB_STATUS_ERROR
-        # Use the fragment document returned by lexbor when parsing without top-level tags.
+        # Use the fragment document returned by lexbor as the parser document.
         self.document = <lxb_html_document_t *> fragment_html_node
         return LXB_STATUS_OK
 
@@ -331,7 +338,7 @@ cdef class LexborHTMLParser:
         """
         if self.document == NULL:
             return None
-        if self._with_top_level_tags:
+        if self._is_fragment:
             node = LexborNode.new(<lxb_dom_node_t *> &self.document.dom_document, self)
             return node.html
         return self.root.html

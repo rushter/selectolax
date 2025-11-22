@@ -306,7 +306,13 @@ cdef class LexborHTMLParser:
         lxb_dom_collection_destroy(collection, <bint> True)
         return result
 
-    def text(self, bool deep=True, str separator='', bool strip=False):
+    def text(
+        self,
+        deep: bool = True,
+        separator: str = "",
+        strip: bool = False,
+        skip_empty: bool = False,
+    ) -> str:
         """Returns the text of the node including text of all its child nodes.
 
         Parameters

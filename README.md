@@ -10,7 +10,6 @@ using [Modest](https://github.com/lexborisov/Modest/) and [Lexbor](https://githu
 [![PyPI - Version](https://img.shields.io/pypi/v/selectolax?logo=pypi&label=Pypi&logoColor=fff)](https://pypi.org/project/selectolax)
 [![PyPI Total Downloads](https://static.pepy.tech/badge/selectolax)](https://pepy.tech/projects/selectolax)
 [![CI](https://img.shields.io/github/actions/workflow/status/rushter/selectolax/pythonpackage.yml?branch=master&logo=githubactions&label=CI)](https://github.com/rushter/selectolax/actions/workflows/pythonpackage.yml?query=branch%3Amaster+event%3Apush)
-
 [![Python Versions](https://img.shields.io/pypi/pyversions/selectolax?logo=python&logoColor=fff&label=Python)](https://pypi.org/project/selectolax)
 [![GitHub License](https://img.shields.io/github/license/rushter/selectolax?logo=github&label=License)](https://github.com/rushter/selectolax/blob/master/LICENSE)
 

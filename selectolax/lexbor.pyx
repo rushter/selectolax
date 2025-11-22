@@ -32,11 +32,13 @@ cdef class LexborHTMLParser:
         html : str or bytes
             HTML content to parse.
         is_fragment : bool, optional
-            When ``False`` (default), the input is parsed as a full HTML document. If the input is only a fragment,
-             the parser still accepts it and inserts any missing required elements (such as `<html>`, `<head>`, and `<body>`)
-              into the tree according to the HTML parsing rules in the HTML Standard.
-               This matches how browsers construct the DOM when they load an HTML page.
-            When ``True``, the input is parsed as an HTML fragment. The parser does not insert any missing required HTML elements.
+            When ``False`` (default), the input is parsed as a full HTML document.
+            If the input is only a fragment, the parser still accepts it and inserts any missing required elements,
+            (such as `<html>`, `<head>`, and `<body>`) into the tree,
+            according to the HTML parsing rules in the HTML Standard.
+            This matches how browsers construct the DOM when they load an HTML page.
+            When ``True``, the input is parsed as an HTML fragment.
+            The parser does not insert any missing required HTML elements.
         """
         cdef size_t html_len
         cdef object bytes_html
@@ -109,9 +111,10 @@ cdef class LexborHTMLParser:
 
     cdef inline lxb_status_t _parse_html_document(self, char *html, size_t html_len) nogil:
         """Parse HTML as a full HTML document.
-         If the input is only a fragment, the parser still accepts it and inserts any missing required elements
-          (such as `<html>`, `<head>`, and `<body>`) into the tree according to the HTML parsing rules in the HTML Standard.
-               This matches how browsers construct the DOM when they load an HTML page.
+        If the input is only a fragment, the parser still accepts it and inserts any missing required elements,
+        (such as `<html>`, `<head>`, and `<body>`) into the tree,
+        according to the HTML parsing rules in the HTML Standard.
+        This matches how browsers construct the DOM when they load an HTML page.
 
         Parameters
         ----------
@@ -130,7 +133,7 @@ cdef class LexborHTMLParser:
     cdef inline lxb_status_t _parse_html_fragment(self, char *html, size_t html_len) nogil:
         """Parse HTML as an HTML fragment.
         The parser does not insert any missing required HTML elements.
-        
+
         Parameters
         ----------
         html : char *

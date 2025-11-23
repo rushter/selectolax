@@ -49,6 +49,7 @@ clean-test: ## remove test and coverage artifacts
 lint: ## check style with ruff
 	ruff format selectolax tests
 	ruff check --fix selectolax tests
+	cython-lint selectolax/
 	mypy selectolax tests
 
 test: ## run tests quickly with the default Python

@@ -219,7 +219,14 @@ cdef extern from "lexbor/html/html.h" nogil:
 
     # Functions
     lxb_html_document_t * lxb_html_document_create()
-    lxb_status_t lxb_html_document_parse(lxb_html_document_t *document,  const lxb_char_t *html, size_t size)
+    lxb_html_element_t * lxb_html_document_create_element(lxb_html_document_t *document,
+                                                          const lxb_char_t *local_name, size_t lname_len,
+                                                          void *reserved_for_opt)
+    lxb_status_t lxb_html_document_parse(lxb_html_document_t *document, const lxb_char_t *html, size_t size)
+    lxb_dom_node_t * lxb_html_document_parse_fragment(lxb_html_document_t *document,
+                                                      lxb_dom_element_t *element,
+                                                      const lxb_char_t *html,
+                                                      size_t size)
     lxb_html_body_element_t * lxb_html_document_body_element_noi(lxb_html_document_t *document)
     lxb_html_head_element_t * lxb_html_document_head_element_noi(lxb_html_document_t *document)
     lxb_dom_element_t * lxb_dom_document_element(lxb_dom_document_t *document)
@@ -254,9 +261,13 @@ cdef class LexborCSSSelector:
 
 cdef class LexborHTMLParser:
     cdef lxb_html_document_t *document
+    cdef bint _is_fragment
     cdef public bytes raw_html
     cdef LexborCSSSelector _selector
-    cdef int _parse_html(self, char* html, size_t html_len) except -1
+    cdef inline void _new_html_document(self)
+    cdef inline lxb_status_t _parse_html_document(self, char *html, size_t html_len) nogil
+    cdef inline lxb_status_t _parse_html_fragment(self, char *html, size_t html_len) nogil
+    cdef int _parse_html(self, char *html, size_t html_len) except -1
     cdef object cached_script_texts
     cdef object cached_script_srcs
 
@@ -304,6 +315,7 @@ cdef extern from "lexbor/dom/dom.h" nogil:
     void lxb_dom_node_remove(lxb_dom_node_t *node)
     void * lxb_dom_document_destroy_text_noi(lxb_dom_document_t *document, lxb_char_t *text)
     lxb_dom_node_t * lxb_dom_document_root(lxb_dom_document_t *document)
+    lxb_dom_element_t * lxb_dom_interface_element(lxb_dom_node_t *node)
     lxb_char_t * lxb_dom_element_qualified_name(lxb_dom_element_t *element, size_t *len)
     lxb_dom_node_t * lxb_dom_node_destroy(lxb_dom_node_t *node)
     lxb_dom_node_t * lxb_dom_node_destroy_deep(lxb_dom_node_t *root)

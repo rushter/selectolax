@@ -7,11 +7,12 @@
 - Add the ability to skip empty text nodes for lexbor backend to `.text`, `.iter`, `.traverse` @pygarap
 
 - Add new properties to lexbor backend: `is_element_node`, `is_text_node`, `is_comment_node`, `is_document_node`.  @pygarap
+- Update `lexbor` library
 
 
 # Version 0.4.3
 
-- Update `lexbor`
+- Update `lexbor` library
 - Fix missing description on PyPi.
 
 

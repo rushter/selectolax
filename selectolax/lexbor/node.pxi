@@ -1048,20 +1048,20 @@ cdef class LexborNode:
         """
         return self._is_empty_text_node(self.node)
 
-    cdef inline bint _buffer_is_whitespace(self, lxb_char_t *buffer, size_t buffer_length):
-        cdef size_t index = 0
+    cdef inline bint _buffer_is_whitespace(self, const lxb_char_t *buffer, size_t buffer_length) nogil:
+        cdef const lxb_char_t *cursor = buffer
+        cdef const lxb_char_t *end = buffer + buffer_length
         cdef lxb_char_t current_char
 
         if buffer == NULL or buffer_length == 0:
             return True
 
         # Inline whitespace check mirroring lexbor_utils_whitespace(chr, !=, &&)
-        # to avoid extra allocations and Python-level processing.
-        while index < buffer_length:
-            current_char = buffer[index]
+        while cursor < end:
+            current_char = cursor[0]
             if current_char != ' ' and current_char != '\t' and current_char != '\n' and current_char != '\f' and current_char != '\r':
                 return False
-            index += 1
+            cursor += 1
 
         return True
 

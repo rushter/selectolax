@@ -1053,9 +1053,13 @@ cdef class LexborNode:
             return False
 
         cdef lxb_dom_character_data_t *char_data = <lxb_dom_character_data_t *> node
-        cdef lexbor_str_t *str = &char_data.data
-        cdef size_t length = str.length
-        cdef lxb_char_t *data = str.data
+        cdef lexbor_str_t *text_str = &char_data.data
+        cdef size_t length = text_str.length
+        cdef lxb_char_t *data = text_str.data
+
+        return self._buffer_is_whitespace(data, length)
+
+    cdef inline bint _buffer_is_whitespace(self, lxb_char_t *data, size_t length):
         cdef size_t i = 0
         cdef lxb_char_t chr
 

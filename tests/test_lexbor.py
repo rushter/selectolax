@@ -106,16 +106,16 @@ def test_iter_includes_text_nodes_when_requested():
     div = parser.css_first("div")
     children = [node for node in div.iter(include_text=True, skip_empty=True)]
     assert (
-            ", ".join(
-                node.tag for node in children[0].iter(include_text=True, skip_empty=True)
-            )
-            == "-text"
+        ", ".join(
+            node.tag for node in children[0].iter(include_text=True, skip_empty=True)
+        )
+        == "-text"
     )
     assert (
-            ", ".join(
-                node.tag for node in children[1].iter(include_text=True, skip_empty=True)
-            )
-            == ""
+        ", ".join(
+            node.tag for node in children[1].iter(include_text=True, skip_empty=True)
+        )
+        == ""
     )
 
 
@@ -147,17 +147,57 @@ def test_traverse_with_skip_empty_on_a_full_html_document():
         """
     )
     parser = LexborHTMLParser(html)
-    children = [(node.tag, node.text_content) for node in parser.root.traverse(include_text=True, skip_empty=False)]
-    assert children == [('html', None), ('head', None), ('-text', '\n    '), ('meta', None), ('-text', '\n    '),
-                        ('meta', None), ('-text', '\n    '), ('title', None), ('-text', 'Title!'), ('-text', '\n    '),
-                        ('-comment', None), ('-text', '\n  '), ('-text', '\n  '), ('body', None), ('-text', '\n    '),
-                        ('p', None), ('-text', 'Hello '), ('strong', None), ('-text', 'World'), ('-text', '!'),
-                        ('-text', '\n    '), ('div', None), ('-text', '\n      Div\n    '), ('-text', '\n  \n\n')]
-    children = [(node.tag, node.text_content) for node in parser.root.traverse(include_text=True, skip_empty=True)]
-    assert children == [('html', None), ('head', None), ('meta', None), ('meta', None), ('title', None),
-                        ('-text', 'Title!'), ('-comment', None), ('body', None), ('p', None), ('-text', 'Hello '),
-                        ('strong', None), ('-text', 'World'), ('-text', '!'), ('div', None),
-                        ('-text', '\n      Div\n    ')]
+    children = [
+        (node.tag, node.text_content)
+        for node in parser.root.traverse(include_text=True, skip_empty=False)
+    ]
+    assert children == [
+        ("html", None),
+        ("head", None),
+        ("-text", "\n    "),
+        ("meta", None),
+        ("-text", "\n    "),
+        ("meta", None),
+        ("-text", "\n    "),
+        ("title", None),
+        ("-text", "Title!"),
+        ("-text", "\n    "),
+        ("-comment", None),
+        ("-text", "\n  "),
+        ("-text", "\n  "),
+        ("body", None),
+        ("-text", "\n    "),
+        ("p", None),
+        ("-text", "Hello "),
+        ("strong", None),
+        ("-text", "World"),
+        ("-text", "!"),
+        ("-text", "\n    "),
+        ("div", None),
+        ("-text", "\n      Div\n    "),
+        ("-text", "\n  \n\n"),
+    ]
+    children = [
+        (node.tag, node.text_content)
+        for node in parser.root.traverse(include_text=True, skip_empty=True)
+    ]
+    assert children == [
+        ("html", None),
+        ("head", None),
+        ("meta", None),
+        ("meta", None),
+        ("title", None),
+        ("-text", "Title!"),
+        ("-comment", None),
+        ("body", None),
+        ("p", None),
+        ("-text", "Hello "),
+        ("strong", None),
+        ("-text", "World"),
+        ("-text", "!"),
+        ("div", None),
+        ("-text", "\n      Div\n    "),
+    ]
 
 
 def test_is_empty_text_node_property():
@@ -176,12 +216,12 @@ def test_parser_without_top_level_tags():
     )
     assert parser is not None and isinstance(parser, LexborHTMLParser)
     assert (
-            parser.html
-            == "<html><head></head><body><div><span>\n \n</span><title>X</title></div></body></html>"
+        parser.html
+        == "<html><head></head><body><div><span>\n \n</span><title>X</title></div></body></html>"
     )
     assert (
-            parser.root.html
-            == "<html><head></head><body><div><span>\n \n</span><title>X</title></div></body></html>"
+        parser.root.html
+        == "<html><head></head><body><div><span>\n \n</span><title>X</title></div></body></html>"
     )
     assert parser.head is not None
     assert parser.body is not None

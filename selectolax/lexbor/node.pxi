@@ -1049,6 +1049,21 @@ cdef class LexborNode:
         return self._is_empty_text_node(self.node)
 
     cdef inline bint _is_empty_text_node(self, lxb_dom_node_t *text_node):
+        """
+        Check whether a node is a text node made up solely of HTML ASCII whitespace.
+
+        Parameters
+        ----------
+        text_node : lxb_dom_node_t *
+            Pointer to the node that should be inspected.
+
+        Returns
+        -------
+        bint
+            ``True`` if ``text_node`` is a text node whose character data contains
+            only space, tab, newline, form feed, or carriage return characters;
+            otherwise ``False``.
+        """
         if text_node == NULL or text_node.type != LXB_DOM_NODE_TYPE_TEXT:
             return False
 
@@ -1060,6 +1075,28 @@ cdef class LexborNode:
         return self._is_whitespace_only(text_bytes, text_length)
 
     cdef inline bint _is_whitespace_only(self, const lxb_char_t *buffer, size_t buffer_length) nogil:
+        """
+        Determine whether a byte buffer consists only of HTML ASCII whitespace.
+
+        Parameters
+        ----------
+        buffer : const lxb_char_t *
+            Pointer to the buffer to inspect.
+        buffer_length : size_t
+            Number of bytes available in ``buffer``.
+
+        Returns
+        -------
+        bint
+            ``True`` if ``buffer`` is ``NULL``, empty, or contains only space
+            (0x20), tab (0x09), line feed (0x0A), form feed (0x0C), or carriage
+            return (0x0D) bytes; otherwise ``False``.
+
+        Notes
+        -----
+        Mirrors Lexbor's ``lexbor_utils_whitespace`` macro and stays inline to
+        keep the GIL released in hot loops.
+        """
         cdef const lxb_char_t *cursor = buffer
         cdef const lxb_char_t *end = buffer + buffer_length
         cdef lxb_char_t current_char

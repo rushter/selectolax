@@ -1048,7 +1048,18 @@ cdef class LexborNode:
         """
         return self._is_empty_text_node(self.node)
 
-    cdef inline bint _buffer_is_whitespace(self, const lxb_char_t *buffer, size_t buffer_length) nogil:
+    cdef inline bint _is_empty_text_node(self, lxb_dom_node_t *text_node):
+        if text_node == NULL or text_node.type != LXB_DOM_NODE_TYPE_TEXT:
+            return False
+
+        cdef lxb_dom_character_data_t *text_character_data = <lxb_dom_character_data_t *> text_node
+        cdef lexbor_str_t *text_buffer = &text_character_data.data
+        cdef size_t text_length = text_buffer.length
+        cdef lxb_char_t *text_bytes = text_buffer.data
+
+        return self._is_whitespace_only(text_bytes, text_length)
+
+    cdef inline bint _is_whitespace_only(self, const lxb_char_t *buffer, size_t buffer_length) nogil:
         cdef const lxb_char_t *cursor = buffer
         cdef const lxb_char_t *end = buffer + buffer_length
         cdef lxb_char_t current_char
@@ -1059,23 +1070,12 @@ cdef class LexborNode:
         # Inline whitespace check mirroring lexbor_utils_whitespace(chr, !=, &&)
         while cursor < end:
             current_char = cursor[0]
-            if current_char != ' ' and current_char != '\t' and current_char != '\n' and current_char != '\f' and current_char != '\r':
+            if (current_char != ' ' and current_char != '\t' and current_char != '\n'
+                    and current_char != '\f' and current_char != '\r'):
                 return False
             cursor += 1
 
         return True
-
-    cdef inline bint _is_empty_text_node(self, lxb_dom_node_t *text_node):
-        if text_node == NULL or text_node.type != LXB_DOM_NODE_TYPE_TEXT:
-            return False
-
-        cdef lxb_dom_character_data_t *text_character_data = <lxb_dom_character_data_t *> text_node
-        cdef lexbor_str_t *text_buffer = &text_character_data.data
-        cdef size_t text_length = text_buffer.length
-        cdef lxb_char_t *text_bytes = text_buffer.data
-
-        return self._buffer_is_whitespace(text_bytes, text_length)
-
 
 @cython.internal
 @cython.final

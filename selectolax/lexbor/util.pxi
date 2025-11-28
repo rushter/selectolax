@@ -2,6 +2,7 @@ include "../utils.pxi"
 
 import re
 
+
 def create_tag(tag: str):
     """
     Given an HTML tag name, e.g. `"div"`, create a single empty node for that tag,
@@ -19,6 +20,7 @@ def parse_fragment(html: str):
     if they are missing. This function does not add these tags.
     """
     return do_parse_fragment(html, LexborHTMLParser)
+
 
 def extract_html_comment(text: str) -> str:
     """Extract the inner content of an HTML comment string.

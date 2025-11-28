@@ -133,6 +133,7 @@ def test_is_empty_text_node_property():
 def test_comment_content_property() -> None:
     parser = LexborHTMLParser("<div><span><!-- hello --></span><title>X</title></div>")
     text_node = parser.css_first("span").first_child
+    assert text_node is not None
     assert text_node.is_comment_node
     assert text_node.comment_content == "hello"
 

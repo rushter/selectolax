@@ -956,6 +956,24 @@ cdef class LexborNode:
 
     @property
     def comment_content(self) -> str | None:
+        """Extract the textual content of an HTML comment node.
+
+        Returns
+        -------
+        str or None
+            Comment text with surrounding whitespace removed, or ``None`` if
+            the current node is not a comment or the comment markup cannot be
+            parsed.
+
+        Examples
+        --------
+        >>> parse_fragment("<!-- hello -->")[0].comment_content
+        'hello'
+        >>> parse_fragment("<div>not a comment</div>")[0].comment_content is None
+        True
+        """
+        if not self.is_comment_node:
+            return None
         try:
             return extract_html_comment(self.html)
         except (ValueError, AttributeError, IndexError):

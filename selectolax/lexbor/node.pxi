@@ -175,7 +175,7 @@ cdef class LexborNode:
                 if node.type == LXB_DOM_NODE_TYPE_TEXT:
                     text = <unsigned char *> lexbor_str_data_noi(&(<lxb_dom_character_data_t *> node).data)
                     if text != NULL:
-                        if not skip_empty or not self._is_empty_text_node(node):
+                        if not skip_empty or not is_empty_text_node(node):
                             py_text = text.decode(_ENCODING)
                             container.append(py_text)
                 node = node.next
@@ -459,7 +459,7 @@ cdef class LexborNode:
             if node.type == LXB_DOM_NODE_TYPE_TEXT and not include_text:
                 node = node.next
                 continue
-            if node.type == LXB_DOM_NODE_TYPE_TEXT and include_text and skip_empty and self._is_empty_text_node(node):
+            if node.type == LXB_DOM_NODE_TYPE_TEXT and include_text and skip_empty and is_empty_text_node(node):
                 node = node.next
                 continue
 
@@ -612,7 +612,7 @@ cdef class LexborNode:
 
         while node != NULL:
             if include_text or node.type != LXB_DOM_NODE_TYPE_TEXT:
-                if not skip_empty or not self._is_empty_text_node(node):
+                if not skip_empty or not is_empty_text_node(node):
                     lxb_node = LexborNode.new(<lxb_dom_node_t *> node, self.parser)
                     yield lxb_node
 
@@ -1046,73 +1046,8 @@ cdef class LexborNode:
             only of ASCII whitespace characters (space, tab, newline, form feed
             or carriage return).
         """
-        return self._is_empty_text_node(self.node)
+        return is_empty_text_node(self.node)
 
-    cdef inline bint _is_empty_text_node(self, lxb_dom_node_t *text_node):
-        """
-        Check whether a node is a text node made up solely of HTML ASCII whitespace.
-
-        Parameters
-        ----------
-        text_node : lxb_dom_node_t *
-            Pointer to the node that should be inspected.
-
-        Returns
-        -------
-        bint
-            ``True`` if ``text_node`` is a text node whose character data contains
-            only space, tab, newline, form feed, or carriage return characters;
-            otherwise ``False``.
-        """
-        if text_node == NULL or text_node.type != LXB_DOM_NODE_TYPE_TEXT:
-            return False
-
-        cdef lxb_dom_character_data_t *text_character_data = <lxb_dom_character_data_t *> text_node
-        cdef lexbor_str_t *text_buffer = &text_character_data.data
-        cdef size_t text_length = text_buffer.length
-        cdef lxb_char_t *text_bytes = text_buffer.data
-
-        return self._is_whitespace_only(text_bytes, text_length)
-
-    cdef inline bint _is_whitespace_only(self, const lxb_char_t *buffer, size_t buffer_length) nogil:
-        """
-        Determine whether a byte buffer consists only of HTML ASCII whitespace.
-
-        Parameters
-        ----------
-        buffer : const lxb_char_t *
-            Pointer to the buffer to inspect.
-        buffer_length : size_t
-            Number of bytes available in ``buffer``.
-
-        Returns
-        -------
-        bint
-            ``True`` if ``buffer`` is ``NULL``, empty, or contains only space
-            (0x20), tab (0x09), line feed (0x0A), form feed (0x0C), or carriage
-            return (0x0D) bytes; otherwise ``False``.
-
-        Notes
-        -----
-        Mirrors Lexbor's ``lexbor_utils_whitespace`` macro and stays inline to
-        keep the GIL released in hot loops.
-        """
-        cdef const lxb_char_t *cursor = buffer
-        cdef const lxb_char_t *end = buffer + buffer_length
-        cdef lxb_char_t current_char
-
-        if buffer == NULL or buffer_length == 0:
-            return True
-
-        # Inline whitespace check mirroring lexbor_utils_whitespace(chr, !=, &&)
-        while cursor < end:
-            current_char = cursor[0]
-            if (current_char != ' ' and current_char != '\t' and current_char != '\n'
-                    and current_char != '\f' and current_char != '\r'):
-                return False
-            cursor += 1
-
-        return True
 
 @cython.internal
 @cython.final

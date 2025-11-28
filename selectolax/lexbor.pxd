@@ -241,11 +241,13 @@ cdef class LexborNode:
         lxb_dom_node_t *node
         public LexborHTMLParser parser
     cdef bint _is_node_type(self, lxb_dom_node_type_t expected_type)
-    cdef bint _is_empty_text_node(self, lxb_dom_node_t *node)
-    cdef inline bint _is_whitespace_only(self, const lxb_char_t *buffer, size_t buffer_length) nogil
 
     @staticmethod
     cdef LexborNode new(lxb_dom_node_t *node, LexborHTMLParser parser)
+
+
+cdef bint is_empty_text_node(lxb_dom_node_t *node)
+cdef inline bint _is_whitespace_only(const lxb_char_t *buffer, size_t buffer_length) nogil
 
 
 cdef class LexborCSSSelector:

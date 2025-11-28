@@ -129,11 +129,13 @@ def test_is_empty_text_node_property():
     assert text_node.text_content == "X"
     assert not text_node.is_empty_text_node
 
+
 def test_comment_content_property() -> None:
     parser = LexborHTMLParser("<div><span><!-- hello --></span><title>X</title></div>")
     text_node = parser.css_first("span").first_child
     assert text_node.is_comment_node
     assert text_node.comment_content == "hello"
+
 
 def test_parser_without_top_level_tags():
     parser = LexborHTMLParser(

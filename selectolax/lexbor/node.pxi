@@ -955,6 +955,13 @@ cdef class LexborNode:
         return None
 
     @property
+    def comment_content(self) -> str | None:
+        try:
+            return extract_html_comment(self.html)
+        except (ValueError, AttributeError, IndexError):
+            return None
+
+    @property
     def inner_html(self) -> str | None:
         """Return HTML representation of the child nodes.
 

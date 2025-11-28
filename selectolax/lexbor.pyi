@@ -719,6 +719,9 @@ class LexborNode:
         ...
 
     @property
+    def comment_content(self) -> str | None: ...
+
+    @property
     def inner_html(self) -> str | None:
         """Return HTML representation of the child nodes.
 

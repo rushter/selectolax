@@ -8,7 +8,7 @@ def create_tag(tag: str):
     Given an HTML tag name, e.g. `"div"`, create a single empty node for that tag,
     e.g. `"<div></div>"`.
     """
-    return do_create_tag(tag, LexborHTMLParser)
+    return LexborHTMLParser(f"<{tag}></{tag}>", is_fragment=True).root
 
 
 def parse_fragment(html: str):

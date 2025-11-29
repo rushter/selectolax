@@ -1,6 +1,12 @@
 """Tests for functionality that is only supported by lexbor backend."""
 
+from inspect import cleandoc
+
 from selectolax.lexbor import LexborHTMLParser, parse_fragment
+
+
+def clean_doc(text: str) -> str:
+    return f"{cleandoc(text)}\n"
 
 
 def test_reads_inner_html():
@@ -118,6 +124,80 @@ def test_traverse_respects_skip_empty_on_text_nodes():
     div = parser.css_first("div")
     children = [node.tag for node in div.traverse(include_text=True, skip_empty=True)]
     assert ", ".join(children) == "div, span, -text, title"
+
+
+def test_traverse_with_skip_empty_on_a_full_html_document():
+    html = clean_doc(
+        """
+        <!doctype html>
+        <html lang="en">
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width,initial-scale=1">
+            <title>Title!</title>
+            <!-- My crazy comment -->
+          </head>
+          <body>
+            <p>Hello <strong>World</strong>!</p>
+            <div hidden draggable="true" translate="no" contenteditable="true" tabindex="3">
+              Div
+            </div>
+          </body>
+        </html>
+        """
+    )
+    parser = LexborHTMLParser(html)
+    children = [
+        (node.tag, node.text_content)
+        for node in parser.root.traverse(include_text=True, skip_empty=False)
+    ]
+    assert children == [
+        ("html", None),
+        ("head", None),
+        ("-text", "\n    "),
+        ("meta", None),
+        ("-text", "\n    "),
+        ("meta", None),
+        ("-text", "\n    "),
+        ("title", None),
+        ("-text", "Title!"),
+        ("-text", "\n    "),
+        ("-comment", None),
+        ("-text", "\n  "),
+        ("-text", "\n  "),
+        ("body", None),
+        ("-text", "\n    "),
+        ("p", None),
+        ("-text", "Hello "),
+        ("strong", None),
+        ("-text", "World"),
+        ("-text", "!"),
+        ("-text", "\n    "),
+        ("div", None),
+        ("-text", "\n      Div\n    "),
+        ("-text", "\n  \n\n"),
+    ]
+    children = [
+        (node.tag, node.text_content)
+        for node in parser.root.traverse(include_text=True, skip_empty=True)
+    ]
+    assert children == [
+        ("html", None),
+        ("head", None),
+        ("meta", None),
+        ("meta", None),
+        ("title", None),
+        ("-text", "Title!"),
+        ("-comment", None),
+        ("body", None),
+        ("p", None),
+        ("-text", "Hello "),
+        ("strong", None),
+        ("-text", "World"),
+        ("-text", "!"),
+        ("div", None),
+        ("-text", "\n      Div\n    "),
+    ]
 
 
 def test_is_empty_text_node_property():

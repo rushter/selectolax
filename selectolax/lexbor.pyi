@@ -189,8 +189,9 @@ class LexborNode:
             If ``True``, apply ``str.strip()`` to each fragment before joining to
             remove surrounding whitespace. Defaults to ``False``.
         skip_empty : bool, optional
-            Exclude text nodes that ``lxb_dom_node_is_empty`` considers empty when
-            ``True``. Defaults to ``False``.
+            Exclude text nodes whose content is only ASCII whitespace (space,
+            tab, newline, form feed or carriage return) when ``True``.
+            Defaults to ``False``.
 
         Returns
         -------
@@ -424,8 +425,9 @@ class LexborNode:
             When ``True``, yield text nodes in addition to element nodes. Defaults
             to ``False``.
         skip_empty : bool, optional
-            When ``include_text`` is ``True``, ignore text nodes that
-            ``lxb_dom_node_is_empty`` deems empty. Defaults to ``False``.
+            When ``include_text`` is ``True``, ignore text nodes made up solely
+            of ASCII whitespace (space, tab, newline, form feed or carriage
+            return). Defaults to ``False``.
 
         Yields
         ------
@@ -512,8 +514,9 @@ class LexborNode:
             When ``True``, include text nodes in the traversal sequence. Defaults
             to ``False``.
         skip_empty : bool, optional
-            Skip empty text nodes (as determined by ``lxb_dom_node_is_empty``)
-            when ``include_text`` is ``True``. Defaults to ``False``.
+            Skip text nodes that contain only ASCII whitespace (space, tab,
+            newline, form feed or carriage return) when ``include_text`` is
+            ``True``. Defaults to ``False``.
 
         Yields
         ------
@@ -803,8 +806,9 @@ class LexborNode:
         Returns
         -------
         bool
-            ``True`` when the node is a text node and ``lxb_dom_node_is_empty``
-            reports that it contains no characters.
+            ``True`` when the node is a text node whose data consists solely of
+            ASCII whitespace characters (space, tab, newline, form feed or
+            carriage return).
         """
         ...
 
@@ -935,8 +939,9 @@ class LexborHTMLParser:
         deep : bool, default True
             If True, includes text from all child nodes.
         skip_empty : bool, optional
-            Exclude text nodes that ``lxb_dom_node_is_empty`` considers empty when
-            ``True``. Defaults to ``False``.
+            Exclude text nodes whose content is only ASCII whitespace (space,
+            tab, newline, form feed or carriage return) when ``True``.
+            Defaults to ``False``.
 
         Returns
         -------

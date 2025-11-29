@@ -149,8 +149,9 @@ cdef class LexborNode:
             If ``True``, apply ``str.strip()`` to each fragment before joining to
             remove surrounding whitespace. Defaults to ``False``.
         skip_empty : bool, optional
-            Exclude text nodes that ``lxb_dom_node_is_empty`` considers empty when
-            ``True``. Defaults to ``False``.
+            Exclude text nodes whose content is only ASCII whitespace (space,
+            tab, newline, form feed or carriage return) when ``True``.
+            Defaults to ``False``.
 
         Returns
         -------
@@ -174,7 +175,7 @@ cdef class LexborNode:
                 if node.type == LXB_DOM_NODE_TYPE_TEXT:
                     text = <unsigned char *> lexbor_str_data_noi(&(<lxb_dom_character_data_t *> node).data)
                     if text != NULL:
-                        if not skip_empty or not self._is_empty_text_node(node):
+                        if not skip_empty or not is_empty_text_node(node):
                             py_text = text.decode(_ENCODING)
                             container.append(py_text)
                 node = node.next
@@ -440,8 +441,9 @@ cdef class LexborNode:
             When ``True``, yield text nodes in addition to element nodes. Defaults
             to ``False``.
         skip_empty : bool, optional
-            When ``include_text`` is ``True``, ignore text nodes that
-            ``lxb_dom_node_is_empty`` deems empty. Defaults to ``False``.
+            When ``include_text`` is ``True``, ignore text nodes made up solely
+            of ASCII whitespace (space, tab, newline, form feed or carriage
+            return). Defaults to ``False``.
 
         Yields
         ------
@@ -457,7 +459,7 @@ cdef class LexborNode:
             if node.type == LXB_DOM_NODE_TYPE_TEXT and not include_text:
                 node = node.next
                 continue
-            if node.type == LXB_DOM_NODE_TYPE_TEXT and include_text and skip_empty and self._is_empty_text_node(node):
+            if node.type == LXB_DOM_NODE_TYPE_TEXT and include_text and skip_empty and is_empty_text_node(node):
                 node = node.next
                 continue
 
@@ -594,8 +596,9 @@ cdef class LexborNode:
             When ``True``, include text nodes in the traversal sequence. Defaults
             to ``False``.
         skip_empty : bool, optional
-            Skip empty text nodes (as determined by ``lxb_dom_node_is_empty``)
-            when ``include_text`` is ``True``. Defaults to ``False``.
+            Skip text nodes that contain only ASCII whitespace (space, tab,
+            newline, form feed or carriage return) when ``include_text`` is
+            ``True``. Defaults to ``False``.
 
         Yields
         ------
@@ -609,7 +612,7 @@ cdef class LexborNode:
 
         while node != NULL:
             if include_text or node.type != LXB_DOM_NODE_TYPE_TEXT:
-                if not skip_empty or not self._is_empty_text_node(node):
+                if not skip_empty or not is_empty_text_node(node):
                     lxb_node = LexborNode.new(<lxb_dom_node_t *> node, self.parser)
                     yield lxb_node
 
@@ -1064,22 +1067,11 @@ cdef class LexborNode:
         Returns
         -------
         bool
-            ``True`` when the node is a text node and
-            ``lxb_dom_node_is_empty`` reports that its parent subtree contains
-            only whitespace (or nothing).
+            ``True`` when the node is a text node whose character data consists
+            only of ASCII whitespace characters (space, tab, newline, form feed
+            or carriage return).
         """
-        return self._is_empty_text_node(self.node)
-
-    cdef inline bint _is_empty_text_node(self, lxb_dom_node_t *node):
-        if node.type != LXB_DOM_NODE_TYPE_TEXT:
-            return False
-
-        # lexbor's emptiness check walks children of the passed node; for a
-        # text node we need to evaluate its parent so the text itself is
-        # inspected.
-        if node.parent != NULL:
-            return lxb_dom_node_is_empty(node.parent)
-        return lxb_dom_node_is_empty(node)
+        return is_empty_text_node(self.node)
 
 
 @cython.internal

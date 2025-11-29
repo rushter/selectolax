@@ -324,8 +324,9 @@ cdef class LexborHTMLParser:
         deep : bool, default True
             If True, includes text from all child nodes.
         skip_empty : bool, optional
-            Exclude text nodes that ``lxb_dom_node_is_empty`` considers empty when
-            ``True``. Defaults to ``False``.
+            Exclude text nodes whose content is only ASCII whitespace (space,
+            tab, newline, form feed or carriage return) when ``True``.
+            Defaults to ``False``.
 
         Returns
         -------

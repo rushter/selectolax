@@ -1,5 +1,7 @@
 include "../utils.pxi"
 
+import re
+
 
 def create_tag(tag: str):
     """
@@ -18,6 +20,28 @@ def parse_fragment(html: str):
     if they are missing. This function does not add these tags.
     """
     return do_parse_fragment(html, LexborHTMLParser)
+
+
+def extract_html_comment(text: str) -> str:
+    """Extract the inner content of an HTML comment string.
+
+    Args:
+        text: Raw HTML comment, including the ``<!--`` and ``-->`` markers.
+
+    Returns:
+        The comment body with surrounding whitespace stripped.
+
+    Raises:
+        ValueError: If the input is not a well-formed HTML comment.
+
+    Examples:
+        >>> extract_html_comment("<!-- hello -->")
+        'hello'
+    """
+    if match := re.fullmatch(r"\s*<!--\s*(.*?)\s*-->\s*", text, flags=re.DOTALL):
+        return match.group(1).strip()
+    msg = "Input is not a valid HTML comment"
+    raise ValueError(msg)
 
 
 cdef inline bint is_empty_text_node(lxb_dom_node_t *text_node):
@@ -45,6 +69,7 @@ cdef inline bint is_empty_text_node(lxb_dom_node_t *text_node):
     cdef lxb_char_t *text_bytes = text_buffer.data
 
     return _is_whitespace_only(text_bytes, text_length)
+
 
 cdef inline bint _is_whitespace_only(const lxb_char_t *buffer, size_t buffer_length) nogil:
     """

@@ -167,8 +167,9 @@ cdef class LexborHTMLParser:
         )
         if fragment_html_node == NULL:
             return LXB_STATUS_ERROR
+        self.document = self.document
         # Use the fragment document returned by lexbor as the parser document.
-        self.document = <lxb_html_document_t *> fragment_html_node
+        self.fragmented_document  = <lxb_html_document_t *> fragment_html_node
         return LXB_STATUS_OK
 
     def __dealloc__(self):
@@ -220,7 +221,8 @@ cdef class LexborHTMLParser:
         """
         if self.document == NULL:
             return None
-        return LexborNode.new(<lxb_dom_node_t *> lxb_dom_document_root(&self.document.dom_document), self)
+        return LexborNode.new(<lxb_dom_node_t *>self.fragmented_document, self)
+        # return LexborNode.new(<lxb_dom_node_t *> lxb_dom_document_root(&self.document.dom_document), self)
 
     @property
     def body(self):

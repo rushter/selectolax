@@ -11,6 +11,7 @@ DEF _ENCODING = 'UTF-8'
 
 
 @cython.final
+@cython.internal
 cdef class Stack:
     def __cinit__(self, size_t capacity=25):
         self.capacity = capacity

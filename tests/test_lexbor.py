@@ -2,6 +2,8 @@
 
 from inspect import cleandoc
 
+import pytest
+
 from selectolax.lexbor import LexborHTMLParser, parse_fragment
 
 
@@ -218,7 +220,7 @@ def test_comment_content_property() -> None:
     assert text_node.comment_content == "hello"
 
 
-def test_parser_without_top_level_tags():
+def test_fragment_parser_top_level_tags():
     parser = LexborHTMLParser(
         "<div><span>\n \n</span><title>X</title></div>", is_fragment=False
     )
@@ -267,11 +269,38 @@ def test_fragment_parser_multiple_nodes_on_the_same_level():
     assert parser.html == expected_html
 
 
-def test_fragmented_parser_whole_doc():
+def test_fragment_parser_whole_doc():
     html = """<html lang="en">
             <head><meta charset="utf-8"><title>Title!</title></head>
             <body><p>Lorem <strong>Ipsum</strong>!</p></body>
         </html>"""
     parser = LexborHTMLParser(html, is_fragment=True)
     expected_html = '<meta charset="utf-8"><title>Title!</title>\n            <p>Lorem <strong>Ipsum</strong>!</p>'
-    assert parser.html.strip() == expected_html
+    html = parser.html
+    assert html is not None
+    assert html.strip() == expected_html
+
+
+def test_fragment_parser_empty_doc():
+    html = ""
+    parser = LexborHTMLParser(html, is_fragment=True)
+    assert parser.html is None
+
+
+@pytest.mark.parametrize(
+    "html, expected_html",
+    [
+        ("<body><div>Test</div></body>", "<div>Test</div>"),
+        ("  <div>Lorep Ipsum</div>", "  <div>Lorep Ipsum</div>"),
+        ("<div>Lorem</div><div>Ipsum</div>", "<div>Lorem</div><div>Ipsum</div>"),
+        ("   \n  <div>Lorem Ipsum</div>  \t  ", "   \n  <div>Lorem Ipsum</div>  \t  "),
+        ("<!-- Comment --><div>Content</div>", "<!-- Comment --><div>Content</div>"),
+        (
+            "<template><p>Inside Template</p></template>",
+            "<template><p>Inside Template</p></template>",
+        ),
+    ],
+)
+def test_fragment_parser(html, expected_html):
+    parser = LexborHTMLParser(html, is_fragment=True)
+    assert parser.html == expected_html

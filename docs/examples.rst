@@ -13,12 +13,15 @@ Basic HTML Parsing
 There are 3 ways to create or parse objects in Selectolax:
 
 1. Parse HTML as a full document using ``LexborHTMLParser()``
-2. Parse HTML as a fragment using ``LexborHTMLParser().parse_fragment()``
+2. Parse HTML as a fragment using ``LexborHTMLParser(..., is_fragment=True)``
 3. Create single node using ``LexborHTMLParser().create_tag()``
 
 - ``LexborHTMLParser()`` - Returns the HTML tree as parsed by Lexbor, unmodified. The HTML is assumed to be a full document. ``<html>``, ``<head>``, and ``<body>`` tags are added if missing.
 
-- ``parse_fragment()`` - Intended for HTML fragments/partials. Returns a list of Nodes. Given HTML doesn't need to contain ``<html>``, ``<head>``, ``<body>``. HTML can have multiple root elements.
+- ``LexborHTMLParser(..., is_fragment=True)`` - Intended for HTML fragments/partials.
+    Behaves the same way as `DocumentFragment` in browsers.
+    Drops ``<html>``, ``<head>``, and ``<body>`` tags if present in the input HTML.
+    Use it to parse snippets of HTML that are not complete documents.
 
 - ``create_tag()`` - Create a single empty node for given tag.
 
@@ -55,7 +58,7 @@ There are 3 ways to create or parse objects in Selectolax:
     html_tree = LexborHTMLParser(html)
 
     # Parse HTML as a fragment
-    frag_tree = LexborHTMLParser().parse_fragment(fragment)
+    frag_tree = LexborHTMLParser(html, is_fragment=True)
 
     # Create a single node
     node = LexborHTMLParser().create_tag("div")
@@ -172,6 +175,34 @@ Ensure exactly one match exists, otherwise raise an error.
 .. code-block:: text
 
     ValueError: Expected 1 match, but found 2 matches
+
+CSS Chaining
+~~~~~~~~~~~~
+
+Chain multiple CSS selectors to progressively filter results.
+
+.. code-block:: python
+
+    html = """
+    <div id="container">
+        <span class="red"></span>
+        <span class="green"></span>
+        <span class="red"></span>
+        <span class="green"></span>
+    </div>
+    """
+
+    parser = LexborHTMLParser(html)
+
+    # Chain selectors: start with div, then span, then .red
+    red_spans = parser.select('div').css("span").css(".red").matches
+    print([node.html for node in red_spans])
+
+**Output:**
+
+.. code-block:: text
+
+    ['<span class="red"></span>', '<span class="red"></span>']
 
 HTML manipulation
 -----------------
@@ -399,6 +430,42 @@ Add, modify, and remove element attributes.
             <p class="p3" vid>Lorem ipsum</p>
         </div>
 
+Inserting Nodes
+~~~~~~~~~~~~~~~
+
+Insert new content into the DOM at specific positions.
+
+.. code-block:: python
+
+    html = """
+    <div id="container">
+        <span class="red"></span>
+        <span class="green"></span>
+        <span class="red"></span>
+        <span class="green"></span>
+    </div>
+    """
+
+    parser = LexborHTMLParser(html)
+
+    # Insert text before an element
+    red_node = parser.css_first('.red')
+    red_node.insert_before("Hello")
+
+    # Insert HTML nodes
+    subtree = LexborHTMLParser("<div>Hi</div>")
+    green_node = parser.css_first('.green')
+    green_node.insert_before(subtree)
+
+    # Insert before, after, or as child
+    car_div = LexborHTMLParser().create_tag("div")
+    car_div.inner_html = "Car"
+    green_node.insert_before(car_div)
+    green_node.insert_after(car_div)
+    green_node.insert_child(car_div)
+
+    print(parser.body.html)
+
 Tree Traversal
 --------------
 
@@ -544,6 +611,37 @@ Extract all links and images from HTML content.
 Advanced selectors
 ------------------
 
+Text Content Filtering
+~~~~~~~~~~~~~~~~~~~~~~
+
+Use advanced selectors to filter elements based on their text content.
+
+.. code-block:: python
+
+    html = """
+    <script>
+     var super_variable = 100;
+    </script>
+    <script>
+     console.log('debug');
+    </script>
+    """
+
+    parser = LexborHTMLParser(html)
+
+    # Filter script tags containing specific text
+    scripts_with_super = parser.select('script').text_contains("super").matches
+    print([node.text() for node in scripts_with_super])
+
+**Output:**
+
+.. code-block:: text
+
+    ['\n var super_variable = 100;\n']
+
+CSS Attribute and Pseudo-class Selectors
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 .. code-block:: python
 
     html = """
@@ -606,6 +704,33 @@ Advanced selectors
     Author: Jane
     First article title: First Post
     Post ID 1 title: First Post
+
+Text Content Pseudo-class Selectors
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Use lexbor-specific pseudo-classes for case-sensitive and case-insensitive text matching.
+
+.. code-block:: python
+
+    html = '<div><p>hello </p><p id="main">lexbor is AwesOme</p></div>'
+    parser = LexborHTMLParser(html)
+
+    # Case-insensitive search
+    results_ci = parser.css('p:lexbor-contains("awesome" i)')
+    print(f"Case-insensitive results: {len(results_ci)}")
+
+    # Case-sensitive search
+    results_cs = parser.css('p:lexbor-contains("AwesOme")')
+    print(f"Case-sensitive results: {len(results_cs)}")
+    print(f"Matching text: {results_cs[0].text()}")
+
+**Output:**
+
+.. code-block:: text
+
+    Case-insensitive results: 1
+    Case-sensitive results: 1
+    Matching text: lexbor is AwesOme
 
 Sibling Navigation
 ------------------

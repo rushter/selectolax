@@ -840,8 +840,13 @@ class LexborHTMLParser:
             (such as `<html>`, `<head>`, and `<body>`) into the tree,
             according to the HTML parsing rules in the HTML Standard.
             This matches how browsers construct the DOM when they load an HTML page.
+
             When ``True``, the input is parsed as an HTML fragment.
             The parser does not insert any missing required HTML elements.
+            Behaves the same way as `DocumentFragment` in browsers.
+            When `<html>`, `<head>` or `<body>` are present, ignores them entirely.
+            As per the HTML Standard.
+
         """
         ...
 

@@ -108,7 +108,7 @@ assert len(results) == 1
 assert results[0].text() == "lexbor is AwesOme"
 ```
 
-* [Detailed overview](https://github.com/rushter/selectolax/blob/master/examples/walkthrough.ipynb)
+* [More examples](https://selectolax.readthedocs.io/en/latest/examples.html)
 
 ### Available backends
 

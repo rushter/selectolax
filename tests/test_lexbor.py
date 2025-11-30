@@ -269,29 +269,11 @@ def test_fragment_parser_multiple_nodes_on_the_same_level():
     assert parser.html == expected_html
 
 
-@pytest.mark.skip(reason="Currently bugged")
 def test_fragmented_parser_whole_doc():
-    html = clean_doc("""
-        <html lang="en">
-            <head>
-                <meta charset="utf-8">
-                <title>Title!</title>
-            </head>
-            <body>
-                <p>Hello <strong>Lorem Ipsum</strong>!</p>
-            </body>
-        </html>
-    """)
+    html = """<html lang="en">
+            <head><meta charset="utf-8"><title>Title!</title></head>
+            <body><p>Lorem <strong>Ipsum</strong>!</p></body>
+        </html>"""
     parser = LexborHTMLParser(html, is_fragment=True)
-    expected_html = clean_doc("""
-        <html lang="en">
-            <head>
-                <meta charset="utf-8">
-                <title>Title!</title>
-            </head>
-            <body>
-                <p>Hello <strong>Lorem Ipsum</strong>!</p>
-            </body>
-        </html>
-    """)
-    assert parser.html == expected_html
+    expected_html = '<meta charset="utf-8"><title>Title!</title>\n            <p>Lorem <strong>Ipsum</strong>!</p>'
+    assert parser.html.strip() == expected_html

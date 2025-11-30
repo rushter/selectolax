@@ -2,8 +2,6 @@
 
 from inspect import cleandoc
 
-import pytest
-
 from selectolax.lexbor import LexborHTMLParser, parse_fragment
 
 

@@ -48,6 +48,7 @@ cdef class LexborHTMLParser:
         cdef size_t html_len
         cdef object bytes_html
         self._is_fragment = is_fragment
+        self._original_document = NULL
         self._selector = None
         self._new_html_document()
         bytes_html, html_len = preprocess_input(html)
@@ -174,6 +175,7 @@ cdef class LexborHTMLParser:
             return LXB_STATUS_ERROR
 
         # Use the fragment document returned by lexbor as the parser document.
+        self._original_document = self.document
         self.document  = <lxb_html_document_t *> fragment_html_node
         return LXB_STATUS_OK
 
@@ -191,6 +193,8 @@ cdef class LexborHTMLParser:
         """
         if self.document != NULL:
             lxb_html_document_destroy(self.document)
+        if self._original_document != NULL:
+            lxb_html_document_destroy(self._original_document)
 
     def __repr__(self):
         """Return a concise representation of the parsed document.

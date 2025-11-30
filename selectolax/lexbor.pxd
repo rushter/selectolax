@@ -268,6 +268,7 @@ cdef class LexborCSSSelector:
 
 cdef class LexborHTMLParser:
     cdef lxb_html_document_t *document
+    cdef lxb_html_document_t *_original_document
     cdef bint _is_fragment
     cdef public bytes raw_html
     cdef LexborCSSSelector _selector

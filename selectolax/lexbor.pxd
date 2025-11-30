@@ -243,8 +243,6 @@ cdef class LexborNode:
         public LexborHTMLParser parser
         cdef bint _is_fragment_root
 
-    cdef bint _is_node_type(self, lxb_dom_node_type_t expected_type)
-
     @staticmethod
     cdef LexborNode new(lxb_dom_node_t *node, LexborHTMLParser parser)
     cdef void set_as_fragment_root(self)

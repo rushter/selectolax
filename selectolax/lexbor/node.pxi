@@ -171,7 +171,7 @@ cdef class LexborNode:
 
         if not deep:
             container = TextContainer(separator, strip)
-            if self._is_node_type(LXB_DOM_NODE_TYPE_TEXT):
+            if _is_node_type(self.node, LXB_DOM_NODE_TYPE_TEXT):
                 text = <unsigned char *> lexbor_str_data_noi(&(<lxb_dom_character_data_t *> self.node).data)
                 if text != NULL:
                     if not skip_empty or not self.is_empty_text_node:
@@ -179,7 +179,7 @@ cdef class LexborNode:
                         container.append(py_text)
 
             while node != NULL:
-                if node.type == LXB_DOM_NODE_TYPE_TEXT:
+                if _is_node_type(node, LXB_DOM_NODE_TYPE_TEXT):
                     text = <unsigned char *> lexbor_str_data_noi(&(<lxb_dom_character_data_t *> node).data)
                     if text != NULL:
                         if not skip_empty or not is_empty_text_node(node):
@@ -189,7 +189,7 @@ cdef class LexborNode:
             return container.text
         else:
             container = TextContainer(separator, strip)
-            if self._is_node_type(LXB_DOM_NODE_TYPE_TEXT):
+            if _is_node_type(self.node, LXB_DOM_NODE_TYPE_TEXT):
                 text = <unsigned char *> lexbor_str_data_noi(&(<lxb_dom_character_data_t *> self.node).data)
                 if text != NULL:
                     if not skip_empty or not self.is_empty_text_node:
@@ -372,7 +372,7 @@ cdef class LexborNode:
         cdef size_t str_len = 0
         attributes = dict()
 
-        if not self._is_node_type(LXB_DOM_NODE_TYPE_ELEMENT):
+        if not _is_node_type(self.node, LXB_DOM_NODE_TYPE_ELEMENT):
             return attributes
 
         while attr != NULL:
@@ -953,7 +953,7 @@ cdef class LexborNode:
         cdef unsigned char * text
         cdef lxb_dom_node_t * node = <lxb_dom_node_t *> self.node.first_child
         cdef TextContainer container
-        if not self._is_node_type(LXB_DOM_NODE_TYPE_TEXT):
+        if not _is_node_type(self.node, LXB_DOM_NODE_TYPE_TEXT):
             return None
 
         text = <unsigned char *> lexbor_str_data_noi(&(<lxb_dom_character_data_t *> self.node).data)
@@ -1044,28 +1044,25 @@ cdef class LexborNode:
         node = lxb_dom_node_clone(<lxb_dom_node_t *> self.node, 1)
         return LexborNode.new(node, self.parser)
 
-    cdef inline bint _is_node_type(self, lxb_dom_node_type_t expected_type):
-        return self.node != NULL and self.node.type == expected_type
-
     @property
     def is_element_node(self) -> bool:
         """Return True if the node represents an element node."""
-        return self._is_node_type(LXB_DOM_NODE_TYPE_ELEMENT)
+        return _is_node_type(self.node, LXB_DOM_NODE_TYPE_ELEMENT)
 
     @property
     def is_text_node(self) -> bool:
         """Return True if the node represents a text node."""
-        return self._is_node_type(LXB_DOM_NODE_TYPE_TEXT)
+        return _is_node_type(self.node, LXB_DOM_NODE_TYPE_TEXT)
 
     @property
     def is_comment_node(self) -> bool:
         """Return True if the node represents a comment node."""
-        return self._is_node_type(LXB_DOM_NODE_TYPE_COMMENT)
+        return _is_node_type(self.node, LXB_DOM_NODE_TYPE_COMMENT)
 
     @property
     def is_document_node(self) -> bool:
         """Return True if the node represents a document node."""
-        return self._is_node_type(LXB_DOM_NODE_TYPE_DOCUMENT)
+        return _is_node_type(self.node, LXB_DOM_NODE_TYPE_DOCUMENT)
 
     @property
     def is_empty_text_node(self) -> bool:
@@ -1144,3 +1141,6 @@ cdef lxb_status_t serialize_fragment(lxb_dom_node_t *node, lexbor_str_t *lxb_str
         node = node.next
 
     return LXB_STATUS_OK
+
+cdef inline bint _is_node_type(lxb_dom_node_t *node, lxb_dom_node_type_t expected_type):
+    return node != NULL and node.type == expected_type

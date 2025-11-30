@@ -28,6 +28,7 @@ cdef extern from "lexbor/core/core.h" nogil:
         LXB_STATUS_STOP
 
     lexbor_str_t* lexbor_str_destroy(lexbor_str_t *str, lexbor_mraw_t *mraw, bint destroy_obj)
+
     lexbor_str_t* lexbor_str_create()
     lxb_char_t * lexbor_str_data_noi(lexbor_str_t *str)
 
@@ -240,10 +241,13 @@ cdef class LexborNode:
     cdef:
         lxb_dom_node_t *node
         public LexborHTMLParser parser
+        cdef bint _is_fragment_root
+
     cdef bint _is_node_type(self, lxb_dom_node_type_t expected_type)
 
     @staticmethod
     cdef LexborNode new(lxb_dom_node_t *node, LexborHTMLParser parser)
+    cdef void set_as_fragment_root(self)
 
 
 cdef bint is_empty_text_node(lxb_dom_node_t *node)

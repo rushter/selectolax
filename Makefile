@@ -87,5 +87,5 @@ install: clean ## install the package to the active Python's site-packages
 dev:
 	python setup.py build_ext --inplace --cython --lexbor
 
-dev-static:
-	python setup.py build_ext --inplace --cython --static
+dev-static: clean-build
+	python setup.py build_ext --inplace --cython --static --disable-modest

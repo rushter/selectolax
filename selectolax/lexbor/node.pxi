@@ -32,11 +32,15 @@ cdef inline bytes to_bytes(str_or_LexborNode value):
 cdef class LexborNode:
     """A class that represents HTML node (element)."""
 
+    cdef void set_as_fragment_root(self):
+        self._is_fragment_root = 1
+
     @staticmethod
     cdef LexborNode new(lxb_dom_node_t *node, LexborHTMLParser parser):
         cdef LexborNode lxbnode = LexborNode.__new__(LexborNode)
         lxbnode.node = node
         lxbnode.parser = parser
+        lxbnode._is_fragment_root = 0
         return lxbnode
 
     @property
@@ -108,7 +112,10 @@ cdef class LexborNode:
         cdef lxb_status_t status
 
         lxb_str = lexbor_str_create()
-        status = lxb_html_serialize_tree_str(self.node, lxb_str)
+        if self._is_fragment_root:
+            status = serialize_fragment(self.node, lxb_str)
+        else:
+            status = lxb_html_serialize_tree_str(self.node, lxb_str)
         if status == 0 and lxb_str.data:
             html = lxb_str.data.decode(_ENCODING).replace('<-undef>', '')
             lexbor_str_destroy(lxb_str, self.node.owner_document.text, True)
@@ -1127,3 +1134,13 @@ cdef lexbor_action_t text_callback(lxb_dom_node_t *node, void *ctx):
     cls = <TextContainer> ctx
     cls.append(py_str)
     return LEXBOR_ACTION_OK
+
+cdef lxb_status_t serialize_fragment(lxb_dom_node_t *node, lexbor_str_t *lxb_str):
+    cdef lxb_status_t status
+    while node != NULL:
+        status = lxb_html_serialize_tree_str(node, lxb_str)
+        if status != LXB_STATUS_OK:
+            return status
+        node = node.next
+
+    return LXB_STATUS_OK

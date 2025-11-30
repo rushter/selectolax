@@ -2,6 +2,8 @@
 
 from inspect import cleandoc
 
+import pytest
+
 from selectolax.lexbor import LexborHTMLParser, parse_fragment
 
 
@@ -245,3 +247,51 @@ def test_parser_without_top_level_tags():
         is_fragment=True,
     )
     assert parser.html == "<div><span>\n \n</span><title>X</title></div>"
+
+
+def test_fragment_parser_multiple_nodes_on_the_same_level():
+    html = clean_doc("""
+          <meta charset="utf-8">
+          <meta content="width=device-width,initial-scale=1" name="viewport">
+          <title>Title!</title>
+          <!-- My crazy comment -->
+          <p>Hello <strong>World</strong>!</p>
+    """)
+    parser = LexborHTMLParser(html, is_fragment=True)
+    expected_html = clean_doc("""
+          <meta charset="utf-8">
+          <meta content="width=device-width,initial-scale=1" name="viewport">
+          <title>Title!</title>
+          <!-- My crazy comment -->
+          <p>Hello <strong>World</strong>!</p>
+
+    """)
+    assert parser.html == expected_html
+
+
+@pytest.mark.skip(reason="Currently bugged")
+def test_fragmented_parser_whole_doc():
+    html = clean_doc("""
+        <html lang="en">
+            <head>
+                <meta charset="utf-8">
+                <title>Title!</title>
+            </head>
+            <body>
+                <p>Hello <strong>Lorem Ipsum</strong>!</p>
+            </body>
+        </html>
+    """)
+    parser = LexborHTMLParser(html, is_fragment=True)
+    expected_html = clean_doc("""
+        <html lang="en">
+            <head>
+                <meta charset="utf-8">
+                <title>Title!</title>
+            </head>
+            <body>
+                <p>Hello <strong>Lorem Ipsum</strong>!</p>
+            </body>
+        </html>
+    """)
+    assert parser.html == expected_html

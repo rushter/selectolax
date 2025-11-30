@@ -204,7 +204,8 @@ cdef class LexborHTMLParser:
         str
             A string showing the number of characters in the parsed HTML.
         """
-        return f"<LexborHTMLParser chars='{len(self.root.html)}'>"
+        html_len = len(self.root.html if self.root is not None else "")
+        return f"<LexborHTMLParser chars='{html_len}'>"
 
     @property
     def selector(self):

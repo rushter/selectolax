@@ -1,6 +1,13 @@
 # selectolax Changelog
 
-# Unreleased
+
+- Fix HTML parsing in fragment parser for `LexborHTMLParser`
+- Fix memory leak in fragment parser
+- Improve `skip_empty` parameter for text methods
+- Add `comment_content` method
+- Minor performance optimizations
+
+# Version 0.4.4
 
 - Add `is_fragment` parameter to `LexborHTMLParser` @pygarap
 

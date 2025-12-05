@@ -7,7 +7,7 @@ requires = [
 
 [project]
 name = 'selectolax'
-version = '0.4.4'
+version = '0.4.5'
 description = 'A fast HTML5 parser with CSS selectors, written in Cython, using Modest and Lexbor engines.'
 readme = 'README.md'
 requires-python = '>=3.9,<3.15'

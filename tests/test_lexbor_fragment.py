@@ -279,3 +279,91 @@ def test_fragment_decompose():
 def test_fragment_strips_top_level_tags(input_html, expected):
     parser = LexborHTMLParser(input_html, is_fragment=True)
     assert parser.html == expected
+
+
+def test_fragment_navigation():
+    html = "<div>First</div><span>Second</span><p>Third</p>"
+    parser = LexborHTMLParser(html, is_fragment=True)
+    div = parser.root
+    span = div.next
+    p = span.next
+    assert div.tag == "div"
+    assert span.tag == "span"
+    assert p.tag == "p"
+    assert div.prev is None
+    assert span.prev.tag == "div"
+    assert p.prev.tag == "span"
+    assert p.next is None
+    assert div.first_child.is_text_node
+    assert div.last_child.is_text_node
+    assert div.first_child.text_content == "First"
+
+
+def test_fragment_attrs():
+    html = "<div id='test' class='foo bar' data-value='123'></div>"
+    parser = LexborHTMLParser(html, is_fragment=True)
+    div = parser.root
+    assert div.attributes == {"id": "test", "class": "foo bar", "data-value": "123"}
+    assert div.attrs["id"] == "test"
+    div.attrs["new"] = "value"
+    assert div.attributes == {
+        "id": "test",
+        "class": "foo bar",
+        "data-value": "123",
+        "new": "value",
+    }
+
+
+def test_fragment_child_alias():
+    html = "<div><span>content</span></div>"
+    parser = LexborHTMLParser(html, is_fragment=True)
+    div = parser.root
+    assert div.child == div.first_child
+
+
+def test_fragment_tag_properties():
+    html = "<div id='test'>content</div>"
+    parser = LexborHTMLParser(html, is_fragment=True)
+    div = parser.root
+    assert div.tag == "div"
+    assert div.tag_id is not None
+    assert div.mem_id is not None
+    assert div.id == "test"
+
+
+def test_fragment_unwrap():
+    html = "<div><span>Hello</span> world</div>"
+    parser = LexborHTMLParser(html, is_fragment=True)
+    span = parser.root.css_first("span")
+    span.unwrap()
+    assert parser.html == "<div>Hello world</div>"
+
+
+def test_fragment_unwrap_tags():
+    html = "<div><i>Hello</i> <b>world</b></div>"
+    parser = LexborHTMLParser(html, is_fragment=True)
+    parser.root.unwrap_tags(["i", "b"])
+    assert parser.html == "<div>Hello world</div>"
+
+
+def test_fragment_eq():
+    html = "<div>test</div>"
+    parser1 = LexborHTMLParser(html, is_fragment=True)
+    parser2 = LexborHTMLParser(html, is_fragment=True)
+    assert parser1.root == parser2.root.html
+    assert parser1.root == "<div>test</div>"
+
+
+def test_fragment_text_content():
+    html = "<div>Hello</div>"
+    parser = LexborHTMLParser(html, is_fragment=True)
+    text_node = parser.root.first_child
+    assert text_node.text_content == "Hello"
+    assert parser.root.text_content is None
+
+
+def test_fragment_comment_content():
+    html = "<!-- comment -->"
+    parser = LexborHTMLParser(html, is_fragment=True)
+    comment_node = parser.root
+    assert comment_node.comment_content == "comment"

@@ -1,5 +1,6 @@
 # selectolax Changelog
 
+# Version 0.4.5
 
 - Fix HTML parsing in fragment parser for `LexborHTMLParser`
 - Fix memory leak in fragment parser

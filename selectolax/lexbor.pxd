@@ -279,7 +279,7 @@ cdef class LexborHTMLParser:
 
     @staticmethod
     cdef LexborHTMLParser from_document(lxb_html_document_t * document, bytes raw_html)
-
+    cdef inline lxb_html_document_t* main_document(self)
 
 cdef extern from "lexbor/dom/dom.h" nogil:
     ctypedef enum lexbor_action_t:

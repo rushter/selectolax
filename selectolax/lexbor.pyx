@@ -55,6 +55,12 @@ cdef class LexborHTMLParser:
         self._parse_html(bytes_html, html_len)
         self.raw_html = bytes_html
 
+    cdef inline lxb_html_document_t* main_document(self):
+        if self._is_fragment:
+            return self._original_document
+        else:
+            return self.document
+
     cdef inline void _new_html_document(self):
         """Initialize a fresh Lexbor HTML document.
 

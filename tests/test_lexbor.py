@@ -304,3 +304,10 @@ def test_fragment_parser_empty_doc():
 def test_fragment_parser(html, expected_html):
     parser = LexborHTMLParser(html, is_fragment=True)
     assert parser.html == expected_html
+
+
+def test_insert_node_fragment_parser():
+    html = "<div></div>"
+    p = LexborHTMLParser(html, is_fragment=True)
+    p.root.insert_child("text")
+    assert p.html == "<div>text</div>"

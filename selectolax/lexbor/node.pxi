@@ -819,7 +819,7 @@ cdef class LexborNode:
         if isinstance(value, (str, bytes, unicode)):
             bytes_val = to_bytes(value)
             new_node = <lxb_dom_node_t *> lxb_dom_document_create_text_node(
-                &self.parser.document.dom_document,
+                &self.parser.main_document().dom_document,
                 <lxb_char_t *> bytes_val, len(bytes_val)
             )
             if new_node == NULL:

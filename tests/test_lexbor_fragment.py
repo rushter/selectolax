@@ -2,10 +2,6 @@ from inspect import cleandoc
 import pytest
 from selectolax.lexbor import LexborHTMLParser
 
-# TODO:
-# 1) .clone on document, .clone on node
-# 2) Any kind of tree modification
-
 
 def clean_doc(text: str) -> str:
     return f"{cleandoc(text)}\n"
@@ -102,3 +98,184 @@ def test_insert_node_fragment_parser():
     p = LexborHTMLParser(html, is_fragment=True)
     p.root.insert_child("text")
     assert p.html == "<div>text</div>"
+
+
+def test_insert_before_fragment_parser():
+    html = "<div><span></span></div>"
+    p = LexborHTMLParser(html, is_fragment=True)
+    span = p.root.css_first("span")
+    span.insert_before("text")
+    assert p.html == "<div>text<span></span></div>"
+
+
+def test_insert_after_fragment_parser():
+    html = "<div><span></span></div>"
+    p = LexborHTMLParser(html, is_fragment=True)
+    span = p.root.css_first("span")
+    span.insert_after("text")
+    assert p.html == "<div><span></span>text</div>"
+
+
+def test_clone_parser_fragment():
+    html = "<div><span>Hello</span><p>World</p></div>"
+    p = LexborHTMLParser(html, is_fragment=True)
+    cloned = p.clone()
+    assert cloned.html == p.html
+    assert cloned is not p
+
+    cloned.root.css_first("span").insert_child("!")
+    assert cloned.html == "<div><span>Hello!</span><p>World</p></div>"
+    assert p.html == "<div><span>Hello</span><p>World</p></div>"
+
+
+def test_clone_node_fragment():
+    html = "<div><span>Hello</span><p>World</p></div>"
+    p = LexborHTMLParser(html, is_fragment=True)
+    span = p.root.css_first("span")
+    cloned_span = span.clone()
+    assert cloned_span.html == span.html
+    assert cloned_span is not span
+
+    cloned_span.insert_child("!")
+    assert cloned_span.html == "<span>Hello!</span>"
+    assert span.html == "<span>Hello</span>"
+
+
+def test_fragment_root_html_serialization():
+    html = "<div>Hello</div><span>World</span>"
+    p = LexborHTMLParser(html, is_fragment=True)
+    assert p.root.html == "<div>Hello</div><span>World</span>"
+    p.root.insert_child("!")
+    assert p.html == "<div>Hello!</div><span>World</span>"
+
+
+def test_fragment_node_properties():
+    html = "<div>Hello</div><span>World</span>"
+    p = LexborHTMLParser(html, is_fragment=True)
+    div = p.root
+    span = p.root.next
+
+    assert div.is_element_node is True
+    assert div.is_text_node is False
+    assert div.is_comment_node is False
+
+    assert span.is_element_node is True
+    assert span.is_text_node is False
+    assert span.is_comment_node is False
+
+    text_node = div.first_child
+    assert text_node.is_element_node is False
+    assert text_node.is_text_node is True
+    assert text_node.is_comment_node is False
+
+
+def test_fragment_text_extraction():
+    html = "<div>Hello <strong>World</strong>!</div>"
+    p = LexborHTMLParser(html, is_fragment=True)
+    div = p.root.css_first("div")
+    assert div.text() == "Hello World!"
+    assert div.text(deep=True, separator=" ", strip=True) == "Hello World !"
+
+
+def test_fragment_traversal():
+    html = "<div><span>Hello</span><p>World</p></div>"
+    p = LexborHTMLParser(html, is_fragment=True)
+    nodes = list(p.root.traverse(include_text=True))
+    assert len(nodes) == 5
+    assert nodes[0].tag == "div"
+    assert nodes[1].tag == "span"
+    assert nodes[2].tag == "-text"
+    assert nodes[3].tag == "p"
+    assert nodes[4].tag == "-text"
+
+
+def test_fragment_inner_html():
+    html = "<div><span>Hello</span><p>World</p></div>"
+    p = LexborHTMLParser(html, is_fragment=True)
+    div = p.root.css_first("div")
+    assert div.inner_html == "<span>Hello</span><p>World</p>"
+    div.inner_html = "<em>New</em> content"
+    assert div.html == "<div><em>New</em> content</div>"
+
+
+def test_fragment_node_operations_combined():
+    html = "<div><span>Hello</span></div>"
+    p = LexborHTMLParser(html, is_fragment=True)
+    span = p.root.css_first("span")
+    span.replace_with("Replaced")
+    assert p.html == "<div>Replaced</div>"
+
+    html2 = "<div><span></span></div>"
+    p2 = LexborHTMLParser(html2, is_fragment=True)
+    span2 = p2.root.css_first("span")
+    span2.insert_before("Before")
+    span2.insert_after("After")
+    assert p2.html == "<div>Before<span></span>After</div>"
+
+
+def test_fragment_replace_with_node():
+    html = "<div><span>Hello</span></div>"
+    parser = LexborHTMLParser(html, is_fragment=True)
+    replacement_html = "<em>Replaced</em>"
+    replacement_parser = LexborHTMLParser(replacement_html, is_fragment=True)
+    span = parser.root.css_first("span")
+    span.replace_with(replacement_parser.root)
+    assert parser.html == "<div><em>Replaced</em></div>"
+
+
+def test_fragment_insert_before_node():
+    base_html = "<div><span></span></div>"
+    base_parser = LexborHTMLParser(base_html, is_fragment=True)
+    before_html = "<strong>Before</strong>"
+    before_parser = LexborHTMLParser(before_html, is_fragment=True)
+    span = base_parser.root.css_first("span")
+    span.insert_before(before_parser.root)
+    assert base_parser.html == "<div><strong>Before</strong><span></span></div>"
+
+
+def test_fragment_insert_after_node():
+    base_html = "<div><span></span></div>"
+    base_parser = LexborHTMLParser(base_html, is_fragment=True)
+    after_html = "<em>After</em>"
+    after_parser = LexborHTMLParser(after_html, is_fragment=True)
+    span = base_parser.root.css_first("span")
+    span.insert_after(after_parser.root)
+    assert base_parser.html == "<div><span></span><em>After</em></div>"
+
+
+def test_fragment_insert_child_node():
+    base_html = "<div></div>"
+    base_parser = LexborHTMLParser(base_html, is_fragment=True)
+    child_html = "<p>Child</p>"
+    child_parser = LexborHTMLParser(child_html, is_fragment=True)
+    div = base_parser.root.css_first("div")
+    div.insert_child(child_parser.root)
+    assert base_parser.html == "<div><p>Child</p></div>"
+
+
+def test_fragment_strip_tags():
+    html = "<div><script>alert('test')</script><p>Hello</p><style>body { color: red; }</style></div>"
+    parser = LexborHTMLParser(html, is_fragment=True)
+    parser.root.strip_tags(["script", "style"])
+    assert parser.html == "<div><p>Hello</p></div>"
+
+
+def test_fragment_decompose():
+    html = "<div><script>alert('test')</script><p>Hello</p></div>"
+    parser = LexborHTMLParser(html, is_fragment=True)
+    script = parser.root.css_first("script")
+    script.decompose()
+    assert parser.html == "<div><p>Hello</p></div>"
+
+
+@pytest.mark.parametrize(
+    "input_html, expected",
+    [
+        ("<html><body><div>test</div></body></html>", "<div>test</div>"),
+        ("<head><title>test</title></head>", "<title>test</title>"),
+        ("<body><p>test</p></body>", "<p>test</p>"),
+    ],
+)
+def test_fragment_strips_top_level_tags(input_html, expected):
+    parser = LexborHTMLParser(input_html, is_fragment=True)
+    assert parser.html == expected

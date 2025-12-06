@@ -1,6 +1,6 @@
 # selectolax Changelog
 
-# Unreleased
+# Version 0.4.6
 
 
 - Fix HTML parsing in fragment parser for `LexborHTMLParser`

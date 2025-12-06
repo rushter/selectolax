@@ -165,6 +165,8 @@ cdef class LexborSelector:
         cdef list nodes = []
         for node in self.nodes:
             attr = node.attributes.get(attribute)
+            if not attr:
+                continue
             if attr and start and start in attr:
                 attr = attr[attr.find(start) + len(start):]
             if len(attr) > length:

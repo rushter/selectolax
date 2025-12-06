@@ -114,6 +114,7 @@ cdef class LexborNode:
         lxb_str = lexbor_str_create()
         if self._is_fragment_root:
             status = serialize_fragment(self.node, lxb_str)
+            # status = lxb_html_serialize_tree_str(self.node, lxb_str)
         else:
             status = lxb_html_serialize_tree_str(self.node, lxb_str)
         if status == 0 and lxb_str.data:
@@ -202,6 +203,14 @@ cdef class LexborNode:
             )
             return container.text
 
+    cdef inline LexborNode _get_node(self):
+        cdef LexborNode node
+        if self._is_fragment_root:
+            node = self.parent
+        else:
+            node = self
+        return node
+
     def css(self, str query):
         """Evaluate CSS selector against current node and its child nodes.
 
@@ -223,7 +232,7 @@ cdef class LexborNode:
         -------
         selector : list of `Node` objects
         """
-        return self.parser.selector.find(query, self)
+        return self.parser.selector.find(query, self._get_node())
 
     def css_first(self, str query, default=None, bool strict=False):
         """Same as `css` but returns only the first match.
@@ -245,9 +254,9 @@ cdef class LexborNode:
         selector : `LexborNode` object
         """
         if strict:
-            results = self.parser.selector.find(query, self)
+            results = self.parser.selector.find(query, self._get_node())
         else:
-            results = self.parser.selector.find_first(query, self)
+            results = self.parser.selector.find_first(query, self._get_node())
         n_results = len(results)
         if n_results > 0:
             if strict and n_results > 1:
@@ -664,7 +673,7 @@ cdef class LexborNode:
         if isinstance(value, (str, bytes, unicode)):
             bytes_val = to_bytes(value)
             new_node = <lxb_dom_node_t *> lxb_dom_document_create_text_node(
-                &self.parser.main_document().dom_document,
+                &self.parser.document.dom_document,
                 <lxb_char_t *> bytes_val, len(bytes_val)
             )
             if new_node == NULL:
@@ -673,7 +682,7 @@ cdef class LexborNode:
             lxb_dom_node_remove(<lxb_dom_node_t *> self.node)
         elif isinstance(value, LexborNode):
             new_node = lxb_dom_document_import_node(
-                &self.parser.main_document().dom_document,
+                &self.parser.document.dom_document,
                 <lxb_dom_node_t *> value.node,
                 <bint> True
             )
@@ -717,7 +726,7 @@ cdef class LexborNode:
         if isinstance(value, (str, bytes, unicode)):
             bytes_val = to_bytes(value)
             new_node = <lxb_dom_node_t *> lxb_dom_document_create_text_node(
-                &self.parser.main_document().dom_document,
+                &self.parser.document.dom_document,
                 <lxb_char_t *> bytes_val, len(bytes_val)
             )
             if new_node == NULL:
@@ -725,7 +734,7 @@ cdef class LexborNode:
             lxb_dom_node_insert_before(self.node, new_node)
         elif isinstance(value, LexborNode):
             new_node = lxb_dom_document_import_node(
-                &self.parser.main_document().dom_document,
+                &self.parser.document.dom_document,
                 <lxb_dom_node_t *> value.node,
                 <bint> True
             )
@@ -768,7 +777,7 @@ cdef class LexborNode:
         if isinstance(value, (str, bytes, unicode)):
             bytes_val = to_bytes(value)
             new_node = <lxb_dom_node_t *> lxb_dom_document_create_text_node(
-                &self.parser.main_document().dom_document,
+                &self.parser.document.dom_document,
                 <lxb_char_t *> bytes_val, len(bytes_val)
             )
             if new_node == NULL:
@@ -776,7 +785,7 @@ cdef class LexborNode:
             lxb_dom_node_insert_after(self.node, new_node)
         elif isinstance(value, LexborNode):
             new_node = lxb_dom_document_import_node(
-                &self.parser.main_document().dom_document,
+                &self.parser.document.dom_document,
                 <lxb_dom_node_t *> value.node,
                 <bint> True
             )
@@ -819,7 +828,7 @@ cdef class LexborNode:
         if isinstance(value, (str, bytes, unicode)):
             bytes_val = to_bytes(value)
             new_node = <lxb_dom_node_t *> lxb_dom_document_create_text_node(
-                &self.parser.main_document().dom_document,
+                &self.parser.document.dom_document,
                 <lxb_char_t *> bytes_val, len(bytes_val)
             )
             if new_node == NULL:
@@ -827,7 +836,7 @@ cdef class LexborNode:
             lxb_dom_node_insert_child(self.node, new_node)
         elif isinstance(value, LexborNode):
             new_node = lxb_dom_document_import_node(
-                &self.parser.main_document().dom_document,
+                &self.parser.document.dom_document,
                 <lxb_dom_node_t *> value.node,
                 <bint> True
             )
@@ -930,7 +939,7 @@ cdef class LexborNode:
         -------
         selector : The `Selector` class.
         """
-        return LexborSelector(self, query)
+        return LexborSelector(self._get_node(), query)
 
     def __eq__(self, other):
         if isinstance(other, str):

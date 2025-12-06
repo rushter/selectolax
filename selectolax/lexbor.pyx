@@ -48,16 +48,16 @@ cdef class LexborHTMLParser:
         cdef size_t html_len
         cdef object bytes_html
         self._is_fragment = is_fragment
-        self._original_document = NULL
+        self._fragment_document = NULL
         self._selector = None
         self._new_html_document()
         bytes_html, html_len = preprocess_input(html)
         self._parse_html(bytes_html, html_len)
         self.raw_html = bytes_html
 
-    cdef inline lxb_html_document_t* main_document(self):
+    cdef inline lxb_html_document_t* main_document(self) nogil:
         if self._is_fragment:
-            return self._original_document
+            return self._fragment_document
         else:
             return self.document
 
@@ -180,9 +180,7 @@ cdef class LexborHTMLParser:
         if fragment_html_node == NULL:
             return LXB_STATUS_ERROR
 
-        # Use the fragment document returned by lexbor as the parser document.
-        self._original_document = self.document
-        self.document  = <lxb_html_document_t *> fragment_html_node
+        self._fragment_document  = <lxb_html_document_t *> fragment_html_node
         return LXB_STATUS_OK
 
     def __dealloc__(self):
@@ -197,10 +195,10 @@ cdef class LexborHTMLParser:
         Safe to call multiple times; does nothing if the document is already
         freed.
         """
+        if self._fragment_document != NULL:
+            lxb_html_document_destroy(self._fragment_document)
         if self.document != NULL:
             lxb_html_document_destroy(self.document)
-        if self._original_document != NULL:
-            lxb_html_document_destroy(self._original_document)
 
     def __repr__(self):
         """Return a concise representation of the parsed document.
@@ -238,7 +236,14 @@ cdef class LexborHTMLParser:
         if self.document == NULL:
             return None
         cdef LexborNode  node
-        node =  LexborNode.new(<lxb_dom_node_t *> lxb_dom_document_root(&self.document.dom_document), self)
+        cdef lxb_dom_node_t* dom_root
+        if self._is_fragment and self._fragment_document != NULL:
+            dom_root = lxb_dom_document_root(&self._fragment_document.dom_document)
+        else:
+            dom_root = lxb_dom_document_root(&self.document.dom_document)
+        if dom_root == NULL:
+            return None
+        node =  LexborNode.new(dom_root, self)
         if self._is_fragment:
             node.set_as_fragment_root()
         return node
@@ -370,6 +375,8 @@ cdef class LexborHTMLParser:
         if self.document == NULL:
             return None
         if self._is_fragment:
+            if self.root is None:
+                return None
             return self.root.html
         node = LexborNode.new(<lxb_dom_node_t *> &self.document.dom_document, self)
         return node.html
@@ -626,7 +633,7 @@ cdef class LexborHTMLParser:
         with nogil:
             cloned_node = lxb_dom_document_import_node(
                 &cloned_document.dom_document,
-                <lxb_dom_node_t *> lxb_dom_document_root(&self.document.dom_document),
+                <lxb_dom_node_t *> lxb_dom_document_root(&self.main_document().dom_document),
                 <bint> True
             )
 

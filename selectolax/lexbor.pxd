@@ -246,6 +246,7 @@ cdef class LexborNode:
     @staticmethod
     cdef LexborNode new(lxb_dom_node_t *node, LexborHTMLParser parser)
     cdef void set_as_fragment_root(self)
+    cdef inline LexborNode _get_node(self)
 
 
 cdef bint is_empty_text_node(lxb_dom_node_t *node)
@@ -266,7 +267,7 @@ cdef class LexborCSSSelector:
 
 cdef class LexborHTMLParser:
     cdef lxb_html_document_t *document
-    cdef lxb_html_document_t *_original_document
+    cdef lxb_html_document_t *_fragment_document
     cdef bint _is_fragment
     cdef public bytes raw_html
     cdef LexborCSSSelector _selector
@@ -279,7 +280,7 @@ cdef class LexborHTMLParser:
 
     @staticmethod
     cdef LexborHTMLParser from_document(lxb_html_document_t * document, bytes raw_html)
-    cdef inline lxb_html_document_t* main_document(self)
+    cdef inline lxb_html_document_t* main_document(self) nogil
 
 cdef extern from "lexbor/dom/dom.h" nogil:
     ctypedef enum lexbor_action_t:

@@ -367,3 +367,86 @@ def test_fragment_comment_content():
     parser = LexborHTMLParser(html, is_fragment=True)
     comment_node = parser.root
     assert comment_node.comment_content == "comment"
+
+
+def test_fragment_parser_malformed_html():
+    html = "<div><unclosed><span>content"
+    parser = LexborHTMLParser(html, is_fragment=True)
+    html_result = parser.html
+    assert html_result is not None
+    assert "content" in html_result
+
+
+def test_fragment_parser_empty_input():
+    parser = LexborHTMLParser("", is_fragment=True)
+    assert parser.root is None
+    assert parser.html is None
+
+
+def test_attributes_access_on_non_element():
+    html = "<!-- comment --><div>text</div>"
+    parser = LexborHTMLParser(html, is_fragment=True)
+    root = parser.root
+    assert root is not None
+
+    comment_node = root
+    assert comment_node.is_comment_node
+
+    attrs = comment_node.attributes
+    assert isinstance(attrs, dict)
+    assert len(attrs) == 0
+
+    text_node = root.css_first("div").first_child
+    assert text_node is not None
+    assert text_node.is_text_node
+
+    text_attrs = text_node.attributes
+    assert isinstance(text_attrs, dict)
+    assert len(text_attrs) == 0
+
+
+@pytest.mark.parametrize(
+    "malformed_html",
+    [
+        "<div><unclosed><span>content",  # Unclosed tags
+        "<div><span></div>",  # Mismatched tags
+        "<div><span>content</span",  # Missing closing bracket
+        '<div class="unclosed>content</div>',  # Unclosed attribute
+        "<div>&invalid_entity;</div>",  # Invalid entity
+        "<!-- unclosed comment",  # Unclosed comment
+        "<![CDATA[ unclosed cdata",  # Unclosed CDATA
+    ],
+)
+def test_fragment_parsing_malformed_html(malformed_html):
+    """Test fragment parsing with malformed HTML."""
+    parser = LexborHTMLParser(malformed_html, is_fragment=True)
+    html_result = parser.html
+    assert html_result is None or isinstance(html_result, str)
+
+
+def test_fragment_only_text():
+    """Test fragment parsing with only text."""
+    text_only = "Just plain text"
+    parser = LexborHTMLParser(text_only, is_fragment=True)
+    html_result = parser.html
+    assert html_result is not None
+    assert "Just plain text" in html_result
+
+
+def test_fragment_only_comment():
+    """Test fragment parsing with only comment."""
+    comment_only = "<!-- Just a comment -->"
+    parser = LexborHTMLParser(comment_only, is_fragment=True)
+    html_result = parser.html
+    assert html_result is not None
+    assert "Just a comment" in html_result
+
+
+def test_fragment_mixed_content():
+    """Test fragment parsing with mixed content."""
+    mixed = "Text <!-- comment --> <div>element</div> more text"
+    parser = LexborHTMLParser(mixed, is_fragment=True)
+    html_result = parser.html
+    assert html_result is not None
+    assert "Text" in html_result
+    assert "element" in html_result

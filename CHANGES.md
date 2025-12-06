@@ -1,12 +1,20 @@
 # selectolax Changelog
 
-# Version 0.4.5
+# Unreleased
+
 
 - Fix HTML parsing in fragment parser for `LexborHTMLParser`
 - Fix memory leak in fragment parser
 - Improve `skip_empty` parameter for text methods
 - Add `comment_content` method
 - Minor performance optimizations
+- Add `create_tag` method to `LexborHTMLParser`
+- Fix advanced selector (`.select()`) when attributes are empty.
+
+
+# Version 0.4.5
+
+  - Broken release. Not published to PyPi.
 
 # Version 0.4.4
 

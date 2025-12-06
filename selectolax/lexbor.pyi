@@ -1261,7 +1261,7 @@ class LexborHTMLParser:
 
         Parameters
         ----------
-        tag_name : str
+        tag : str
             Name of the tag to create.
 
         Returns

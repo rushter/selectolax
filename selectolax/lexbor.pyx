@@ -711,7 +711,7 @@ cdef class LexborHTMLParser:
 
         Parameters
         ----------
-        tag_name : str
+        tag : str
             Name of the tag to create.
 
         Returns
@@ -735,9 +735,9 @@ cdef class LexborHTMLParser:
         """
         cdef lxb_html_element_t* element
         cdef lxb_dom_node_t* dom_node
-        if not tag_name:
+        if not tag:
             raise SelectolaxError("Tag name cannot be empty")
-        pybyte_name = tag_name.encode('UTF-8')
+        pybyte_name = tag.encode('UTF-8')
 
         element = lxb_html_document_create_element(
             self.document,
@@ -747,7 +747,7 @@ cdef class LexborHTMLParser:
         )
 
         if element == NULL:
-            raise SelectolaxError(f"Can't create element for tag '{tag_name}'")
+            raise SelectolaxError(f"Can't create element for tag '{tag}'")
 
         dom_node = <lxb_dom_node_t *> element
 

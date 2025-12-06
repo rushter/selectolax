@@ -1,6 +1,6 @@
 from inspect import cleandoc
 import pytest
-from selectolax.lexbor import LexborHTMLParser
+from selectolax.lexbor import LexborHTMLParser, SelectolaxError
 
 
 def clean_doc(text: str) -> str:
@@ -418,14 +418,12 @@ def test_attributes_access_on_non_element():
     ],
 )
 def test_fragment_parsing_malformed_html(malformed_html):
-    """Test fragment parsing with malformed HTML."""
     parser = LexborHTMLParser(malformed_html, is_fragment=True)
     html_result = parser.html
     assert html_result is None or isinstance(html_result, str)
 
 
 def test_fragment_only_text():
-    """Test fragment parsing with only text."""
     text_only = "Just plain text"
     parser = LexborHTMLParser(text_only, is_fragment=True)
     html_result = parser.html
@@ -434,7 +432,6 @@ def test_fragment_only_text():
 
 
 def test_fragment_only_comment():
-    """Test fragment parsing with only comment."""
     comment_only = "<!-- Just a comment -->"
     parser = LexborHTMLParser(comment_only, is_fragment=True)
     html_result = parser.html
@@ -443,10 +440,61 @@ def test_fragment_only_comment():
 
 
 def test_fragment_mixed_content():
-    """Test fragment parsing with mixed content."""
     mixed = "Text <!-- comment --> <div>element</div> more text"
     parser = LexborHTMLParser(mixed, is_fragment=True)
     html_result = parser.html
     assert html_result is not None
     assert "Text" in html_result
     assert "element" in html_result
+
+
+def test_fragment_create_node_basic():
+    parser = LexborHTMLParser("<div></div>", is_fragment=True)
+    assert parser.root is not None
+    new_node = parser.create_node("span")
+    assert new_node.tag == "span"
+    assert new_node.parent is None
+
+    parser.root.insert_child(new_node)
+    expected_html = "<div><span></span></div>"
+    assert parser.html == expected_html
+
+
+def test_fragment_create_node_different_tags():
+    parser = LexborHTMLParser("<div></div>", is_fragment=True)
+    root = parser.root
+    assert root is not None
+
+    tags_to_test = ["p", "span", "div", "h1", "custom-tag"]
+    for tag in tags_to_test:
+        new_node = parser.create_node(tag)
+        assert new_node.tag == tag
+        root.insert_child(new_node)
+
+    html = parser.html
+    assert html is not None
+    for tag in tags_to_test:
+        assert f"<{tag}></{tag}>" in html
+
+
+def test_fragment_create_node_with_attributes():
+    parser = LexborHTMLParser("<div></div>", is_fragment=True)
+    assert parser.root is not None
+    new_node = parser.create_node("a")
+    new_node.attrs["href"] = "https://example.com"
+    new_node.attrs["class"] = "link"
+
+    parser.root.insert_child(new_node)
+    html = parser.html
+    assert html is not None
+    assert 'href="https://example.com"' in html
+    assert 'class="link"' in html
+
+
+def test_fragment_create_node_empty_tag_name():
+    parser = LexborHTMLParser("<div></div>", is_fragment=True)
+    try:
+        parser.create_node("")
+        assert False, "Should have raised an exception"
+    except SelectolaxError:
+        pass

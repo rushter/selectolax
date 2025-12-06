@@ -691,7 +691,6 @@ def test_double_unwrap_prevention():
 
 
 def test_clone_complex_modifications():
-    """Test cloning with complex document modifications."""
     html = "<div><p>Original</p><span>Content</span></div>"
     parser = LexborHTMLParser(html)
 
@@ -710,3 +709,53 @@ def test_clone_complex_modifications():
 
     cloned_text = cloned.root.text()
     assert "Modified" not in cloned_text
+
+
+def test_create_node_basic():
+    parser = LexborHTMLParser("<div></div>")
+    new_node = parser.create_node("span")
+    assert new_node.tag == "span"
+    assert new_node.parent is None
+
+    parser.css_first("div").insert_child(new_node)
+    expected_html = "<html><head></head><body><div><span></span></div></body></html>"
+    assert parser.html == expected_html
+
+
+def test_create_node_different_tags():
+    parser = LexborHTMLParser("<div></div>")
+    root = parser.root
+    assert root is not None
+
+    tags_to_test = ["p", "span", "div", "h1", "custom-tag"]
+    for tag in tags_to_test:
+        new_node = parser.create_node(tag)
+        assert new_node.tag == tag
+        root.insert_child(new_node)
+
+    html = parser.html
+    assert html is not None
+    for tag in tags_to_test:
+        assert f"<{tag}></{tag}>" in html
+
+
+def test_create_node_with_attributes():
+    parser = LexborHTMLParser("<div></div>")
+    new_node = parser.create_node("a")
+    new_node.attrs["href"] = "https://example.com"
+    new_node.attrs["class"] = "link"
+
+    parser.root.insert_child(new_node)
+    html = parser.html
+    assert html is not None
+    assert 'href="https://example.com"' in html
+    assert 'class="link"' in html
+
+
+def test_create_node_empty_tag_name():
+    parser = LexborHTMLParser("<div></div>")
+    try:
+        parser.create_node("")
+        assert False, "Should have raised an exception"
+    except SelectolaxError:
+        pass

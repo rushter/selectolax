@@ -704,3 +704,51 @@ cdef class LexborHTMLParser:
         None
         """
         self.root.inner_html = html
+
+    def create_node(self, str tag):
+        """Given an HTML tag name, e.g. `"div"`, create a single empty node for that tag,
+        e.g. `"<div></div>"`.
+
+        Parameters
+        ----------
+        tag_name : str
+            Name of the tag to create.
+
+        Returns
+        -------
+        LexborNode
+            Newly created element node.
+        Raises
+        ------
+        SelectolaxError
+            If the element cannot be created.
+
+        Examples
+        --------
+        >>> parser = LexborHTMLParser("<div></div>")
+        >>> new_node = parser.create_node("span")
+        >>> new_node.tag_name
+        'span'
+        >>> parser.root.append_child(new_node)
+        >>> parser.html
+        '<html><head></head><body><div><span></span></div></body></html>'
+        """
+        cdef lxb_html_element_t* element
+        cdef lxb_dom_node_t* dom_node
+        if not tag_name:
+            raise SelectolaxError("Tag name cannot be empty")
+        pybyte_name = tag_name.encode('UTF-8')
+
+        element = lxb_html_document_create_element(
+            self.document,
+            <const lxb_char_t *> pybyte_name,
+            len(pybyte_name),
+            NULL
+        )
+
+        if element == NULL:
+            raise SelectolaxError(f"Can't create element for tag '{tag_name}'")
+
+        dom_node = <lxb_dom_node_t *> element
+
+        return LexborNode.new(dom_node, self)

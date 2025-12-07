@@ -729,7 +729,7 @@ cdef class LexborHTMLParser:
         >>> new_node = parser.create_node("span")
         >>> new_node.tag_name
         'span'
-        >>> parser.root.append_child(new_node)
+        >>> parser.css_first("div").append_child(new_node)
         >>> parser.html
         '<html><head></head><body><div><span></span></div></body></html>'
         """

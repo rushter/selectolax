@@ -7,7 +7,7 @@ using [Modest](https://github.com/lexborisov/Modest/) and [Lexbor](https://githu
 It supports two backends:
 
 - `Lexbor <https://github.com/lexbor/lexbor>`__ (preferred)
-- `Modest <https://github.com/lexborisov/Modest>`__ (first generation of lexbor)
+- `Modest <https://github.com/lexborisov/Modest>`__ (first generation of lexbor, **deprecated**)
 
 API
 ===

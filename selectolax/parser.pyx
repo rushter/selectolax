@@ -8,7 +8,9 @@ include "modest/util.pxi"
 include "utils.pxi"
 
 cdef class HTMLParser:
-    """The HTML parser.
+    """The HTML parser using modest backend.
+
+    This backend is **deprecated**. Please use `lexbor` backend instead.
 
     Use this class to parse raw HTML.
 

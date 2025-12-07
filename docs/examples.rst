@@ -14,7 +14,7 @@ There are 3 ways to create or parse objects in Selectolax:
 
 1. Parse HTML as a full document using ``LexborHTMLParser()``
 2. Parse HTML as a fragment using ``LexborHTMLParser(..., is_fragment=True)``
-3. Create single node using ``LexborHTMLParser().create_tag()``
+3. Create single node using ``LexborHTMLParser(...).create_node()``
 
 - ``LexborHTMLParser()`` - Returns the HTML tree as parsed by Lexbor, unmodified. The HTML is assumed to be a full document. ``<html>``, ``<head>``, and ``<body>`` tags are added if missing.
 
@@ -23,7 +23,6 @@ There are 3 ways to create or parse objects in Selectolax:
     Drops ``<html>``, ``<head>``, and ``<body>`` tags if present in the input HTML.
     Use it to parse snippets of HTML that are not complete documents.
 
-- ``create_tag()`` - Create a single empty node for given tag.
 
 .. code-block:: python
 
@@ -55,13 +54,13 @@ There are 3 ways to create or parse objects in Selectolax:
     """
 
     # Parse HTML as a full document
-    html_tree = LexborHTMLParser(html)
+    parser = LexborHTMLParser(html)
 
     # Parse HTML as a fragment
-    frag_tree = LexborHTMLParser(html, is_fragment=True)
+    frag_parser = LexborHTMLParser(html, is_fragment=True)
 
-    # Create a single node
-    node = LexborHTMLParser().create_tag("div")
+    # Create a new node for  `parser`.
+    node = parser.create_node("div")
 
 CSS Selectors
 -------------
@@ -265,7 +264,7 @@ You can also change HTML by setting the `.inner_html` property.
 
     node.inner_html = "<span>Test</span>"
     print("\nNew html:\n")
-    print(node.inner)
+    print(node.inner_html)
 
 **Output:**
 
@@ -458,7 +457,7 @@ Insert new content into the DOM at specific positions.
     green_node.insert_before(subtree)
 
     # Insert before, after, or as child
-    car_div = LexborHTMLParser().create_tag("div")
+    car_div = parser.create_node("div")
     car_div.inner_html = "Car"
     green_node.insert_before(car_div)
     green_node.insert_after(car_div)

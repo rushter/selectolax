@@ -1,9 +1,5 @@
 from libc.stdint cimport uint8_t, uint32_t, uintptr_t
 
-
-
-
-
 cdef extern from "lexbor/core/core.h" nogil:
     ctypedef uint32_t lxb_codepoint_t
     ctypedef unsigned char lxb_char_t
@@ -36,15 +32,14 @@ cdef extern from "lexbor/core/core.h" nogil:
     lxb_char_t * lexbor_str_data_noi(lexbor_str_t *str)
 
 cdef extern from "lexbor/core/lexbor.h" nogil:
-    
     ctypedef void *(*lexbor_memory_malloc_f)(size_t size) nogil
     ctypedef void *(*lexbor_memory_realloc_f)(void *dst, size_t size) nogil
     ctypedef void *(*lexbor_memory_calloc_f)(size_t num, size_t size) nogil
-    ctypedef void (*lexbor_memory_free_f)(void *dst) nogil 
+    ctypedef void (*lexbor_memory_free_f)(void *dst) nogil
     lxb_status_t lexbor_memory_setup(
-        lexbor_memory_malloc_f new_malloc, 
-        lexbor_memory_realloc_f new_realloc, 
-        lexbor_memory_calloc_f new_calloc, 
+        lexbor_memory_malloc_f new_malloc,
+        lexbor_memory_realloc_f new_realloc,
+        lexbor_memory_calloc_f new_calloc,
         lexbor_memory_free_f new_free
     )
 

@@ -1,5 +1,13 @@
 from cpython.bool cimport bool
-
+from cpython.buffer cimport PyBUF_SIMPLE, PyBuffer_Release, PyObject_GetBuffer
+from cpython.bytes cimport PyBytes_FromStringAndSize
+from cpython.exc cimport PyErr_SetObject
+from cpython.mem cimport (
+    PyMem_RawCalloc, 
+    PyMem_RawFree, 
+    PyMem_RawMalloc,
+    PyMem_RawRealloc
+)
 _ENCODING = 'UTF-8'
 
 include "base.pxi"
@@ -24,7 +32,7 @@ cdef class LexborHTMLParser:
 
     html : str (unicode) or bytes
     """
-    def __init__(self, html: str | bytes, is_fragment: bool = False):
+    def __init__(self, html: str | bytes | bytearray | memoryview, is_fragment: bool = False):
         """Create a parser and load HTML.
 
         Parameters
@@ -47,6 +55,7 @@ cdef class LexborHTMLParser:
         """
         cdef size_t html_len
         cdef object bytes_html
+        
         self._is_fragment = is_fragment
         self._fragment_document = NULL
         self._selector = None
@@ -54,6 +63,7 @@ cdef class LexborHTMLParser:
         bytes_html, html_len = preprocess_input(html)
         self._parse_html(bytes_html, html_len)
         self.raw_html = bytes_html
+
 
     cdef inline lxb_html_document_t* main_document(self) nogil:
         if self._is_fragment:
@@ -752,3 +762,21 @@ cdef class LexborHTMLParser:
         dom_node = <lxb_dom_node_t *> element
 
         return LexborNode.new(dom_node, self)
+
+
+
+# Putting lexbor on python's heap is better than putting it 
+# onto C's Heap, because python's Garbage collector can collect 
+# this memory after use and has the bonus of gaining access to
+# mimalloc which python uses under the hood...
+if lexbor_memory_setup(
+    PyMem_RawMalloc,
+    PyMem_RawRealloc,
+    PyMem_RawCalloc,
+    PyMem_RawFree
+) != LXB_STATUS_OK:
+    # This will almost never happen due to the code in both the windows and posix versions 
+    # but if something were to happen this excecption on import should be triggered...
+    raise SelectolaxError("Can't initalize allocators from lexbor_memory_setup(...)")
+
+

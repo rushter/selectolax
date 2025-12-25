@@ -1,5 +1,11 @@
 from cpython.bool cimport bool
-
+from cpython.exc cimport PyErr_SetObject
+from cpython.mem cimport (
+    PyMem_RawCalloc,
+    PyMem_RawFree,
+    PyMem_RawMalloc,
+    PyMem_RawRealloc
+)
 _ENCODING = 'UTF-8'
 
 include "base.pxi"
@@ -47,6 +53,7 @@ cdef class LexborHTMLParser:
         """
         cdef size_t html_len
         cdef object bytes_html
+
         self._is_fragment = is_fragment
         self._fragment_document = NULL
         self._selector = None
@@ -752,3 +759,17 @@ cdef class LexborHTMLParser:
         dom_node = <lxb_dom_node_t *> element
 
         return LexborNode.new(dom_node, self)
+
+# Putting lexbor on python's heap is better than putting it
+# onto C's Heap, because python's Garbage collector can collect
+# this memory after use and has the bonus of gaining access to
+# mimalloc which python uses under the hood...
+if lexbor_memory_setup(
+    PyMem_RawMalloc,
+    PyMem_RawRealloc,
+    PyMem_RawCalloc,
+    PyMem_RawFree
+) != LXB_STATUS_OK:
+    # This will almost never happen due to the code in both the windows and posix versions
+    # but if something were to happen this excecption on import should be triggered...
+    raise SelectolaxError("Can't initalize allocators from lexbor_memory_setup(...)")

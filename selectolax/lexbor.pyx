@@ -32,7 +32,7 @@ cdef class LexborHTMLParser:
 
     html : str (unicode) or bytes
     """
-    def __init__(self, html: str | bytes | bytearray | memoryview, is_fragment: bool = False):
+    def __init__(self, html: str | bytes, is_fragment: bool = False):
         """Create a parser and load HTML.
 
         Parameters

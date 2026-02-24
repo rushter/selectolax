@@ -511,28 +511,21 @@ cdef class LexborNode:
 
         Note: by default, empty tags are ignored, use "delete_empty" to change this.
         """
+        if self.node.parent == NULL:
+            return
 
         if node_is_removed(<lxb_dom_node_t *> self.node) == 1:
             logger.error("Attempt to unwrap removed node. Does nothing.")
             return
 
-        if self.node.first_child == NULL:
-            if delete_empty:
-                lxb_dom_node_remove(<lxb_dom_node_t *> self.node)
-            return
+        cdef lxb_dom_node_t * current_node = self.node.first_child
         cdef lxb_dom_node_t * next_node
-        cdef lxb_dom_node_t * current_node
 
-        if self.node.first_child.next != NULL:
-            current_node = self.node.first_child
+        while current_node != NULL:
             next_node = current_node.next
+            lxb_dom_node_insert_before(self.node, current_node)
+            current_node = next_node
 
-            while next_node != NULL:
-                next_node = current_node.next
-                lxb_dom_node_insert_before(self.node, current_node)
-                current_node = next_node
-        else:
-            lxb_dom_node_insert_before(self.node, self.node.first_child)
         lxb_dom_node_remove(<lxb_dom_node_t *> self.node)
 
     def unwrap_tags(self, list tags, bint delete_empty = False):
@@ -588,21 +581,29 @@ cdef class LexborNode:
 
         while node != NULL:
             next_node = node.next
-            if node.type == LXB_DOM_NODE_TYPE_TEXT and node.prev and node.prev.type == LXB_DOM_NODE_TYPE_TEXT:
-                left_text = lxb_dom_node_text_content(node.prev, &left_length)
-                right_text = lxb_dom_node_text_content(node, &right_length)
-                if left_text and right_text:
-                    combined = (<bytes> left_text[:left_length]) + (<bytes> right_text[:right_length])
-                    lxb_dom_node_text_content_set(node, combined, len(combined))
-                    lxb_dom_node_remove(node.prev)
 
-                if left_text is not NULL:
-                    lxb_dom_document_destroy_text_noi(self.node.owner_document, left_text)
-                if right_text is not NULL:
-                    lxb_dom_document_destroy_text_noi(self.node.owner_document, right_text)
+            if node.type == LXB_DOM_NODE_TYPE_TEXT:
+                while next_node != NULL and next_node.type == LXB_DOM_NODE_TYPE_TEXT:
+                    left_text = lxb_dom_node_text_content(node, &left_length)
+                    right_text = lxb_dom_node_text_content(next_node, &right_length)
 
-            if node.first_child:
+                    if left_text and right_text:
+                        combined = (<bytes> left_text[:left_length]) + (<bytes> right_text[:right_length])
+                        lxb_dom_node_text_content_set(node, combined, len(combined))
+                        lxb_dom_node_remove(next_node)
+
+                        lxb_dom_document_destroy_text_noi(self.node.owner_document, left_text)
+                        lxb_dom_document_destroy_text_noi(self.node.owner_document, right_text)
+
+                        next_node = node.next
+                    else:
+                        if left_text: lxb_dom_document_destroy_text_noi(self.node.owner_document, left_text)
+                        if right_text: lxb_dom_document_destroy_text_noi(self.node.owner_document, right_text)
+                        break
+
+            if node.type == LXB_DOM_NODE_TYPE_ELEMENT and node.first_child:
                 LexborNode.new(node, self.parser).merge_text_nodes()
+
             node = next_node
 
     def traverse(self, bool include_text = False, bool skip_empty = False):

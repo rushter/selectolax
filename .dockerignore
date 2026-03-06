@@ -1,0 +1,17 @@
+.git
+.gitignore
+.gitmodules
+.idea
+.mypy_cache
+.pytest_cache
+.ruff_cache
+.venv
+build
+dist
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+*.so
+cython_debug
+docs/_build

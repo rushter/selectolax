@@ -70,6 +70,7 @@ cdef class LexborCSSSelector:
         self.results = []
         self.current_node = None
         lxb_css_selector_list_destroy_memory(selectors_list)
+        self.parser.memory = NULL
         return results
 
     cpdef int any_matches(self, str query, LexborNode node) except -1:
@@ -82,7 +83,7 @@ cdef class LexborCSSSelector:
             raise TypeError("Query must be a string.")
 
         bytes_query = query.encode(_ENCODING)
-        selectors_list = lxb_css_selectors_parse(self.parser, <lxb_char_t *> bytes_query, <size_t> len(query))
+        selectors_list = lxb_css_selectors_parse(self.parser, <lxb_char_t *> bytes_query, <size_t> len(bytes_query))
 
         if selectors_list == NULL:
             PyErr_SetObject(SelectolaxError, "Can't parse CSS selector.")
@@ -93,12 +94,14 @@ cdef class LexborCSSSelector:
                                     <lxb_selectors_cb_f> css_matcher_callback, <void *> self)
         if status != LXB_STATUS_OK:
             lxb_css_selector_list_destroy_memory(selectors_list)
+            self.parser.memory = NULL
             PyErr_SetObject(SelectolaxError, "Can't parse CSS selector.")
             return -1
 
         result = PyList_GET_SIZE(self.results) > 0
         self.results = []
         lxb_css_selector_list_destroy_memory(selectors_list)
+        self.parser.memory = NULL
         return result
 
     def __dealloc__(self):

@@ -5,6 +5,8 @@
 
 - Fix `.text()` and `iter()` for HTML fragments when there are multiple nodes at the root level. Resolves #209.
 - Update lexbor. Resolves #212.
+- Breaking changes: Empty tags are now serialized to `<div value="">` instead of `<div value>`
+  ([Commit 4530fed](https://github.com/lexbor/lexbor/commit/4530fed3f3a2b1c3729f7742be4f56131cb8e086)).
 
 # Version 0.4.6
 

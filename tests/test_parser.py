@@ -308,7 +308,7 @@ def test_decompose_root_node():
 def test_empty_attribute_lexbor():
     div = create_tag("div")
     div.attrs["hidden"] = None
-    assert div.html == "<div hidden></div>"
+    assert div.html == '<div hidden=""></div>'
 
 
 def test_pseudo_class_contains():

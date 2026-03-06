@@ -140,7 +140,6 @@ cdef class LexborNode:
             raise RuntimeError("Can't extract text")
 
         unicode_text = text.decode(_ENCODING)
-        lxb_dom_document_destroy_text_noi(self.node.owner_document, text)
         return unicode_text
 
     def text(self, bool deep=True, str separator='', bool strip=False, bool skip_empty=False):
@@ -599,15 +598,8 @@ cdef class LexborNode:
                         lxb_dom_node_text_content_set(node, combined, len(combined))
                         lxb_dom_node_remove(next_node)
 
-                        lxb_dom_document_destroy_text_noi(self.node.owner_document, left_text)
-                        lxb_dom_document_destroy_text_noi(self.node.owner_document, right_text)
-
                         next_node = node.next
                     else:
-                        if left_text:
-                            lxb_dom_document_destroy_text_noi(self.node.owner_document, left_text)
-                        if right_text:
-                            lxb_dom_document_destroy_text_noi(self.node.owner_document, right_text)
                         break
 
             if node.type == LXB_DOM_NODE_TYPE_ELEMENT and node.first_child:

@@ -557,6 +557,8 @@ cdef class LexborNode:
         """
         cdef LexborNode element
         for tag in tags:
+            if self.node.parent == NULL and not _is_node_type(self.node, LXB_DOM_NODE_TYPE_DOCUMENT):
+                break
             for element in self.css(tag):
                 element.unwrap(delete_empty)
 

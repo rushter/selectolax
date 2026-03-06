@@ -759,3 +759,19 @@ def test_create_node_empty_tag_name():
         assert False, "Should have raised an exception"
     except SelectolaxError:
         pass
+
+
+def test_unwrap_tags_segfault_prevention():
+    # This scenario used to cause a segmentation fault because the 'span' tag
+    # matches the node itself, causing it to be detached. The subsequent
+    # search for 'p' would then happen on a detached node.
+    html = "<div><span id='repro'><span><p>Text</p></span></span></div>"
+    tree = LexborHTMLParser(html)
+    node = tree.css_first("#repro")
+    assert node is not None
+
+    # Should not segfault
+    node.unwrap_tags(["span", "p"])
+
+    assert "Text" in tree.html
+    assert '<span id="repro">' not in tree.html

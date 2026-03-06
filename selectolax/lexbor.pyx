@@ -235,8 +235,6 @@ cdef class LexborHTMLParser:
             self._selector = LexborCSSSelector()
         return self._selector
 
-
-
     @property
     def root(self):
         """Return the document root node.

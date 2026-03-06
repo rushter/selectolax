@@ -1,9 +1,12 @@
 # selectolax Changelog
 
-- Fix `.text()` and `iter()` for HTML fragments when there are multiple nodes at the root level.
+
+# Version 0.4.7
+
+- Fix `.text()` and `iter()` for HTML fragments when there are multiple nodes at the root level. Resolves #209.
+- Update lexbor. Resolves #212.
 
 # Version 0.4.6
-
 
 - Fix HTML parsing in fragment parser for `LexborHTMLParser`
 - Fix memory leak in fragment parser

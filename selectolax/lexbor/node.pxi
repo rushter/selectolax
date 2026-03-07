@@ -579,32 +579,7 @@ cdef class LexborNode:
         >>> tree.text(deep=True, separator=" ", strip=True)
         "John Doe"
         """
-        cdef lxb_dom_node_t *node = self.node.first_child
-        cdef lxb_dom_node_t *next_node
-        cdef lxb_char_t *left_text
-        cdef lxb_char_t *right_text
-        cdef size_t left_length, right_length
-
-        while node != NULL:
-            next_node = node.next
-
-            if node.type == LXB_DOM_NODE_TYPE_TEXT:
-                while next_node != NULL and next_node.type == LXB_DOM_NODE_TYPE_TEXT:
-                    left_text = lxb_dom_node_text_content(node, &left_length)
-                    right_text = lxb_dom_node_text_content(next_node, &right_length)
-
-                    if left_text and right_text:
-                        combined = (<bytes> left_text[:left_length]) + (<bytes> right_text[:right_length])
-                        lxb_dom_node_text_content_set(node, combined, len(combined))
-                        lxb_dom_node_remove(next_node)
-
-                        next_node = node.next
-                    else:
-                        break
-
-            if node.type == LXB_DOM_NODE_TYPE_ELEMENT and node.first_child:
-                LexborNode.new(node, self.parser).merge_text_nodes()
-            node = next_node
+        _merge_text_nodes(self.node)
 
     def traverse(self, bool include_text = False, bool skip_empty = False):
         """Depth-first traversal starting at the current node.
@@ -1156,3 +1131,47 @@ cdef lxb_status_t serialize_fragment(lxb_dom_node_t *node, lexbor_str_t *lxb_str
 
 cdef inline bint _is_node_type(lxb_dom_node_t *node, lxb_dom_node_type_t expected_type):
     return node != NULL and node.type == expected_type
+
+cdef void _merge_text_nodes(lxb_dom_node_t *root):
+    if root == NULL or node_is_removed(root):
+        return
+
+    cdef lxb_dom_node_t *node
+    cdef lxb_dom_node_t *next_node
+    cdef lxb_dom_text_t *new_text_node
+    cdef lxb_char_t *left_text
+    cdef lxb_char_t *right_text
+    cdef size_t left_length, right_length
+    cdef bytes combined
+
+    cdef bint changed = 1
+    while changed:
+        changed = 0
+        node = root.first_child
+        while node != NULL:
+            next_node = node.next
+            if node.type == LXB_DOM_NODE_TYPE_TEXT and next_node != NULL and next_node.type == LXB_DOM_NODE_TYPE_TEXT:
+                left_text = lxb_dom_node_text_content(node, &left_length)
+                right_text = lxb_dom_node_text_content(next_node, &right_length)
+
+                if left_text != NULL and right_text != NULL:
+                    combined = (<bytes>left_text[:left_length]) + (<bytes>right_text[:right_length])
+                    new_text_node = lxb_dom_document_create_text_node(
+                        root.owner_document,
+                        <lxb_char_t *>combined,
+                        len(combined)
+                    )
+                    if new_text_node != NULL:
+                        lxb_dom_node_insert_before(node, <lxb_dom_node_t *>new_text_node)
+                        lxb_dom_node_remove(node)
+                        lxb_dom_node_remove(next_node)
+                        changed = 1
+                        break
+
+            node = next_node
+
+    node = root.first_child
+    while node != NULL:
+        if node.type == LXB_DOM_NODE_TYPE_ELEMENT and node.first_child:
+            _merge_text_nodes(node)
+        node = node.next

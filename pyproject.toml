@@ -86,3 +86,6 @@ cython = [
 [tool.cython-lint]
 max-line-length = 120
 ignore = ['E221', 'E222', ]
+
+[tool.setuptools.packages.find]
+include = ["selectolax*"]

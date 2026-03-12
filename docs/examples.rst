@@ -231,6 +231,7 @@ They can be called on any node.
 **Output:**
 
 .. code-block:: text
+
     Inner html:
 
       <div>Hi there</div>

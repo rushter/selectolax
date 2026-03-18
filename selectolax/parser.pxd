@@ -1,4 +1,4 @@
-
+# cython: freethreading_compatible = True
 cdef extern from "myhtml/myhtml.h" nogil:
     ctypedef unsigned int mystatus_t
     ctypedef struct myhtml_t

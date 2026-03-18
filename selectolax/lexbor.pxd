@@ -1,3 +1,4 @@
+# cython: freethreading_compatible = True
 from libc.stdint cimport uint8_t, uint32_t, uintptr_t
 
 cdef extern from "lexbor/core/core.h" nogil:

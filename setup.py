@@ -61,6 +61,8 @@ COMPILER_DIRECTIVES = {
     "emit_code_comments": True,
     "boundscheck": False,
     "wraparound": False,
+    "freethreading_compatible": "True",
+    "subinterpreters_compatible": "own_gil",
 }
 
 
@@ -143,8 +145,8 @@ def make_extensions():
             "-Wno-unused-variable",
             "-Wno-unused-function",
             "-std=c99",
-            "-O2",
-            "-g0",
+            "-O0",
+            "-g",
         ]
         compile_arguments.extend(args)
         compile_arguments_lxb.extend(args)

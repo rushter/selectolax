@@ -123,6 +123,136 @@ cdef class LexborNode:
             return html
         return None
 
+    cdef inline str _serialize_html(self, lxb_html_serialize_opt_t options, size_t indent, bint pretty):
+        cdef lexbor_str_t *lxb_str
+        cdef lxb_status_t status
+
+        lxb_str = lexbor_str_create()
+        if self._is_fragment_root:
+            if pretty:
+                status = serialize_fragment_pretty(self.node, lxb_str, options, indent)
+            else:
+                status = serialize_fragment(self.node, lxb_str)
+        else:
+            if pretty:
+                status = lxb_html_serialize_pretty_tree_str(self.node, options, indent, lxb_str)
+            else:
+                status = lxb_html_serialize_tree_str(self.node, lxb_str)
+
+        if status == 0 and lxb_str.data:
+            html = lxb_str.data.decode(_ENCODING).replace('<-undef>', '')
+            lexbor_str_destroy(lxb_str, self.node.owner_document.text, True)
+            return html
+        return None
+
+    cdef inline str _serialize_inner_html(self, lxb_html_serialize_opt_t options, size_t indent, bint pretty):
+        cdef lexbor_str_t *lxb_str
+        cdef lxb_status_t status
+
+        lxb_str = lexbor_str_create()
+        if pretty:
+            status = lxb_html_serialize_pretty_deep_str(self.node, options, indent, lxb_str)
+        else:
+            status = lxb_html_serialize_deep_str(self.node, lxb_str)
+
+        if status == 0 and lxb_str.data:
+            html = lxb_str.data.decode(_ENCODING).replace('<-undef>', '')
+            lexbor_str_destroy(lxb_str, self.node.owner_document.text, True)
+            return html
+        return None
+
+    def html_pretty(
+        self,
+        Py_ssize_t indent=0,
+        bint skip_ws_nodes=False,
+        bint skip_comment=False,
+        bint raw=False,
+        bint without_closing=False,
+        bint tag_with_ns=False,
+        bint without_text_indent=False,
+        bint full_doctype=False,
+    ):
+        """Return pretty-printed HTML for the current node.
+
+        Parameters
+        ----------
+        indent : int, optional
+            Initial indentation level passed to Lexbor. Defaults to ``0``.
+        skip_ws_nodes : bool, optional
+            Skip text nodes that contain only whitespace.
+        skip_comment : bool, optional
+            Exclude HTML comment nodes from the serialized output.
+        raw : bool, optional
+            Serialize text and attribute values without HTML escaping.
+        without_closing : bool, optional
+            Omit closing tags for non-void elements.
+        tag_with_ns : bool, optional
+            Include namespace prefixes in serialized tag names when available.
+        without_text_indent : bool, optional
+            Disable extra indentation added around text and comment content.
+        full_doctype : bool, optional
+            Serialize the full document type declaration when a doctype node is present.
+        """
+        cdef lxb_html_serialize_opt_t options
+        if indent < 0:
+            raise ValueError("indent must be greater than or equal to 0")
+        options = _html_pretty_options(
+            skip_ws_nodes,
+            skip_comment,
+            raw,
+            without_closing,
+            tag_with_ns,
+            without_text_indent,
+            full_doctype,
+        )
+        return self._serialize_html(options, <size_t> indent, True)
+
+    def inner_html_pretty(
+        self,
+        Py_ssize_t indent=0,
+        bint skip_ws_nodes=False,
+        bint skip_comment=False,
+        bint raw=False,
+        bint without_closing=False,
+        bint tag_with_ns=False,
+        bint without_text_indent=False,
+        bint full_doctype=False,
+    ):
+        """Return pretty-printed HTML representation of the child nodes.
+
+        Parameters
+        ----------
+        indent : int, optional
+            Initial indentation level passed to Lexbor. Defaults to ``0``.
+        skip_ws_nodes : bool, optional
+            Skip text nodes that contain only whitespace.
+        skip_comment : bool, optional
+            Exclude HTML comment nodes from the serialized output.
+        raw : bool, optional
+            Serialize text and attribute values without HTML escaping.
+        without_closing : bool, optional
+            Omit closing tags for non-void elements.
+        tag_with_ns : bool, optional
+            Include namespace prefixes in serialized tag names when available.
+        without_text_indent : bool, optional
+            Disable extra indentation added around text and comment content.
+        full_doctype : bool, optional
+            Serialize the full document type declaration when a doctype node is present.
+        """
+        cdef lxb_html_serialize_opt_t options
+        if indent < 0:
+            raise ValueError("indent must be greater than or equal to 0")
+        options = _html_pretty_options(
+            skip_ws_nodes,
+            skip_comment,
+            raw,
+            without_closing,
+            tag_with_ns,
+            without_text_indent,
+            full_doctype,
+        )
+        return self._serialize_inner_html(options, <size_t> indent, True)
+
     def __hash__(self):
         return self.mem_id
 
@@ -989,16 +1119,7 @@ cdef class LexborNode:
         text : str | None
         """
 
-        cdef lexbor_str_t *lxb_str
-        cdef lxb_status_t status
-
-        lxb_str = lexbor_str_create()
-        status = lxb_html_serialize_deep_str(self.node, lxb_str)
-        if status == 0 and lxb_str.data:
-            html = lxb_str.data.decode(_ENCODING).replace('<-undef>', '')
-            lexbor_str_destroy(lxb_str, self.node.owner_document.text, True)
-            return html
-        return None
+        return self._serialize_inner_html(LXB_HTML_SERIALIZE_OPT_UNDEF, 0, False)
 
     @inner_html.setter
     def inner_html(self, str html) -> None:
@@ -1128,6 +1249,51 @@ cdef lxb_status_t serialize_fragment(lxb_dom_node_t *node, lexbor_str_t *lxb_str
         node = node.next
 
     return LXB_STATUS_OK
+
+
+cdef lxb_status_t serialize_fragment_pretty(
+    lxb_dom_node_t *node,
+    lexbor_str_t *lxb_str,
+    lxb_html_serialize_opt_t options,
+    size_t indent,
+):
+    cdef lxb_status_t status
+    while node != NULL:
+        status = lxb_html_serialize_pretty_tree_str(node, options, indent, lxb_str)
+        if status != LXB_STATUS_OK:
+            return status
+        node = node.next
+
+    return LXB_STATUS_OK
+
+
+cdef inline lxb_html_serialize_opt_t _html_pretty_options(
+    bint skip_ws_nodes,
+    bint skip_comment,
+    bint raw,
+    bint without_closing,
+    bint tag_with_ns,
+    bint without_text_indent,
+    bint full_doctype,
+):
+    cdef lxb_html_serialize_opt_t options = LXB_HTML_SERIALIZE_OPT_UNDEF
+
+    if skip_ws_nodes:
+        options = <lxb_html_serialize_opt_t> (options | LXB_HTML_SERIALIZE_OPT_SKIP_WS_NODES)
+    if skip_comment:
+        options = <lxb_html_serialize_opt_t> (options | LXB_HTML_SERIALIZE_OPT_SKIP_COMMENT)
+    if raw:
+        options = <lxb_html_serialize_opt_t> (options | LXB_HTML_SERIALIZE_OPT_RAW)
+    if without_closing:
+        options = <lxb_html_serialize_opt_t> (options | LXB_HTML_SERIALIZE_OPT_WITHOUT_CLOSING)
+    if tag_with_ns:
+        options = <lxb_html_serialize_opt_t> (options | LXB_HTML_SERIALIZE_OPT_TAG_WITH_NS)
+    if without_text_indent:
+        options = <lxb_html_serialize_opt_t> (options | LXB_HTML_SERIALIZE_OPT_WITHOUT_TEXT_INDENT)
+    if full_doctype:
+        options = <lxb_html_serialize_opt_t> (options | LXB_HTML_SERIALIZE_OPT_FULL_DOCTYPE)
+
+    return options
 
 cdef inline bint _is_node_type(lxb_dom_node_t *node, lxb_dom_node_type_t expected_type):
     return node != NULL and node.type == expected_type

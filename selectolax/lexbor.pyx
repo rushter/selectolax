@@ -392,6 +392,68 @@ cdef class LexborHTMLParser:
         node = LexborNode.new(<lxb_dom_node_t *> &self.document.dom_document, self)
         return node.html
 
+    def html_pretty(
+        self,
+        Py_ssize_t indent=0,
+        bint skip_ws_nodes=False,
+        bint skip_comment=False,
+        bint raw=False,
+        bint without_closing=False,
+        bint tag_with_ns=False,
+        bint without_text_indent=False,
+        bint full_doctype=False,
+    ):
+        """Return pretty-printed HTML representation of the page.
+
+        Parameters
+        ----------
+        indent : int, optional
+            Initial indentation level passed to Lexbor. Defaults to ``0``.
+        skip_ws_nodes : bool, optional
+            Skip text nodes that contain only whitespace.
+        skip_comment : bool, optional
+            Exclude HTML comment nodes from the serialized output.
+        raw : bool, optional
+            Serialize text and attribute values without HTML escaping.
+        without_closing : bool, optional
+            Omit closing tags for non-void elements.
+        tag_with_ns : bool, optional
+            Include namespace prefixes in serialized tag names when available.
+        without_text_indent : bool, optional
+            Disable extra indentation added around text and comment content.
+        full_doctype : bool, optional
+            Serialize the full document type declaration when a doctype node is present.
+        """
+        cdef lxb_html_serialize_opt_t options
+        if self.document == NULL:
+            return None
+        if indent < 0:
+            raise ValueError("indent must be greater than or equal to 0")
+        options = _html_pretty_options(
+            skip_ws_nodes,
+            skip_comment,
+            raw,
+            without_closing,
+            tag_with_ns,
+            without_text_indent,
+            full_doctype,
+        )
+        if self._is_fragment:
+            if self.root is None:
+                return None
+            return self.root.html_pretty(
+                indent=indent,
+                skip_ws_nodes=skip_ws_nodes,
+                skip_comment=skip_comment,
+                raw=raw,
+                without_closing=without_closing,
+                tag_with_ns=tag_with_ns,
+                without_text_indent=without_text_indent,
+                full_doctype=full_doctype,
+            )
+        node = LexborNode.new(<lxb_dom_node_t *> &self.document.dom_document, self)
+        return node._serialize_html(options, <size_t> indent, True)
+
     def css(self, str query):
         """A CSS selector.
 
@@ -715,6 +777,51 @@ cdef class LexborHTMLParser:
         None
         """
         self.root.inner_html = html
+
+    def inner_html_pretty(
+        self,
+        Py_ssize_t indent=0,
+        bint skip_ws_nodes=False,
+        bint skip_comment=False,
+        bint raw=False,
+        bint without_closing=False,
+        bint tag_with_ns=False,
+        bint without_text_indent=False,
+        bint full_doctype=False,
+    ):
+        """Return pretty-printed HTML representation of the child nodes.
+
+        Parameters
+        ----------
+        indent : int, optional
+            Initial indentation level passed to Lexbor. Defaults to ``0``.
+        skip_ws_nodes : bool, optional
+            Skip text nodes that contain only whitespace.
+        skip_comment : bool, optional
+            Exclude HTML comment nodes from the serialized output.
+        raw : bool, optional
+            Serialize text and attribute values without HTML escaping.
+        without_closing : bool, optional
+            Omit closing tags for non-void elements.
+        tag_with_ns : bool, optional
+            Include namespace prefixes in serialized tag names when available.
+        without_text_indent : bool, optional
+            Disable extra indentation added around text and comment content.
+        full_doctype : bool, optional
+            Serialize the full document type declaration when a doctype node is present.
+        """
+        if self.root is None:
+            return None
+        return self.root.inner_html_pretty(
+            indent=indent,
+            skip_ws_nodes=skip_ws_nodes,
+            skip_comment=skip_comment,
+            raw=raw,
+            without_closing=without_closing,
+            tag_with_ns=tag_with_ns,
+            without_text_indent=without_text_indent,
+            full_doctype=full_doctype,
+        )
 
     def create_node(self, str tag):
         """Given an HTML tag name, e.g. `"div"`, create a single empty node for that tag,

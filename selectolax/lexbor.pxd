@@ -247,6 +247,14 @@ cdef extern from "lexbor/html/html.h" nogil:
 
     lxb_status_t lxb_html_serialize_tree_str(lxb_dom_node_t *node, lexbor_str_t *str)
     lxb_status_t lxb_html_serialize_deep_str(lxb_dom_node_t *node, lexbor_str_t *str)
+    lxb_status_t lxb_html_serialize_pretty_tree_str(lxb_dom_node_t *node,
+                                                    lxb_html_serialize_opt_t opt,
+                                                    size_t indent,
+                                                    lexbor_str_t *str)
+    lxb_status_t lxb_html_serialize_pretty_deep_str(lxb_dom_node_t *node,
+                                                    lxb_html_serialize_opt_t opt,
+                                                    size_t indent,
+                                                    lexbor_str_t *str)
     lxb_html_element_t* lxb_html_element_inner_html_set(lxb_html_element_t *element,
                                                         const lxb_char_t *html, size_t size)
 
@@ -259,6 +267,8 @@ cdef class LexborNode:
     @staticmethod
     cdef LexborNode new(lxb_dom_node_t *node, LexborHTMLParser parser)
     cdef void set_as_fragment_root(self)
+    cdef str _serialize_html(self, lxb_html_serialize_opt_t options, size_t indent, bint pretty)
+    cdef str _serialize_inner_html(self, lxb_html_serialize_opt_t options, size_t indent, bint pretty)
     cdef inline LexborNode _get_node(self)
 
 

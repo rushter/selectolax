@@ -161,6 +161,40 @@ class LexborNode:
         """
         ...
 
+    def html_pretty(
+        self,
+        indent: int = 0,
+        skip_ws_nodes: bool = False,
+        skip_comment: bool = False,
+        raw: bool = False,
+        without_closing: bool = False,
+        tag_with_ns: bool = False,
+        without_text_indent: bool = False,
+        full_doctype: bool = False,
+    ) -> str | None:
+        """Return pretty-printed HTML for the current node.
+
+        Parameters
+        ----------
+        indent : int, optional
+            Initial indentation level passed to Lexbor. Defaults to ``0``.
+        skip_ws_nodes : bool, optional
+            Skip text nodes that contain only whitespace.
+        skip_comment : bool, optional
+            Exclude HTML comment nodes from the serialized output.
+        raw : bool, optional
+            Serialize text and attribute values without HTML escaping.
+        without_closing : bool, optional
+            Omit closing tags for non-void elements.
+        tag_with_ns : bool, optional
+            Include namespace prefixes in serialized tag names when available.
+        without_text_indent : bool, optional
+            Disable extra indentation added around text and comment content.
+        full_doctype : bool, optional
+            Serialize the full document type declaration when a doctype node is present.
+        """
+        ...
+
     def __hash__(self) -> int: ...
     def text_lexbor(self) -> str:
         """Returns the text of the node including text of all its child nodes.
@@ -769,6 +803,40 @@ class LexborNode:
         """
         ...
 
+    def inner_html_pretty(
+        self,
+        indent: int = 0,
+        skip_ws_nodes: bool = False,
+        skip_comment: bool = False,
+        raw: bool = False,
+        without_closing: bool = False,
+        tag_with_ns: bool = False,
+        without_text_indent: bool = False,
+        full_doctype: bool = False,
+    ) -> str | None:
+        """Return pretty-printed HTML representation of the child nodes.
+
+        Parameters
+        ----------
+        indent : int, optional
+            Initial indentation level passed to Lexbor. Defaults to ``0``.
+        skip_ws_nodes : bool, optional
+            Skip text nodes that contain only whitespace.
+        skip_comment : bool, optional
+            Exclude HTML comment nodes from the serialized output.
+        raw : bool, optional
+            Serialize text and attribute values without HTML escaping.
+        without_closing : bool, optional
+            Omit closing tags for non-void elements.
+        tag_with_ns : bool, optional
+            Include namespace prefixes in serialized tag names when available.
+        without_text_indent : bool, optional
+            Disable extra indentation added around text and comment content.
+        full_doctype : bool, optional
+            Serialize the full document type declaration when a doctype node is present.
+        """
+        ...
+
     def clone(self) -> LexborNode:
         """Clone the current node.
 
@@ -963,6 +1031,40 @@ class LexborHTMLParser:
         -------
         str or None
             Serialized HTML of the current document.
+        """
+        ...
+
+    def html_pretty(
+        self,
+        indent: int = 0,
+        skip_ws_nodes: bool = False,
+        skip_comment: bool = False,
+        raw: bool = False,
+        without_closing: bool = False,
+        tag_with_ns: bool = False,
+        without_text_indent: bool = False,
+        full_doctype: bool = False,
+    ) -> str | None:
+        """Return pretty-printed HTML representation of the page.
+
+        Parameters
+        ----------
+        indent : int, optional
+            Initial indentation level passed to Lexbor. Defaults to ``0``.
+        skip_ws_nodes : bool, optional
+            Skip text nodes that contain only whitespace.
+        skip_comment : bool, optional
+            Exclude HTML comment nodes from the serialized output.
+        raw : bool, optional
+            Serialize text and attribute values without HTML escaping.
+        without_closing : bool, optional
+            Omit closing tags for non-void elements.
+        tag_with_ns : bool, optional
+            Include namespace prefixes in serialized tag names when available.
+        without_text_indent : bool, optional
+            Disable extra indentation added around text and comment content.
+        full_doctype : bool, optional
+            Serialize the full document type declaration when a doctype node is present.
         """
         ...
 
@@ -1252,6 +1354,40 @@ class LexborHTMLParser:
         Returns
         -------
         None
+        """
+        ...
+
+    def inner_html_pretty(
+        self,
+        indent: int = 0,
+        skip_ws_nodes: bool = False,
+        skip_comment: bool = False,
+        raw: bool = False,
+        without_closing: bool = False,
+        tag_with_ns: bool = False,
+        without_text_indent: bool = False,
+        full_doctype: bool = False,
+    ) -> str | None:
+        """Return pretty-printed HTML representation of the child nodes.
+
+        Parameters
+        ----------
+        indent : int, optional
+            Initial indentation level passed to Lexbor. Defaults to ``0``.
+        skip_ws_nodes : bool, optional
+            Skip text nodes that contain only whitespace.
+        skip_comment : bool, optional
+            Exclude HTML comment nodes from the serialized output.
+        raw : bool, optional
+            Serialize text and attribute values without HTML escaping.
+        without_closing : bool, optional
+            Omit closing tags for non-void elements.
+        tag_with_ns : bool, optional
+            Include namespace prefixes in serialized tag names when available.
+        without_text_indent : bool, optional
+            Disable extra indentation added around text and comment content.
+        full_doctype : bool, optional
+            Serialize the full document type declaration when a doctype node is present.
         """
         ...
     def create_node(self, tag: str) -> LexborNode:

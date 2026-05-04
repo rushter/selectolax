@@ -149,6 +149,31 @@ def test_fragment_root_html_serialization():
     assert p.html == "<div>Hello!</div><span>World</span>"
 
 
+def test_fragment_root_html_pretty_serialization():
+    html = "<div><span>Hello</span></div>\n<span>World</span>"
+    p = LexborHTMLParser(html, is_fragment=True)
+    assert p.root.html_pretty(skip_ws_nodes=True) == clean_doc(
+        """
+        <div>
+          <span>
+          </span>
+        </div>
+        <span>
+        </span>
+        """
+    )
+    assert p.html_pretty(skip_ws_nodes=True) == clean_doc(
+        """
+        <div>
+          <span>
+          </span>
+        </div>
+        <span>
+        </span>
+        """
+    )
+
+
 def test_fragment_node_properties():
     html = "<div>Hello</div><span>World</span>"
     p = LexborHTMLParser(html, is_fragment=True)

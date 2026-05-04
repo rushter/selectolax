@@ -52,6 +52,7 @@ lint: ## check style with ruff
 	cython-lint selectolax/
 	mypy selectolax tests
 
+.PHONY: test
 test: ## run tests quickly with the default Python
 	pytest tests -s -v
 

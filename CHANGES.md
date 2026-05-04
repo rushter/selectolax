@@ -1,6 +1,6 @@
 # selectolax Changelog
 
-Unreleased
+# Version 0.4.8
 
 - Add Add `html_pretty`, `inner_html_pretty` methods
 - Enable free-threading

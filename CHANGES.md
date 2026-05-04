@@ -1,5 +1,12 @@
 # selectolax Changelog
 
+Unreleased
+
+- Add Add `html_pretty`, `inner_html_pretty` methods
+- Enable free-threading
+- Improve `merge_text_nodes`
+- Update lexbor
+
 
 # Version 0.4.7
 

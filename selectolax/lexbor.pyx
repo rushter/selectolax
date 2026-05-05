@@ -15,6 +15,7 @@ include "lexbor/node.pxi"
 include "lexbor/selection.pxi"
 include "lexbor/util.pxi"
 include "lexbor/node_remove.pxi"
+include "lexbor/fragment_lookup.pxi"
 
 # We don't inherit from HTMLParser here, because it also includes all the C code from Modest.
 
@@ -30,7 +31,13 @@ cdef class LexborHTMLParser:
 
     html : str (unicode) or bytes
     """
-    def __init__(self, html: str | bytes, is_fragment: bool = False):
+    def __init__(
+        self,
+        html: str | bytes,
+        is_fragment: bool = False,
+        fragment_tag: str = "div",
+        fragment_namespace: str = "html",
+    ):
         """Create a parser and load HTML.
 
         Parameters
@@ -49,24 +56,31 @@ cdef class LexborHTMLParser:
             Behaves the same way as `DocumentFragment` in browsers.
             When `<html>`, `<head>` or `<body>` are present, ignores them entirely.
             As per the HTML Standard.
+        fragment_tag : str, optional
+            Context element tag used for fragment parsing. Defaults to ``"div"``.
+            Only used when ``is_fragment`` is ``True``.
+        fragment_namespace : str, optional
+            Context element namespace used for fragment parsing. Defaults to ``"html"``.
+            Accepts Lexbor namespace names such as ``"html"``, ``"svg"``, and ``"math"``,
+            or a namespace URI recognized by Lexbor. Only used when ``is_fragment`` is ``True``.
 
         """
         cdef size_t html_len
         cdef object bytes_html
 
         self._is_fragment = is_fragment
-        self._fragment_document = NULL
+        self._fragment_wrapper = NULL
+        self._fragment_root = NULL
+        self._fragment_tag_id = LXB_TAG_DIV
+        self._fragment_namespace_id = LXB_NS_HTML
         self._selector = None
         self._new_html_document()
+        if self._is_fragment:
+            self._fragment_tag_id = _fragment_tag_id_from_string(self.document, fragment_tag)
+            self._fragment_namespace_id = _fragment_namespace_id_from_string(self.document, fragment_namespace)
         bytes_html, html_len = preprocess_input(html)
         self._parse_html(bytes_html, html_len)
         self.raw_html = bytes_html
-
-    cdef inline lxb_html_document_t* main_document(self) nogil:
-        if self._is_fragment:
-            return self._fragment_document
-        else:
-            return self.document
 
     cdef inline void _new_html_document(self):
         """Initialize a fresh Lexbor HTML document.
@@ -169,29 +183,37 @@ cdef class LexborHTMLParser:
         lxb_status_t
             Lexbor status code; ``LXB_STATUS_OK`` when parsing the fragment succeeded.
         """
-        cdef const lxb_char_t *dummy_root_name = <const lxb_char_t *> ""
-        cdef size_t dummy_root_len = 0
-        cdef lxb_html_element_t *dummy_root = NULL
+        cdef lxb_html_parser_t *parser = NULL
         cdef lxb_dom_node_t *fragment_html_node = NULL
+        cdef lxb_status_t status = LXB_STATUS_OK
 
-        dummy_root = lxb_html_document_create_element(
+        parser = lxb_html_parser_create()
+        if parser == NULL:
+            return LXB_STATUS_ERROR_MEMORY_ALLOCATION
+
+        status = lxb_html_parser_init(parser)
+        if status != LXB_STATUS_OK:
+            lxb_html_parser_destroy(parser)
+            return status
+
+        fragment_html_node = lxb_html_parse_fragment_by_tag_id(
+            parser,
             self.document,
-            dummy_root_name,
-            dummy_root_len,
-            NULL
-        )
-        if dummy_root == NULL:
-            return LXB_STATUS_ERROR
-        fragment_html_node = lxb_html_document_parse_fragment(
-            self.document,
-            <lxb_dom_element_t *> dummy_root,
+            self._fragment_tag_id,
+            self._fragment_namespace_id,
             <lxb_char_t *> html,
             html_len
         )
         if fragment_html_node == NULL:
-            return LXB_STATUS_ERROR
+            status = parser.status
+            lxb_html_parser_destroy(parser)
+            if status == LXB_STATUS_OK:
+                return LXB_STATUS_ERROR
+            return status
 
-        self._fragment_document  = <lxb_html_document_t *> fragment_html_node
+        self._fragment_wrapper = fragment_html_node
+        self._fragment_root = fragment_html_node.first_child
+        lxb_html_parser_destroy(parser)
         return LXB_STATUS_OK
 
     def __dealloc__(self):
@@ -206,8 +228,6 @@ cdef class LexborHTMLParser:
         Safe to call multiple times; does nothing if the document is already
         freed.
         """
-        if self._fragment_document != NULL:
-            lxb_html_document_destroy(self._fragment_document)
         if self.document != NULL:
             lxb_html_document_destroy(self.document)
 
@@ -248,8 +268,8 @@ cdef class LexborHTMLParser:
             return None
         cdef LexborNode  node
         cdef lxb_dom_node_t* dom_root
-        if self._is_fragment and self._fragment_document != NULL:
-            dom_root = lxb_dom_document_root(&self._fragment_document.dom_document)
+        if self._is_fragment and self._fragment_root != NULL:
+            dom_root = self._fragment_root
         else:
             dom_root = lxb_dom_document_root(&self.document.dom_document)
         if dom_root == NULL:
@@ -676,6 +696,11 @@ cdef class LexborHTMLParser:
         obj.raw_html = raw_html
         obj.cached_script_texts = None
         obj.cached_script_srcs = None
+        obj._is_fragment = False
+        obj._fragment_wrapper = NULL
+        obj._fragment_root = NULL
+        obj._fragment_tag_id = LXB_TAG_DIV
+        obj._fragment_namespace_id = LXB_NS_HTML
         obj._selector = None
         return obj
 
@@ -693,6 +718,8 @@ cdef class LexborHTMLParser:
         """
         cdef lxb_html_document_t* cloned_document
         cdef lxb_dom_node_t* cloned_node
+        cdef lxb_dom_node_t* source_node
+        cdef lxb_dom_node_t* cloned_root
         cdef LexborHTMLParser cls
 
         with nogil:
@@ -703,10 +730,14 @@ cdef class LexborHTMLParser:
 
         cloned_document.ready_state = LXB_HTML_DOCUMENT_READY_STATE_COMPLETE
 
+        source_node = lxb_dom_document_root(&self.document.dom_document)
+        if self._is_fragment and self._fragment_wrapper != NULL:
+            source_node = self._fragment_wrapper
+
         with nogil:
             cloned_node = lxb_dom_document_import_node(
                 &cloned_document.dom_document,
-                <lxb_dom_node_t *> lxb_dom_document_root(&self.main_document().dom_document),
+                source_node,
                 <bint> True
             )
 
@@ -717,6 +748,14 @@ cdef class LexborHTMLParser:
             lxb_dom_node_insert_child(<lxb_dom_node_t * > cloned_document, cloned_node)
 
         cls = LexborHTMLParser.from_document(cloned_document, self.raw_html)
+        if self._is_fragment:
+            cls._is_fragment = True
+            cls._fragment_tag_id = self._fragment_tag_id
+            cls._fragment_namespace_id = self._fragment_namespace_id
+            cls._fragment_wrapper = cloned_node
+            cloned_root = cloned_node
+            if cloned_root != NULL:
+                cls._fragment_root = cloned_root.first_child
         return cls
 
     def unwrap_tags(self, list tags, delete_empty = False):

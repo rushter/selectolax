@@ -895,7 +895,13 @@ class LexborHTMLParser:
 
     raw_html: bytes
 
-    def __init__(self, html: str | bytes, is_fragment: bool = False) -> None:
+    def __init__(
+        self,
+        html: str | bytes,
+        is_fragment: bool = False,
+        fragment_tag: str = "div",
+        fragment_namespace: str = "html",
+    ) -> None:
         """Create a parser and load HTML.
 
         Parameters
@@ -914,6 +920,13 @@ class LexborHTMLParser:
             Behaves the same way as `DocumentFragment` in browsers.
             When `<html>`, `<head>` or `<body>` are present, ignores them entirely.
             As per the HTML Standard.
+        fragment_tag : str, optional
+            Context element tag used for fragment parsing. Defaults to ``"div"``.
+            Only used when ``is_fragment`` is ``True``.
+        fragment_namespace : str, optional
+            Context element namespace used for fragment parsing. Defaults to ``"html"``.
+            Accepts Lexbor namespace names such as ``"html"``, ``"svg"``, and ``"math"``,
+            or a namespace URI recognized by Lexbor. Only used when ``is_fragment`` is ``True``.
 
         """
         ...

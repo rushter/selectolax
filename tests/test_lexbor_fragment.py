@@ -356,6 +356,37 @@ def test_fragment_tag_properties():
     assert div.id == "test"
 
 
+def test_fragment_parser_accepts_explicit_fragment_context_defaults():
+    parser = LexborHTMLParser(
+        "<div id='test'>content</div>",
+        is_fragment=True,
+        fragment_tag="div",
+        fragment_namespace="html",
+    )
+    assert parser.html == '<div id="test">content</div>'
+
+
+def test_fragment_parser_accepts_namespace_uri():
+    parser = LexborHTMLParser(
+        "<title>SVG</title>",
+        is_fragment=True,
+        fragment_tag="svg",
+        fragment_namespace="http://www.w3.org/2000/svg",
+    )
+    assert parser.root.tag == "title"
+    assert parser.html == "<title>SVG</title>"
+
+
+def test_fragment_parser_rejects_unknown_fragment_tag():
+    with pytest.raises(ValueError, match="Unknown fragment tag"):
+        LexborHTMLParser("<div></div>", is_fragment=True, fragment_tag="not-a-real-tag")
+
+
+def test_fragment_parser_rejects_unknown_fragment_namespace():
+    with pytest.raises(ValueError, match="Unknown fragment namespace"):
+        LexborHTMLParser("<div></div>", is_fragment=True, fragment_namespace="not-a-real-namespace")
+
+
 def test_fragment_unwrap():
     html = "<div><span>Hello</span> world</div>"
     parser = LexborHTMLParser(html, is_fragment=True)

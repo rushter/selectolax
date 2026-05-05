@@ -232,11 +232,20 @@ cdef extern from "lexbor/html/html.h" nogil:
     ctypedef struct lxb_html_element_t
 
     # Functions
+    lxb_html_parser_t * lxb_html_parser_create()
+    lxb_status_t lxb_html_parser_init(lxb_html_parser_t *parser)
+    lxb_html_parser_t * lxb_html_parser_destroy(lxb_html_parser_t *parser)
     lxb_html_document_t * lxb_html_document_create()
     lxb_html_element_t * lxb_html_document_create_element(lxb_html_document_t *document,
                                                           const lxb_char_t *local_name, size_t lname_len,
                                                           void *reserved_for_opt)
     lxb_status_t lxb_html_document_parse(lxb_html_document_t *document, const lxb_char_t *html, size_t size)
+    lxb_dom_node_t * lxb_html_parse_fragment_by_tag_id(lxb_html_parser_t *parser,
+                                                       lxb_html_document_t *document,
+                                                       lxb_tag_id_t tag_id,
+                                                       lxb_ns_id_t ns,
+                                                       const lxb_char_t *html,
+                                                       size_t size)
     lxb_dom_node_t * lxb_html_document_parse_fragment(lxb_html_document_t *document,
                                                       lxb_dom_element_t *element,
                                                       const lxb_char_t *html,
@@ -290,8 +299,11 @@ cdef class LexborCSSSelector:
 
 cdef class LexborHTMLParser:
     cdef lxb_html_document_t *document
-    cdef lxb_html_document_t *_fragment_document
+    cdef lxb_dom_node_t *_fragment_wrapper
+    cdef lxb_dom_node_t *_fragment_root
     cdef bint _is_fragment
+    cdef lxb_tag_id_t _fragment_tag_id
+    cdef lxb_ns_id_t _fragment_namespace_id
     cdef public bytes raw_html
     cdef LexborCSSSelector _selector
     cdef inline void _new_html_document(self)
@@ -303,7 +315,6 @@ cdef class LexborHTMLParser:
 
     @staticmethod
     cdef LexborHTMLParser from_document(lxb_html_document_t * document, bytes raw_html)
-    cdef inline lxb_html_document_t* main_document(self) nogil
 
 cdef extern from "lexbor/dom/dom.h" nogil:
     ctypedef enum lexbor_action_t:
@@ -404,6 +415,9 @@ cdef extern from "lexbor/css/css.h" nogil:
 
 
 cdef extern from "lexbor/tag/tag.h" nogil:
+    ctypedef struct lxb_tag_data_t:
+        lxb_tag_id_t tag_id
+
     ctypedef enum lxb_tag_id_enum_t:
         LXB_TAG__UNDEF = 0x0000
         LXB_TAG__END_OF_FILE = 0x0001
@@ -602,6 +616,36 @@ cdef extern from "lexbor/tag/tag.h" nogil:
         LXB_TAG_WBR = 0x00c2
         LXB_TAG_XMP = 0x00c3
         LXB_TAG__LAST_ENTRY = 0x00c4
+
+    lxb_tag_id_t lxb_tag_id_by_name_noi(lexbor_hash_t *hash,
+                                        const lxb_char_t *name,
+                                        size_t len)
+
+
+cdef extern from "lexbor/ns/ns.h" nogil:
+    ctypedef struct lxb_ns_data_t:
+        lxb_ns_id_t ns_id
+
+    ctypedef struct lxb_ns_prefix_data_t:
+        uintptr_t prefix_id
+
+    ctypedef enum lxb_ns_id_enum_t:
+        LXB_NS__UNDEF = 0x00
+        LXB_NS__ANY = 0x01
+        LXB_NS_HTML = 0x02
+        LXB_NS_MATH = 0x03
+        LXB_NS_SVG = 0x04
+        LXB_NS_XLINK = 0x05
+        LXB_NS_XML = 0x06
+        LXB_NS_XMLNS = 0x07
+        LXB_NS__LAST_ENTRY = 0x08
+
+    const lxb_ns_data_t * lxb_ns_data_by_link(lexbor_hash_t *hash,
+                                              const lxb_char_t *name,
+                                              size_t length)
+    const lxb_ns_prefix_data_t * lxb_ns_prefix_data_by_name(lexbor_hash_t *hash,
+                                                            const lxb_char_t *name,
+                                                            size_t length)
 
 
 cdef extern from "lexbor/selectors/selectors.h" nogil:

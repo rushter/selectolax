@@ -422,6 +422,7 @@ cdef class LexborHTMLParser:
         bint tag_with_ns=False,
         bint without_text_indent=False,
         bint full_doctype=False,
+        bint html5test=False,
     ):
         """Return pretty-printed HTML representation of the page.
 
@@ -443,6 +444,8 @@ cdef class LexborHTMLParser:
             Disable extra indentation added around text and comment content.
         full_doctype : bool, optional
             Serialize the full document type declaration when a doctype node is present.
+        html5test : bool, optional
+            Serialize using Lexbor's HTML5 test formatting mode.
         """
         cdef lxb_html_serialize_opt_t options
         if self.document == NULL:
@@ -457,6 +460,7 @@ cdef class LexborHTMLParser:
             tag_with_ns,
             without_text_indent,
             full_doctype,
+            html5test,
         )
         if self._is_fragment:
             if self.root is None:
@@ -470,6 +474,7 @@ cdef class LexborHTMLParser:
                 tag_with_ns=tag_with_ns,
                 without_text_indent=without_text_indent,
                 full_doctype=full_doctype,
+                html5test=html5test,
             )
         node = LexborNode.new(<lxb_dom_node_t *> &self.document.dom_document, self)
         return node._serialize_html(options, <size_t> indent, True)
@@ -827,6 +832,7 @@ cdef class LexborHTMLParser:
         bint tag_with_ns=False,
         bint without_text_indent=False,
         bint full_doctype=False,
+        bint html5test=False,
     ):
         """Return pretty-printed HTML representation of the child nodes.
 
@@ -848,6 +854,8 @@ cdef class LexborHTMLParser:
             Disable extra indentation added around text and comment content.
         full_doctype : bool, optional
             Serialize the full document type declaration when a doctype node is present.
+        html5test : bool, optional
+            Serialize using Lexbor's HTML5 test formatting mode.
         """
         if self.root is None:
             return None
@@ -860,6 +868,7 @@ cdef class LexborHTMLParser:
             tag_with_ns=tag_with_ns,
             without_text_indent=without_text_indent,
             full_doctype=full_doctype,
+            html5test=html5test,
         )
 
     def create_node(self, str tag):

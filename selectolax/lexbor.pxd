@@ -171,6 +171,7 @@ cdef extern from "lexbor/html/html.h" nogil:
         LXB_HTML_SERIALIZE_OPT_TAG_WITH_NS = 0x10
         LXB_HTML_SERIALIZE_OPT_WITHOUT_TEXT_INDENT = 0x20
         LXB_HTML_SERIALIZE_OPT_FULL_DOCTYPE = 0x40
+        LXB_HTML_SERIALIZE_OPT_HTML5TEST = 0x80
 
     ctypedef struct lexbor_array_t:
         void **list

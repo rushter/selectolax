@@ -171,6 +171,7 @@ class LexborNode:
         tag_with_ns: bool = False,
         without_text_indent: bool = False,
         full_doctype: bool = False,
+        html5test: bool = False,
     ) -> str | None:
         """Return pretty-printed HTML for the current node.
 
@@ -192,6 +193,8 @@ class LexborNode:
             Disable extra indentation added around text and comment content.
         full_doctype : bool, optional
             Serialize the full document type declaration when a doctype node is present.
+        html5test : bool, optional
+            Serialize using Lexbor's HTML5 test formatting mode.
         """
         ...
 
@@ -813,6 +816,7 @@ class LexborNode:
         tag_with_ns: bool = False,
         without_text_indent: bool = False,
         full_doctype: bool = False,
+        html5test: bool = False,
     ) -> str | None:
         """Return pretty-printed HTML representation of the child nodes.
 
@@ -834,6 +838,8 @@ class LexborNode:
             Disable extra indentation added around text and comment content.
         full_doctype : bool, optional
             Serialize the full document type declaration when a doctype node is present.
+        html5test : bool, optional
+            Serialize using Lexbor's HTML5 test formatting mode.
         """
         ...
 
@@ -1057,6 +1063,7 @@ class LexborHTMLParser:
         tag_with_ns: bool = False,
         without_text_indent: bool = False,
         full_doctype: bool = False,
+        html5test: bool = False,
     ) -> str | None:
         """Return pretty-printed HTML representation of the page.
 
@@ -1078,6 +1085,8 @@ class LexborHTMLParser:
             Disable extra indentation added around text and comment content.
         full_doctype : bool, optional
             Serialize the full document type declaration when a doctype node is present.
+        html5test : bool, optional
+            Serialize using Lexbor's HTML5 test formatting mode.
         """
         ...
 
@@ -1380,6 +1389,7 @@ class LexborHTMLParser:
         tag_with_ns: bool = False,
         without_text_indent: bool = False,
         full_doctype: bool = False,
+        html5test: bool = False,
     ) -> str | None:
         """Return pretty-printed HTML representation of the child nodes.
 
@@ -1401,6 +1411,8 @@ class LexborHTMLParser:
             Disable extra indentation added around text and comment content.
         full_doctype : bool, optional
             Serialize the full document type declaration when a doctype node is present.
+        html5test : bool, optional
+            Serialize using Lexbor's HTML5 test formatting mode.
         """
         ...
     def create_node(self, tag: str) -> LexborNode:

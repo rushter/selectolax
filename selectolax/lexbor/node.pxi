@@ -171,6 +171,7 @@ cdef class LexborNode:
         bint tag_with_ns=False,
         bint without_text_indent=False,
         bint full_doctype=False,
+        bint html5test=False,
     ):
         """Return pretty-printed HTML for the current node.
 
@@ -192,6 +193,8 @@ cdef class LexborNode:
             Disable extra indentation added around text and comment content.
         full_doctype : bool, optional
             Serialize the full document type declaration when a doctype node is present.
+        html5test : bool, optional
+            Serialize using Lexbor's HTML5 test formatting mode.
         """
         cdef lxb_html_serialize_opt_t options
         if indent < 0:
@@ -204,6 +207,7 @@ cdef class LexborNode:
             tag_with_ns,
             without_text_indent,
             full_doctype,
+            html5test,
         )
         return self._serialize_html(options, <size_t> indent, True)
 
@@ -217,6 +221,7 @@ cdef class LexborNode:
         bint tag_with_ns=False,
         bint without_text_indent=False,
         bint full_doctype=False,
+        bint html5test=False,
     ):
         """Return pretty-printed HTML representation of the child nodes.
 
@@ -238,6 +243,8 @@ cdef class LexborNode:
             Disable extra indentation added around text and comment content.
         full_doctype : bool, optional
             Serialize the full document type declaration when a doctype node is present.
+        html5test : bool, optional
+            Serialize using Lexbor's HTML5 test formatting mode.
         """
         cdef lxb_html_serialize_opt_t options
         if indent < 0:
@@ -250,6 +257,7 @@ cdef class LexborNode:
             tag_with_ns,
             without_text_indent,
             full_doctype,
+            html5test,
         )
         return self._serialize_inner_html(options, <size_t> indent, True)
 
@@ -1275,6 +1283,7 @@ cdef inline lxb_html_serialize_opt_t _html_pretty_options(
     bint tag_with_ns,
     bint without_text_indent,
     bint full_doctype,
+    bint html5test,
 ):
     cdef lxb_html_serialize_opt_t options = LXB_HTML_SERIALIZE_OPT_UNDEF
 
@@ -1292,6 +1301,8 @@ cdef inline lxb_html_serialize_opt_t _html_pretty_options(
         options = <lxb_html_serialize_opt_t> (options | LXB_HTML_SERIALIZE_OPT_WITHOUT_TEXT_INDENT)
     if full_doctype:
         options = <lxb_html_serialize_opt_t> (options | LXB_HTML_SERIALIZE_OPT_FULL_DOCTYPE)
+    if html5test:
+        options = <lxb_html_serialize_opt_t> (options | LXB_HTML_SERIALIZE_OPT_HTML5TEST)
 
     return options
 

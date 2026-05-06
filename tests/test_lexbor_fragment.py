@@ -156,9 +156,11 @@ def test_fragment_root_html_pretty_serialization():
         """
         <div>
           <span>
+            "Hello"
           </span>
         </div>
         <span>
+          "World"
         </span>
         """
     )
@@ -166,9 +168,11 @@ def test_fragment_root_html_pretty_serialization():
         """
         <div>
           <span>
+            "Hello"
           </span>
         </div>
         <span>
+          "World"
         </span>
         """
     )

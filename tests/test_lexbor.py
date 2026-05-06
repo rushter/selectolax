@@ -92,6 +92,7 @@ def test_inner_html_pretty_parser():
     assert parser.inner_html_pretty(skip_ws_nodes=True) == clean_doc(
         """
         <span>
+          "Hello"
         </span>
         """
     )

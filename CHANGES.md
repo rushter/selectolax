@@ -1,5 +1,11 @@
 # selectolax Changelog
 
+# Unreleased
+
+- Add an ability to specify tags and namespace for fragmented parser
+- Add a new serialization mode when pretty printing: `html5test`
+- Allow empty HTML fragments
+
 # Version 0.4.8
 
 - Add Add `html_pretty`, `inner_html_pretty` methods

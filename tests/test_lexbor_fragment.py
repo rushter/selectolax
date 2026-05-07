@@ -68,12 +68,6 @@ def test_fragment_parser_whole_doc():
     assert html.strip() == expected_html
 
 
-def test_fragment_parser_empty_doc():
-    html = ""
-    with pytest.raises(SelectolaxError):
-        LexborHTMLParser(html, is_fragment=True)
-
-
 @pytest.mark.parametrize(
     "html, expected_html",
     [
@@ -388,7 +382,9 @@ def test_fragment_parser_rejects_unknown_fragment_tag():
 
 def test_fragment_parser_rejects_unknown_fragment_namespace():
     with pytest.raises(ValueError, match="Unknown fragment namespace"):
-        LexborHTMLParser("<div></div>", is_fragment=True, fragment_namespace="not-a-real-namespace")
+        LexborHTMLParser(
+            "<div></div>", is_fragment=True, fragment_namespace="not-a-real-namespace"
+        )
 
 
 def test_fragment_unwrap():
@@ -556,3 +552,9 @@ def test_fragment_iter_multiple_nodes():
     html = "<p>1</p><p>2</p>"
     p = LexborHTMLParser(html, is_fragment=True)
     assert len(list(p.root.iter())) == 2
+
+
+def test_fragment_empty_html():
+    html = ""
+    tree = LexborHTMLParser(html, is_fragment=True)
+    assert tree.html == ""

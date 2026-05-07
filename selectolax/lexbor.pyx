@@ -127,10 +127,6 @@ cdef class LexborHTMLParser:
         if self.document == NULL:
             return -1
 
-        if self._is_fragment and html_len == 0:
-            PyErr_SetObject(SelectolaxError, "Can't parse empty HTML as HTML fragment.")
-            return -1
-
         with nogil:
             if self._is_fragment:
                 status = self._parse_html_fragment(html, html_len)
@@ -407,7 +403,7 @@ cdef class LexborHTMLParser:
             return None
         if self._is_fragment:
             if self.root is None:
-                return None
+                return ""
             return self.root.html
         node = LexborNode.new(<lxb_dom_node_t *> &self.document.dom_document, self)
         return node.html

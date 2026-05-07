@@ -110,14 +110,13 @@ cdef class LexborNode:
         """
         cdef lexbor_str_t *lxb_str
         cdef lxb_status_t status
-
         lxb_str = lexbor_str_create()
         if self._is_fragment_root:
             status = serialize_fragment(self.node, lxb_str)
             # status = lxb_html_serialize_tree_str(self.node, lxb_str)
         else:
             status = lxb_html_serialize_tree_str(self.node, lxb_str)
-        if status == 0 and lxb_str.data:
+        if status == 0:
             html = lxb_str.data.decode(_ENCODING).replace('<-undef>', '')
             lexbor_str_destroy(lxb_str, self.node.owner_document.text, True)
             return html
@@ -139,7 +138,7 @@ cdef class LexborNode:
             else:
                 status = lxb_html_serialize_tree_str(self.node, lxb_str)
 
-        if status == 0 and lxb_str.data:
+        if status == 0:
             html = lxb_str.data.decode(_ENCODING).replace('<-undef>', '')
             lexbor_str_destroy(lxb_str, self.node.owner_document.text, True)
             return html

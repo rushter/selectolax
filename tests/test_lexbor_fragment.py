@@ -1,6 +1,6 @@
 from inspect import cleandoc
 import pytest
-from selectolax.lexbor import LexborHTMLParser, SelectolaxError
+from selectolax.lexbor import LexborHTMLParser
 
 
 def clean_doc(text: str) -> str:

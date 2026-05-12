@@ -5,6 +5,8 @@
 - Add an ability to specify tags and namespace for fragmented parser
 - Add a new serialization mode when pretty printing: `html5test`
 - Allow empty HTML fragments
+- Fix attrs access for non-element nodes
+- Improve buffer cleanups
 
 # Version 0.4.8
 

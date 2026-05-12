@@ -271,7 +271,6 @@ cdef class LexborNode:
 
         cdef size_t str_len = 0
         cdef lxb_char_t * text
-
         text = lxb_dom_node_text_content(self.node, &str_len)
         if <int> str_len == 0:
             raise RuntimeError("Can't extract text")
@@ -561,6 +560,8 @@ cdef class LexborNode:
         >>> node.html
         '<div foo="bar" id="new_id"></div>'
         """
+        if not _is_node_type(self.node, LXB_DOM_NODE_TYPE_ELEMENT):
+            raise TypeError("attrs is only available for element nodes")
         cdef LexborAttributes attributes = LexborAttributes.create(<lxb_dom_node_t *> self.node)
         return attributes
 

@@ -38,16 +38,20 @@ cdef class LexborAttributes:
                 <lxb_char_t *> bytes_key, len(bytes_key),
                 NULL, 0
             )
+            if attr == NULL:
+                raise MemoryError("Failed to set attribute")
             doc = (<lxb_dom_node_t*>attr).owner_document
             lexbor_str_destroy(attr.value, doc.text, 0)
             attr.value = NULL
 
         elif isinstance(value, str) or isinstance(value, unicode) :
-            lxb_dom_element_set_attribute(
+            attr = lxb_dom_element_set_attribute(
                 <lxb_dom_element_t *> self.node,
                 <lxb_char_t *> bytes_key, len(bytes_key),
                 <lxb_char_t *> bytes_value, len(bytes_value),
             )
+            if attr == NULL:
+                raise MemoryError("Failed to set attribute")
         else:
             raise TypeError("Expected str or unicode, got %s" % type(value))
 

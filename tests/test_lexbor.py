@@ -184,6 +184,24 @@ def test_text_honors_skip_empty_flag():
     assert title.text(deep=False, skip_empty=True) == ""
 
 
+def test_attrs_reject_non_element_nodes():
+    parser = LexborHTMLParser("<div>hello<!--comment--></div>")
+    div = parser.css_first("div")
+    text_node = div.first_child
+    comment_node = div.last_child
+
+    assert text_node is not None
+    assert comment_node is not None
+    assert text_node.is_text_node
+    assert comment_node.is_comment_node
+
+    with pytest.raises(TypeError, match="element nodes"):
+        _ = text_node.attrs
+
+    with pytest.raises(TypeError, match="element nodes"):
+        _ = comment_node.attrs
+
+
 def test_iter_includes_text_nodes_when_requested():
     parser = LexborHTMLParser("<div><span>value</span><title>\n   \n</title></div>")
     div = parser.css_first("div")

@@ -149,7 +149,9 @@ cdef class Selector:
         cdef Node node
         for node in self.nodes:
             attr = node.attributes.get(attribute)
-            if attr and start and start in attr:
+            if attr is None:
+                continue
+            if start and start in attr:
                 attr = attr[attr.find(start) + len(start):]
             if len(attr) > length:
                 return True

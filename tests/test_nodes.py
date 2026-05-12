@@ -770,3 +770,25 @@ def test_attribute_longer_than_missing_attribute_with_start():
     selector = tree.root.select("a").attribute_longer_than("href", 15, "http://")
     matches = selector.matches
     assert len(matches) == 1
+
+
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_any_attribute_longer_than_missing_attribute(parser):
+    html = """
+    <div>
+        <a href="http://very-long-url.example.com/path/to/page">with href</a>
+        <a>no href at all</a>
+        <a href="short">short href</a>
+    </div>
+    """
+    tree = parser(html)
+    # Must not raise TypeError despite the middle <a> having no href
+    assert tree.root.select("a").any_attribute_longer_than("href", 10) is True
+    assert tree.root.select("a").any_attribute_longer_than("href", 200) is False
+
+
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_any_attribute_longer_than_all_missing(parser):
+    html = "<div><a>one</a><a>two</a></div>"
+    tree = parser(html)
+    assert tree.root.select("a").any_attribute_longer_than("href", 0) is False

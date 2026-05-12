@@ -267,43 +267,41 @@ cdef class Node:
         text : str
 
         """
-        text = ""
         cdef const char* c_text
         cdef myhtml_tree_node_t *node = self.node.child
+        cdef list parts = []
 
         if not deep:
             if self.node.tag_id == MyHTML_TAG__TEXT:
                 c_text = myhtml_node_text(self.node, NULL)
                 if c_text != NULL:
                     node_text = c_text.decode(_ENCODING, self.parser.decode_errors)
-                    text = append_text(text, node_text, separator, strip)
+                    parts.append(node_text.strip() if strip else node_text)
 
             while node != NULL:
                 if node.tag_id == MyHTML_TAG__TEXT:
                     c_text = myhtml_node_text(node, NULL)
                     if c_text != NULL:
                         node_text = c_text.decode(_ENCODING, self.parser.decode_errors)
-                        text = append_text(text, node_text, separator, strip)
+                        parts.append(node_text.strip() if strip else node_text)
                 node = node.next
         else:
-            text = self._text_deep(self.node, separator=separator, strip=strip)
-        if separator and text and text.endswith(separator):
-            text = text[:-len(separator)]
-        return text
+            self._text_deep(self.node, parts, strip)
+        return separator.join(parts)
 
-    cdef inline _text_deep(self, myhtml_tree_node_t *node, separator='', strip=False):
-        text = ""
+    cdef inline _text_deep(self, myhtml_tree_node_t *node, list parts, bint strip):
         cdef Stack stack = Stack(_STACK_SIZE)
         cdef myhtml_tree_node_t* current_node = NULL
+        cdef const char* c_text
 
         if node.tag_id == MyHTML_TAG__TEXT:
             c_text = myhtml_node_text(node, NULL)
             if c_text != NULL:
                 node_text = c_text.decode(_ENCODING, self.parser.decode_errors)
-                text = append_text(text, node_text, separator, strip)
+                parts.append(node_text.strip() if strip else node_text)
 
         if node.child == NULL:
-            return text
+            return
 
         stack.push(node.child)
 
@@ -316,15 +314,13 @@ cdef class Node:
                     c_text = myhtml_node_text(current_node, NULL)
                     if c_text != NULL:
                         node_text = c_text.decode(_ENCODING, self.parser.decode_errors)
-                        text = append_text(text, node_text, separator, strip)
+                        parts.append(node_text.strip() if strip else node_text)
 
             if current_node.next is not NULL:
                 stack.push(current_node.next)
 
             if current_node.child is not NULL:
                 stack.push(current_node.child)
-
-        return text
 
     def iter(self, include_text=False):
         """Iterate over nodes on the current level.
@@ -911,15 +907,12 @@ cdef class Node:
         -------
         text : str or None.
         """
-        text = ""
         cdef const char* c_text
-        cdef myhtml_tree_node_t *node = self.node.child
 
         if self.node.tag_id == MyHTML_TAG__TEXT:
             c_text = myhtml_node_text(self.node, NULL)
             if c_text != NULL:
-                node_text = c_text.decode(_ENCODING, self.parser.decode_errors)
-                return append_text(text, node_text)
+                return c_text.decode(_ENCODING, self.parser.decode_errors)
         return None
 
     def merge_text_nodes(self):
@@ -973,15 +966,6 @@ cdef class Node:
 
             if current_node.child is not NULL:
                 stack.push(current_node.child)
-
-cdef inline str append_text(str text, str node_text, str separator='', bint strip=False):
-    if strip:
-        text += node_text.strip() + separator
-    else:
-        text += node_text + separator
-
-    return text
-
 
 cdef inline bytes to_bytes(str_or_Node value):
     cdef bytes bytes_val

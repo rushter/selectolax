@@ -1200,34 +1200,32 @@ cdef class LexborNode:
 @cython.internal
 @cython.final
 cdef class TextContainer:
-    cdef str _text
+    cdef list _parts
     cdef str separator
     cdef bint strip
 
     @staticmethod
     cdef TextContainer new_with_defaults():
         cdef TextContainer cls = TextContainer.__new__(TextContainer)
-        cls._text = ''
+        cls._parts = []
         cls.separator = ''
         cls.strip = False
         return cls
 
     def __init__(self, str separator = '', bool strip = False):
-        self._text = ""
+        self._parts = []
         self.separator = separator
         self.strip = strip
 
     def append(self, str node_text):
         if self.strip:
-            self._text += node_text.strip() + self.separator
+            self._parts.append(node_text.strip())
         else:
-            self._text += node_text + self.separator
+            self._parts.append(node_text)
 
     @property
     def text(self):
-        if self.separator and self._text and self._text.endswith(self.separator):
-            self._text = self._text[:-len(self.separator)]
-        return self._text
+        return self.separator.join(self._parts)
 
 cdef lexbor_action_t text_callback(lxb_dom_node_t *node, void *ctx):
     cdef unsigned char *text

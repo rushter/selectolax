@@ -8,6 +8,8 @@
 - Fix attrs access for non-element nodes
 - Improve buffer cleanups
 - Fix duplicate text when doing `text(deep=True)` on a text node
+- Improve text concatenation performance
+- Improve attribute handling
 
 # Version 0.4.8
 

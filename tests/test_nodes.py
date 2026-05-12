@@ -742,3 +742,31 @@ def test_text_strip_and_separator(parser):
 
     result = node.text(deep=True, separator="|", strip=True)
     assert result == "hello|world"
+
+
+def test_attribute_longer_than_missing_attribute():
+    html = """
+    <div>
+        <a href="http://very-long-url.example.com/path/to/page">with href</a>
+        <a>no href at all</a>
+        <a href="short">short href</a>
+    </div>
+    """
+    tree = HTMLParser(html)
+    selector = tree.root.select("a").attribute_longer_than("href", 10)
+    matches = selector.matches
+    assert len(matches) == 1
+    assert "very-long-url" in matches[0].attributes["href"]
+
+
+def test_attribute_longer_than_missing_attribute_with_start():
+    html = """
+    <div>
+        <a href="http://long-domain.example.com/page">with href</a>
+        <a>no href</a>
+    </div>
+    """
+    tree = HTMLParser(html)
+    selector = tree.root.select("a").attribute_longer_than("href", 15, "http://")
+    matches = selector.matches
+    assert len(matches) == 1

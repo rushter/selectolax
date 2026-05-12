@@ -120,6 +120,7 @@ cdef class LexborNode:
             html = lxb_str.data.decode(_ENCODING).replace('<-undef>', '')
             lexbor_str_destroy(lxb_str, self.node.owner_document.text, True)
             return html
+        lexbor_str_destroy(lxb_str, self.node.owner_document.text, True)
         return None
 
     cdef inline str _serialize_html(self, lxb_html_serialize_opt_t options, size_t indent, bint pretty):
@@ -142,6 +143,7 @@ cdef class LexborNode:
             html = lxb_str.data.decode(_ENCODING).replace('<-undef>', '')
             lexbor_str_destroy(lxb_str, self.node.owner_document.text, True)
             return html
+        lexbor_str_destroy(lxb_str, self.node.owner_document.text, True)
         return None
 
     cdef inline str _serialize_inner_html(self, lxb_html_serialize_opt_t options, size_t indent, bint pretty):
@@ -158,6 +160,7 @@ cdef class LexborNode:
             html = lxb_str.data.decode(_ENCODING).replace('<-undef>', '')
             lexbor_str_destroy(lxb_str, self.node.owner_document.text, True)
             return html
+        lexbor_str_destroy(lxb_str, self.node.owner_document.text, True)
         return None
 
     def html_pretty(

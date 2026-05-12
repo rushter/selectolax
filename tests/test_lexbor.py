@@ -202,6 +202,14 @@ def test_attrs_reject_non_element_nodes():
         _ = comment_node.attrs
 
 
+def test_text_does_not_duplicate_fragment_root_text_node():
+    parser = LexborHTMLParser("hello", is_fragment=True)
+    root = parser.root
+    assert root is not None
+    assert root.is_text_node
+    assert root.text(deep=True) == "hello"
+
+
 def test_iter_includes_text_nodes_when_requested():
     parser = LexborHTMLParser("<div><span>value</span><title>\n   \n</title></div>")
     div = parser.css_first("div")

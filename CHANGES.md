@@ -7,6 +7,7 @@
 - Allow empty HTML fragments
 - Fix attrs access for non-element nodes
 - Improve buffer cleanups
+- Fix duplicate text when doing `text(deep=True)` on a text node
 
 # Version 0.4.8
 

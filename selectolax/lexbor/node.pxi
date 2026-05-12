@@ -344,7 +344,7 @@ cdef class LexborNode:
 
     cdef inline LexborNode _get_node(self):
         cdef LexborNode node
-        if self._is_fragment_root:
+        if self._is_fragment_root and not _is_node_type(self.node, LXB_DOM_NODE_TYPE_TEXT):
             node = self.parent
         else:
             node = self

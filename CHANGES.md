@@ -1,6 +1,6 @@
 # selectolax Changelog
 
-# Unreleased
+# Version 0.4.9
 
 - Add an ability to specify tags and namespace for fragmented parser
 - Add a new serialization mode when pretty printing: `html5test`

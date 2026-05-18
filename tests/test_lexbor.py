@@ -884,3 +884,72 @@ def test_unwrap_tags_segfault_prevention():
 
     assert "Text" in tree.html
     assert '<span id="repro">' not in tree.html
+
+
+def test_strip_tags_then_text_basic():
+    html = "<html><head></head><body><script>evil();</script><p>Hello</p></body></html>"
+    parser = LexborHTMLParser(html)
+    parser.strip_tags(["script"])
+    result = parser.root.text(separator=" ", strip=True)
+    assert "Hello" in result
+    assert "evil" not in result
+
+
+def test_strip_tags_then_text_multiple_tags():
+    html = (
+        "<html><head><style>body{}</style></head><body>"
+        "<script>x=1;</script>"
+        "<template><div>hidden</div></template>"
+        "<p>Visible</p>"
+        "</body></html>"
+    )
+    parser = LexborHTMLParser(html)
+    parser.strip_tags(["style", "script", "template"])
+    result = parser.root.text(separator=" ", strip=True)
+    assert "Visible" in result
+    assert "hidden" not in result
+    assert "body{}" not in result
+
+
+def test_strip_tags_then_text_nested_targets():
+    html = (
+        "<html><body>"
+        "<template><script>inner();</script><p>tmpl</p></template>"
+        "<script>outer();</script>"
+        "<p>Keep this</p>"
+        "</body></html>"
+    )
+    parser = LexborHTMLParser(html)
+    parser.strip_tags(["template", "script"])
+    result = parser.root.text(separator=" ", strip=True)
+    assert "Keep this" in result
+    assert "inner" not in result
+    assert "outer" not in result
+
+
+def test_strip_tags_then_text_recursive_flag():
+    html = (
+        "<html><body>"
+        "<div class='rm'><span>child1</span><em>child2</em></div>"
+        "<p>Survivor</p>"
+        "</body></html>"
+    )
+    parser = LexborHTMLParser(html)
+    parser.strip_tags(["div"], recursive=True)
+    result = parser.root.text(separator=" ", strip=True)
+    assert "Survivor" in result
+    assert "child1" not in result
+
+
+def test_strip_tags_then_text_many_iterations():
+    template = (
+        "<html><head><style>.a{{}}</style></head><body>"
+        "<script>var x={i};</script>"
+        "<p>Content {i}</p>"
+        "</body></html>"
+    )
+    for i in range(50):
+        parser = LexborHTMLParser(template.format(i=i))
+        parser.strip_tags(["style", "script"])
+        text = parser.root.text(separator=" ", strip=True)
+        assert f"Content {i}" in text

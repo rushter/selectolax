@@ -1302,7 +1302,7 @@ cdef inline lxb_html_serialize_opt_t _html_pretty_options(
         options = <lxb_html_serialize_opt_t> (options | LXB_HTML_SERIALIZE_OPT_WITHOUT_TEXT_INDENT)
     if full_doctype:
         options = <lxb_html_serialize_opt_t> (options | LXB_HTML_SERIALIZE_OPT_FULL_DOCTYPE)
-    if html5test:
+    if html5test and _SELECTOLAX_HTML5TEST_SUPPORTED:
         options = <lxb_html_serialize_opt_t> (options | LXB_HTML_SERIALIZE_OPT_HTML5TEST)
 
     return options

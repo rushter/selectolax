@@ -171,7 +171,6 @@ cdef extern from "lexbor/html/html.h" nogil:
         LXB_HTML_SERIALIZE_OPT_TAG_WITH_NS = 0x10
         LXB_HTML_SERIALIZE_OPT_WITHOUT_TEXT_INDENT = 0x20
         LXB_HTML_SERIALIZE_OPT_FULL_DOCTYPE = 0x40
-        LXB_HTML_SERIALIZE_OPT_HTML5TEST = 0x80
 
     ctypedef struct lexbor_array_t:
         void **list
@@ -267,6 +266,18 @@ cdef extern from "lexbor/html/html.h" nogil:
                                                     lexbor_str_t *str)
     lxb_html_element_t* lxb_html_element_inner_html_set(lxb_html_element_t *element,
                                                         const lxb_char_t *html, size_t size)
+
+cdef extern from * nogil:
+    """
+    #ifdef LXB_HTML_SERIALIZE_OPT_HTML5TEST
+    #define _SELECTOLAX_HTML5TEST_SUPPORTED 1
+    #else
+    #define LXB_HTML_SERIALIZE_OPT_HTML5TEST 0x80
+    #define _SELECTOLAX_HTML5TEST_SUPPORTED 0
+    #endif
+    """
+    cdef int LXB_HTML_SERIALIZE_OPT_HTML5TEST
+    cdef int _SELECTOLAX_HTML5TEST_SUPPORTED
 
 cdef class LexborNode:
     cdef:

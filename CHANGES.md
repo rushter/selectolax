@@ -1,5 +1,11 @@
 # selectolax Changelog
 
+# Version 0.4.10
+
+- Do not destroy nodes when stripping tags
+- Allow building selectolax using older lexbor versions (#218)
+- Update lexbor. Fixes crashes when parsing HTML (#217).
+
 # Version 0.4.9
 
 - Add an ability to specify tags and namespace for fragmented parser

@@ -15,27 +15,56 @@ cdef class LexborCSSSelector:
         cdef lxb_status_t status
 
         self.parser = lxb_css_parser_create()
-        status = lxb_css_parser_init(self.parser, NULL)
+        if self.parser == NULL:
+            PyErr_SetObject(SelectolaxError, "Can't create CSS parser.")
+            return -1
 
+        status = lxb_css_parser_init(self.parser, NULL)
         if status != LXB_STATUS_OK:
+            lxb_css_parser_destroy(self.parser, True)
+            self.parser = NULL
             PyErr_SetObject(SelectolaxError, "Can't initialize CSS parser.")
             return -1
 
         self.css_selectors = lxb_css_selectors_create()
-        status = lxb_css_selectors_init(self.css_selectors)
+        if self.css_selectors == NULL:
+            lxb_css_parser_destroy(self.parser, True)
+            self.parser = NULL
+            PyErr_SetObject(SelectolaxError, "Can't create CSS selector.")
+            return -1
 
+        status = lxb_css_selectors_init(self.css_selectors)
         if status != LXB_STATUS_OK:
+            lxb_css_selectors_destroy(self.css_selectors, True)
+            self.css_selectors = NULL
+            lxb_css_parser_destroy(self.parser, True)
+            self.parser = NULL
             PyErr_SetObject(SelectolaxError, "Can't initialize CSS selector.")
             return -1
 
         lxb_css_parser_selectors_set(self.parser, self.css_selectors)
 
         self.selectors = lxb_selectors_create()
-        status = lxb_selectors_init(self.selectors)
-        lxb_selectors_opt_set(self.selectors, LXB_SELECTORS_OPT_MATCH_ROOT)
-        if status != LXB_STATUS_OK:
-            PyErr_SetObject(SelectolaxError, "Can't initialize CSS selector.")
+        if self.selectors == NULL:
+            lxb_css_selectors_destroy(self.css_selectors, True)
+            self.css_selectors = NULL
+            lxb_css_parser_destroy(self.parser, True)
+            self.parser = NULL
+            PyErr_SetObject(SelectolaxError, "Can't create selector.")
             return -1
+
+        status = lxb_selectors_init(self.selectors)
+        if status != LXB_STATUS_OK:
+            lxb_selectors_destroy(self.selectors, True)
+            self.selectors = NULL
+            lxb_css_selectors_destroy(self.css_selectors, True)
+            self.css_selectors = NULL
+            lxb_css_parser_destroy(self.parser, True)
+            self.parser = NULL
+            PyErr_SetObject(SelectolaxError, "Can't initialize selector.")
+            return -1
+
+        lxb_selectors_opt_set(self.selectors, LXB_SELECTORS_OPT_MATCH_ROOT)
         return 0
 
     cpdef list find(self, str query, LexborNode node):

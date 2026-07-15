@@ -1,5 +1,11 @@
 # selectolax Changelog
 
+# Version 0.4.11
+
+- Add NULL checks for CSS selectors module to prevent crashes
+- Fix html5test pretty print serialization mode checks
+- Update lexbor
+
 # Version 0.4.10
 
 - Do not destroy nodes when stripping tags

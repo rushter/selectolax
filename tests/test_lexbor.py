@@ -4,7 +4,6 @@ from inspect import cleandoc
 
 import pytest
 
-
 from selectolax.lexbor import LexborHTMLParser, SelectolaxError, parse_fragment
 
 
@@ -763,10 +762,7 @@ def test_css_selector_invalid_syntax():
     root = parser.root
     assert root is not None
 
-    try:
-        root.css("[invalid")
-    except Exception:
-        pass
+    root.css("[invalid")
 
 
 def test_selector_attribute_longer_than_edge_cases():

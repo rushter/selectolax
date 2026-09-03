@@ -60,7 +60,7 @@ jobs:
           python3 -m pip install types-pyinstaller
           USE_LEXBOR=1 python setup.py build_ext --inplace --cython
       - name: Lint using Ruff
-        run: ruff check selectolax tests
+        run: ruff check tests
       - name: Lint Mypy
         run: mypy selectolax tests
       - name: Lint Cython

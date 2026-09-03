@@ -1,8 +1,7 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
 import pytest
-from selectolax.parser import HTMLParser
+
 from selectolax.lexbor import LexborHTMLParser, SelectolaxError
+from selectolax.parser import HTMLParser
 
 """
 We'are testing only our own code.

@@ -2,9 +2,9 @@ import threading
 from difflib import SequenceMatcher
 
 import pytest
-from selectolax.parser import HTMLParser, Node
 
 from selectolax.lexbor import LexborHTMLParser, LexborNode, SelectolaxError, create_tag
+from selectolax.parser import HTMLParser, Node
 
 """
 We'are testing only our own code.
@@ -29,7 +29,7 @@ def test_encoding():
     html = "<div>Привет мир!</div>".encode("cp1251")
     assert HTMLParser(html, detect_encoding=True).input_encoding == "WINDOWS-1251"
 
-    html_utf = '<head><meta charset="WINDOWS-1251"></head>'.encode("utf-8")
+    html_utf = b'<head><meta charset="WINDOWS-1251"></head>'
     assert (
         HTMLParser(html_utf, detect_encoding=True, use_meta_tags=True).input_encoding
         == "WINDOWS-1251"
@@ -47,11 +47,8 @@ def test_encoding():
     assert HTMLParser(html_unencodable).input_encoding == "UTF-8"
 
     # decode_errrors='strict' should error out
-    try:
+    with pytest.raises(UnicodeEncodeError):
         HTMLParser(html_unencodable, decode_errors="strict")
-        assert False
-    except Exception as e:
-        assert type(e) is UnicodeEncodeError
 
 
 @pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
@@ -232,7 +229,7 @@ def test_concurrent_parsing(parser):
             if result:
                 with lock:
                     results.append(result)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001 - collect all failures across threads
             with lock:
                 errors.append(e)
 

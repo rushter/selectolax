@@ -1,5 +1,7 @@
 from inspect import cleandoc
+
 import pytest
+
 from selectolax.lexbor import LexborHTMLParser
 
 

@@ -184,6 +184,21 @@ def test_text_honors_skip_empty_flag():
     assert title.text(deep=False, skip_empty=True) == ""
 
 
+def test_text_lexbor_on_empty_strings():
+    parser = LexborHTMLParser("<div></div>")
+    div = parser.css_first("div")
+    assert div is not None
+    assert div.text_lexbor() == ""
+
+    parser = LexborHTMLParser("<div><p></p><p>foo</p></div>")
+    div = parser.css_first("div")
+    assert div is not None
+    assert div.text_lexbor() == "foo"
+
+    parser = LexborHTMLParser("")
+    assert parser.root.text_lexbor() == ""
+
+
 def test_attrs_reject_non_element_nodes():
     parser = LexborHTMLParser("<div>hello<!--comment--></div>")
     div = parser.css_first("div")

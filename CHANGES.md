@@ -1,5 +1,11 @@
 # selectolax Changelog
 
+# Unreleased
+
+- Add `options` parameter to `LexborHTMLParser` to pass Lexbor document parsing options
+  (for example, `LexborDocumentOptions.WO_EVENTS` to disable mutation events). Fixes #221.
+- Allow empty elements in `text_lexbor`. Fixes #220.
+
 # Version 0.4.11
 
 - Add NULL checks for CSS selectors module to prevent crashes

@@ -6,6 +6,8 @@ from cpython.mem cimport (
     PyMem_RawMalloc,
     PyMem_RawRealloc
 )
+from enum import IntFlag
+
 _ENCODING = 'UTF-8'
 
 include "base.pxi"
@@ -17,8 +19,30 @@ include "lexbor/util.pxi"
 include "lexbor/node_remove.pxi"
 include "lexbor/fragment_lookup.pxi"
 
-# We don't inherit from HTMLParser here, because it also includes all the C code from Modest.
 
+class LexborDocumentOptions(IntFlag):
+    """Parser options for the Lexbor document.
+
+    These mirror the ``lxb_dom_document_opt`` flags from Lexbor.
+
+    Multiple options can be combined with the bitwise OR operator, or by
+    combining their integer values. Both of the following are equivalent:
+
+    >>> LexborDocumentOptions.WO_EVENTS | LexborDocumentOptions.UNDEF
+    >>> LexborDocumentOptions.WO_EVENTS.value | LexborDocumentOptions.UNDEF.value
+    1
+
+    The combined value can be passed directly to the parser.
+    """
+
+    """Original Lexbor name: ``LXB_DOM_DOCUMENT_OPT_UNDEF``."""
+    UNDEF = 0x00
+
+    """Original Lexbor name: ``LXB_DOM_DOCUMENT_OPT_WO_EVENTS``."""
+    WO_EVENTS = 1 << 0
+
+
+# We don't inherit from HTMLParser here, because it also includes all the C code from Modest.
 cdef class LexborHTMLParser:
     """The lexbor HTML parser.
 
@@ -37,6 +61,7 @@ cdef class LexborHTMLParser:
         is_fragment: bool = False,
         fragment_tag: str = "div",
         fragment_namespace: str = "html",
+        options: int = 0,
     ):
         """Create a parser and load HTML.
 
@@ -63,6 +88,20 @@ cdef class LexborHTMLParser:
             Context element namespace used for fragment parsing. Defaults to ``"html"``.
             Accepts Lexbor namespace names such as ``"html"``, ``"svg"``, and ``"math"``,
             or a namespace URI recognized by Lexbor. Only used when ``is_fragment`` is ``True``.
+        options : int, optional
+            Lexbor document options passed to ``lxb_html_document_dom_opt_set``.
+            Use the flags from :class:`LexborDocumentOptions`, e.g.
+            ``LexborDocumentOptions.WO_EVENTS`` to disable mutation events.
+
+            Several options can be combined with the bitwise OR operator::
+
+                LexborDocumentOptions.WO_EVENTS | LexborDocumentOptions.UNDEF
+
+            or by passing the equivalent plain integer::
+
+                LexborDocumentOptions.WO_EVENTS.value | LexborDocumentOptions.UNDEF.value
+
+            Defaults to ``0``.
 
         """
         cdef size_t html_len
@@ -75,6 +114,8 @@ cdef class LexborHTMLParser:
         self._fragment_namespace_id = LXB_NS_HTML
         self._selector = None
         self._new_html_document()
+        lxb_html_document_dom_opt_set(self.document, <lxb_dom_document_opt_t> int(options))
+
         if self._is_fragment:
             self._fragment_tag_id = _fragment_tag_id_from_string(self.document, fragment_tag)
             self._fragment_namespace_id = _fragment_namespace_id_from_string(self.document, fragment_namespace)

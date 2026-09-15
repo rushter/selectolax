@@ -1,8 +1,31 @@
 from __future__ import annotations
 
+from enum import IntFlag
 from typing import Any, Iterator, Literal, NoReturn, Optional, TypeVar, overload
 
 DefaultT = TypeVar("DefaultT")
+
+class LexborDocumentOptions(IntFlag):
+    """Parser options for the Lexbor document.
+
+    These mirror the ``lxb_dom_document_opt`` flags from Lexbor.
+
+    Multiple options can be combined with the bitwise OR operator, or by
+    combining their integer values. Both of the following are equivalent:
+
+    >>> LexborDocumentOptions.WO_EVENTS | LexborDocumentOptions.UNDEF
+    <LexborDocumentOptions.WO_EVENTS: 1>
+    >>> LexborDocumentOptions.WO_EVENTS.value | LexborDocumentOptions.UNDEF.value
+    1
+
+    The combined value can be passed directly to the parser.
+    """
+
+    """Original Lexbor name: ``LXB_DOM_DOCUMENT_OPT_UNDEF``."""
+    UNDEF: int
+
+    """Original Lexbor name: ``LXB_DOM_DOCUMENT_OPT_WO_EVENTS``."""
+    WO_EVENTS: int
 
 class LexborAttributes:
     """A dict-like object that represents attributes."""
@@ -907,6 +930,7 @@ class LexborHTMLParser:
         is_fragment: bool = False,
         fragment_tag: str = "div",
         fragment_namespace: str = "html",
+        options: int = 0,
     ) -> None:
         """Create a parser and load HTML.
 
@@ -933,6 +957,20 @@ class LexborHTMLParser:
             Context element namespace used for fragment parsing. Defaults to ``"html"``.
             Accepts Lexbor namespace names such as ``"html"``, ``"svg"``, and ``"math"``,
             or a namespace URI recognized by Lexbor. Only used when ``is_fragment`` is ``True``.
+        options : int, optional
+            Lexbor document options passed to ``lxb_html_document_dom_opt_set``.
+            Use the flags from :class:`LexborDocumentOptions`, e.g.
+            ``LexborDocumentOptions.WO_EVENTS`` to disable mutation events.
+
+            Several options can be combined with the bitwise OR operator::
+
+                LexborDocumentOptions.WO_EVENTS | LexborDocumentOptions.UNDEF
+
+            or by passing the equivalent plain integer::
+
+                LexborDocumentOptions.WO_EVENTS.value | LexborDocumentOptions.UNDEF.value
+
+            Defaults to ``0``.
 
         """
         ...

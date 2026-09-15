@@ -4,7 +4,12 @@ from inspect import cleandoc
 
 import pytest
 
-from selectolax.lexbor import LexborHTMLParser, SelectolaxError, parse_fragment
+from selectolax.lexbor import (
+    LexborDocumentOptions,
+    LexborHTMLParser,
+    SelectolaxError,
+    parse_fragment,
+)
 
 
 def clean_doc(text: str) -> str:
@@ -964,3 +969,64 @@ def test_strip_tags_then_text_many_iterations():
         parser.strip_tags(["style", "script"])
         text = parser.root.text(separator=" ", strip=True)
         assert f"Content {i}" in text
+
+
+SELECTED_CONTENT_HTML = (
+    "<select><button><selectedcontent></selectedcontent></button>"
+    "<option>a</option><option selected>b</option></select>"
+)
+
+
+def test_document_options_enum_values():
+    assert LexborDocumentOptions.UNDEF == 0
+    assert LexborDocumentOptions.WO_EVENTS == 1
+
+
+def test_document_options_default_enables_events():
+    parser = LexborHTMLParser(SELECTED_CONTENT_HTML)
+    selectedcontent = parser.css_first("selectedcontent")
+    assert selectedcontent.html == "<selectedcontent>b</selectedcontent>"
+
+
+def test_document_options_wo_events_disables_events():
+    parser = LexborHTMLParser(
+        SELECTED_CONTENT_HTML, options=LexborDocumentOptions.WO_EVENTS
+    )
+    selectedcontent = parser.css_first("selectedcontent")
+    assert selectedcontent.html == "<selectedcontent></selectedcontent>"
+
+
+def test_document_options_accepts_plain_int():
+    parser = LexborHTMLParser(
+        SELECTED_CONTENT_HTML, options=int(LexborDocumentOptions.WO_EVENTS)
+    )
+    selectedcontent = parser.css_first("selectedcontent")
+    assert selectedcontent.html == "<selectedcontent></selectedcontent>"
+
+
+def test_document_options_combined_with_bitwise_or():
+    options = LexborDocumentOptions.WO_EVENTS | LexborDocumentOptions.UNDEF
+    assert options == LexborDocumentOptions.WO_EVENTS
+    parser = LexborHTMLParser(SELECTED_CONTENT_HTML, options=options)
+    selectedcontent = parser.css_first("selectedcontent")
+    assert selectedcontent.html == "<selectedcontent></selectedcontent>"
+
+
+def test_document_options_combined_as_plain_int():
+    options = (
+        LexborDocumentOptions.WO_EVENTS.value
+        | LexborDocumentOptions.UNDEF.value
+    )
+    parser = LexborHTMLParser(SELECTED_CONTENT_HTML, options=options)
+    selectedcontent = parser.css_first("selectedcontent")
+    assert selectedcontent.html == "<selectedcontent></selectedcontent>"
+
+
+def test_document_options_fragment_wo_events():
+    parser = LexborHTMLParser(
+        SELECTED_CONTENT_HTML,
+        is_fragment=True,
+        options=LexborDocumentOptions.WO_EVENTS,
+    )
+    selectedcontent = parser.css_first("selectedcontent")
+    assert selectedcontent.html == "<selectedcontent></selectedcontent>"

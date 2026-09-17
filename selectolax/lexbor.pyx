@@ -293,6 +293,17 @@ cdef class LexborHTMLParser:
         return self._selector
 
     @property
+    def options(self):
+        """Return the Lexbor document options for this parser.
+
+        Returns
+        -------
+        LexborDocumentOptions
+            The options currently set on the underlying Lexbor document.
+        """
+        return LexborDocumentOptions(lxb_html_document_dom_opt(self.document))
+
+    @property
     def root(self):
         """Return the document root node.
 
@@ -752,6 +763,7 @@ cdef class LexborHTMLParser:
         You can use to do temporary modifications without affecting the original HTML tree.
         It is tied to the current parser instance.
         Gets destroyed when the parser instance is destroyed.
+        Document options are preserved in the cloned parser.
 
         Returns
         -------
@@ -769,6 +781,10 @@ cdef class LexborHTMLParser:
 
         if cloned_document == NULL:
             raise SelectolaxError("Can't create a new document")
+
+        lxb_html_document_dom_opt_set(
+            cloned_document, lxb_html_document_dom_opt(self.document)
+        )
 
         cloned_document.ready_state = LXB_HTML_DOCUMENT_READY_STATE_COMPLETE
 

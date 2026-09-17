@@ -997,6 +997,17 @@ class LexborHTMLParser:
         ...
 
     @property
+    def options(self) -> LexborDocumentOptions:
+        """Return the Lexbor document options for this parser.
+
+        Returns
+        -------
+        LexborDocumentOptions
+            The options currently set on the underlying Lexbor document.
+        """
+        ...
+
+    @property
     def root(self) -> LexborNode | None:
         """Return the document root node.
 
@@ -1352,6 +1363,7 @@ class LexborHTMLParser:
         You can use it to do temporary modifications without affecting the original HTML tree.
         It is tied to the current parser instance.
         Gets destroyed when the parser instance is destroyed.
+        Document options are preserved in the cloned parser.
 
         Returns
         -------

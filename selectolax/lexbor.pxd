@@ -243,6 +243,7 @@ cdef extern from "lexbor/html/html.h" nogil:
     lxb_html_parser_t * lxb_html_parser_destroy(lxb_html_parser_t *parser)
     lxb_html_document_t * lxb_html_document_create()
     void lxb_html_document_dom_opt_set(lxb_html_document_t *document, lxb_dom_document_opt_t opt)
+    lxb_dom_document_opt_t lxb_html_document_dom_opt(const lxb_html_document_t *document)
     lxb_html_element_t * lxb_html_document_create_element(lxb_html_document_t *document,
                                                           const lxb_char_t *local_name, size_t lname_len,
                                                           void *reserved_for_opt)

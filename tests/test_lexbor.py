@@ -1013,10 +1013,7 @@ def test_document_options_combined_with_bitwise_or():
 
 
 def test_document_options_combined_as_plain_int():
-    options = (
-        LexborDocumentOptions.WO_EVENTS.value
-        | LexborDocumentOptions.UNDEF.value
-    )
+    options = LexborDocumentOptions.WO_EVENTS.value | LexborDocumentOptions.UNDEF.value
     parser = LexborHTMLParser(SELECTED_CONTENT_HTML, options=options)
     selectedcontent = parser.css_first("selectedcontent")
     assert selectedcontent.html == "<selectedcontent></selectedcontent>"
@@ -1029,4 +1026,42 @@ def test_document_options_fragment_wo_events():
         options=LexborDocumentOptions.WO_EVENTS,
     )
     selectedcontent = parser.css_first("selectedcontent")
+    assert selectedcontent.html == "<selectedcontent></selectedcontent>"
+
+
+def test_document_options_property_reflects_constructor_argument():
+    parser = LexborHTMLParser(SELECTED_CONTENT_HTML)
+    assert parser.options == LexborDocumentOptions.UNDEF
+
+    parser = LexborHTMLParser(
+        SELECTED_CONTENT_HTML, options=LexborDocumentOptions.WO_EVENTS
+    )
+    assert parser.options == LexborDocumentOptions.WO_EVENTS
+
+
+def test_document_options_clone_preserves_options():
+    parser = LexborHTMLParser(
+        SELECTED_CONTENT_HTML, options=LexborDocumentOptions.WO_EVENTS
+    )
+    cloned = parser.clone()
+    assert cloned.options == LexborDocumentOptions.WO_EVENTS
+    selectedcontent = cloned.css_first("selectedcontent")
+    assert selectedcontent.html == "<selectedcontent></selectedcontent>"
+
+
+def test_document_options_clone_preserves_default_options():
+    parser = LexborHTMLParser(SELECTED_CONTENT_HTML)
+    cloned = parser.clone()
+    assert cloned.options == LexborDocumentOptions.UNDEF
+
+
+def test_document_options_clone_preserves_fragment_options():
+    parser = LexborHTMLParser(
+        SELECTED_CONTENT_HTML,
+        is_fragment=True,
+        options=LexborDocumentOptions.WO_EVENTS,
+    )
+    cloned = parser.clone()
+    assert cloned.options == LexborDocumentOptions.WO_EVENTS
+    selectedcontent = cloned.css_first("selectedcontent")
     assert selectedcontent.html == "<selectedcontent></selectedcontent>"

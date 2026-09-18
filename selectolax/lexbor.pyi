@@ -18,13 +18,26 @@ class LexborDocumentOptions(IntFlag):
     >>> LexborDocumentOptions.WO_EVENTS.value | LexborDocumentOptions.UNDEF.value
     1
 
-    The combined value can be passed directly to the parser.
+    The combined value can be passed directly to the parser::
+
+        LexborHTMLParser(html, options=LexborDocumentOptions.WO_EVENTS)
     """
 
-    """Original Lexbor name: ``LXB_DOM_DOCUMENT_OPT_UNDEF``."""
+    """Original Lexbor name: ``LXB_DOM_DOCUMENT_OPT_UNDEF``.
+
+    Default value. No options are set.
+    """
     UNDEF: int
 
-    """Original Lexbor name: ``LXB_DOM_DOCUMENT_OPT_WO_EVENTS``."""
+    """Original Lexbor name: ``LXB_DOM_DOCUMENT_OPT_WO_EVENTS``.
+
+    Disables mutation events ("without events"). When set, Lexbor skips the
+    document mutation callbacks (``inserted``, ``removed``, ``moved``,
+    ``children_changed``, ``connected``, and the attribute callbacks) while
+    building or modifying the tree. This can speed up parsing, but it also
+    disables behaviors implemented through those callbacks, such as
+    ``<selectedcontent>`` copying the selected ``<option>``.
+    """
     WO_EVENTS: int
 
 class LexborAttributes:

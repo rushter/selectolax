@@ -4,6 +4,7 @@
 
 - Add `options` parameter to `LexborHTMLParser` to pass Lexbor document parsing options
   (for example, `LexborDocumentOptions.WO_EVENTS` to disable mutation events). Fixes #221.
+- Fix `LexborHTMLParser.clone()` losing nodes for empty HTML fragments
 - Allow empty elements in `text_lexbor`. Fixes #220.
 - Update lexbor
 

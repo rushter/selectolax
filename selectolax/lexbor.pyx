@@ -42,6 +42,26 @@ class LexborDocumentOptions(IntFlag):
     WO_EVENTS = 1 << 0
 
 
+cdef lxb_dom_node_t* _clone_node_into_document(
+    lxb_html_document_t* document, lxb_dom_node_t* node
+) except NULL:
+    """Deep-copy ``node`` into ``document`` and append it as its child."""
+    cdef lxb_dom_node_t* cloned
+
+    with nogil:
+        cloned = lxb_dom_document_import_node(
+            &document.dom_document, node, <bint> True
+        )
+
+    if cloned == NULL:
+        raise SelectolaxError("Can't create a new document")
+
+    with nogil:
+        lxb_dom_node_insert_child(<lxb_dom_node_t * > document, cloned)
+
+    return cloned
+
+
 # We don't inherit from HTMLParser here, because it also includes all the C code from Modest.
 cdef class LexborHTMLParser:
     """The lexbor HTML parser.
@@ -764,6 +784,7 @@ cdef class LexborHTMLParser:
         It is tied to the current parser instance.
         Gets destroyed when the parser instance is destroyed.
         Document options are preserved in the cloned parser.
+        The document ``head`` and ``body`` are preserved when available.
 
         Returns
         -------
@@ -772,8 +793,10 @@ cdef class LexborHTMLParser:
         """
         cdef lxb_html_document_t* cloned_document
         cdef lxb_dom_node_t* cloned_node
-        cdef lxb_dom_node_t* source_node
-        cdef lxb_dom_node_t* cloned_root
+        cdef lxb_dom_node_t* source_child
+        cdef lxb_dom_node_t* next_child
+        cdef lxb_dom_node_t* cloned_html
+        cdef lxb_dom_node_t* child
         cdef LexborHTMLParser cls
 
         with nogil:
@@ -788,22 +811,31 @@ cdef class LexborHTMLParser:
 
         cloned_document.ready_state = LXB_HTML_DOCUMENT_READY_STATE_COMPLETE
 
-        source_node = lxb_dom_document_root(&self.document.dom_document)
-        if self._is_fragment and self._fragment_wrapper != NULL:
-            source_node = self._fragment_wrapper
+        cloned_node = NULL
+        cloned_html = NULL
 
-        with nogil:
-            cloned_node = lxb_dom_document_import_node(
-                &cloned_document.dom_document,
-                source_node,
-                <bint> True
-            )
+        if self._is_fragment:
+            if self._fragment_wrapper != NULL and self._fragment_root != NULL:
+                cloned_node = _clone_node_into_document(
+                    cloned_document, self._fragment_wrapper
+                )
+        else:
+            source_child = self.document.dom_document.node.first_child
+            while source_child != NULL:
+                next_child = source_child.next
+                cloned_node = _clone_node_into_document(cloned_document, source_child)
+                if cloned_html == NULL and lxb_dom_node_tag_id_noi(cloned_node) == LXB_TAG_HTML:
+                    cloned_html = cloned_node
+                source_child = next_child
 
-        if cloned_node == NULL:
-            raise SelectolaxError("Can't create a new document")
-
-        with nogil:
-            lxb_dom_node_insert_child(<lxb_dom_node_t * > cloned_document, cloned_node)
+            if cloned_html != NULL:
+                child = cloned_html.first_child
+                while child != NULL:
+                    if lxb_dom_node_tag_id_noi(child) == LXB_TAG_HEAD:
+                        cloned_document.head = <lxb_html_head_element_t *> child
+                    elif lxb_dom_node_tag_id_noi(child) == LXB_TAG_BODY:
+                        cloned_document.body = <lxb_html_body_element_t *> child
+                    child = child.next
 
         cls = LexborHTMLParser.from_document(cloned_document, self.raw_html)
         if self._is_fragment:
@@ -811,9 +843,8 @@ cdef class LexborHTMLParser:
             cls._fragment_tag_id = self._fragment_tag_id
             cls._fragment_namespace_id = self._fragment_namespace_id
             cls._fragment_wrapper = cloned_node
-            cloned_root = cloned_node
-            if cloned_root != NULL:
-                cls._fragment_root = cloned_root.first_child
+            if cloned_node != NULL:
+                cls._fragment_root = cloned_node.first_child
         return cls
 
     def unwrap_tags(self, list tags, delete_empty = False):

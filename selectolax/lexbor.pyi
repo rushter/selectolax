@@ -1364,6 +1364,7 @@ class LexborHTMLParser:
         It is tied to the current parser instance.
         Gets destroyed when the parser instance is destroyed.
         Document options are preserved in the cloned parser.
+        The document ``head`` and ``body`` are preserved when available.
 
         Returns
         -------

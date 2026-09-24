@@ -16,7 +16,6 @@ cdef class LexborAttributes:
     def __iter__(self):
         cdef lxb_dom_attr_t *attr = lxb_dom_element_first_attribute_noi(<lxb_dom_element_t *> self.node)
         cdef size_t str_len = 0
-        attributes = dict()
 
         while attr != NULL:
             key = lxb_dom_attr_local_name_noi(attr, &str_len)

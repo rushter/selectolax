@@ -769,6 +769,8 @@ def test_css_selector_invalid_syntax():
     assert root is not None
 
     root.css("[invalid")
+    with pytest.raises(SelectolaxError):
+        root.css("[invalid")
 
 
 def test_selector_attribute_longer_than_edge_cases():

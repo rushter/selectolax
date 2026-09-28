@@ -56,6 +56,13 @@ lint: ## check style with ruff
 test: ## run tests quickly with the default Python
 	pytest tests -s -v
 
+.PHONY: test-no-modest
+test-no-modest: ## build a lexbor-only extension (modest disabled) and run tests
+	rm -f selectolax/parser*.so
+	python setup.py build_ext --inplace --cython --disable-modest
+	python -c "import importlib.util, selectolax; assert not hasattr(selectolax, 'parser'); assert importlib.util.find_spec('selectolax.parser') is None"
+	pytest tests -s -v
+
 coverage: ## check code coverage quickly with the default Python
 	coverage run --source selectolax -m pytest
 	coverage report -m

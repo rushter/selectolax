@@ -37,6 +37,37 @@ jobs:
     - name: Test typesafety
       run: |
         pytest typesafety
+  test-no-modest:
+    strategy:
+      max-parallel: 6
+      matrix:
+        python-version: ["3.13"]
+        platform: [ubuntu-24.04]
+    runs-on: ${{ matrix.platform }}
+    timeout-minutes: 10
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: true
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip setuptools
+        pip install -r requirements_dev.txt
+        rm -f selectolax/parser*.so
+        python setup.py build_ext --inplace --cython --disable-modest
+    - name: Verify selectolax.parser is not importable
+      run: |
+        python -c "import importlib.util; assert importlib.util.find_spec('selectolax.parser') is None"
+    - name: Verify selectolax.parser attribute is absent
+      run: |
+        python -c "import selectolax; assert not hasattr(selectolax, 'parser')"
+    - name: Test with pytest
+      run: |
+        pytest tests
   lint:
     strategy:
       max-parallel: 6

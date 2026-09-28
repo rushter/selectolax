@@ -4,19 +4,26 @@ from difflib import SequenceMatcher
 import pytest
 
 from selectolax.lexbor import LexborHTMLParser, LexborNode, SelectolaxError, create_tag
-from selectolax.parser import HTMLParser, Node
+
+from ._engines import HTMLParser, Node, requires_modest
 
 """
 We'are testing only our own code.
 Many functionality are already tested in the Modest engine, so there is no reason to test every case.
 """
 
+_PARSERS = (
+    (HTMLParser, LexborHTMLParser) if HTMLParser is not None else (LexborHTMLParser,)
+)
+_NODE_TYPES = (Node, LexborNode) if Node is not None else (LexborNode,)
+
 _PARSERS_PARAMETRIZER = (
     "parser",
-    (HTMLParser, LexborHTMLParser),
+    _PARSERS,
 )
 
 
+@requires_modest
 def test_encoding():
     html = "<div><p id=p1><p id=p2><p id=p3><a>link</a><p id=p4><p id=p5>text<p id=p6></div>"
     html = HTMLParser(html)
@@ -136,8 +143,8 @@ def test_nodes(parser):
     )
     htmlp = parser(html)
 
-    assert isinstance(htmlp.root, (Node, LexborNode))
-    assert isinstance(htmlp.body, (Node, LexborNode))
+    assert isinstance(htmlp.root, _NODE_TYPES)
+    assert isinstance(htmlp.body, _NODE_TYPES)
     html_output = htmlp.html
     assert len(html_output) >= len(html)
     assert SequenceMatcher(None, html, html_output).ratio() > 0.8

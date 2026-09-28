@@ -1,17 +1,33 @@
 import pytest
 
 from selectolax.lexbor import LexborHTMLParser, SelectolaxError
-from selectolax.parser import HTMLParser
+
+from ._engines import HTMLParser, requires_modest
 
 """
 We'are testing only our own code.
 Many functionality are already tested in the Modest engine, so there is no reason to test every case.
 """
 
+_PARSERS = (
+    (HTMLParser, LexborHTMLParser) if HTMLParser is not None else (LexborHTMLParser,)
+)
+
 _PARSERS_PARAMETRIZER = (
     "parser",
-    (HTMLParser, LexborHTMLParser),
+    _PARSERS,
 )
+
+_NODE_ID_CASES = [
+    ("<div id='my_node'></div>", "my_node", LexborHTMLParser),
+    ("<div></div>", None, LexborHTMLParser),
+]
+if HTMLParser is not None:
+    _NODE_ID_CASES = [
+        ("<div id='my_node'></div>", "my_node", HTMLParser),
+        ("<div></div>", None, HTMLParser),
+        *_NODE_ID_CASES,
+    ]
 
 
 @pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
@@ -96,7 +112,7 @@ def test_attributes(parser):
 
     html = "<div><p attr>text</p></div>"
     selector = "p#p3"
-    for node in HTMLParser(html).css(selector):
+    for node in parser(html).css(selector):
         assert "attr" in node.attributes
         assert node.attributes["attr"] is None
 
@@ -231,12 +247,7 @@ def test_node_navigation(parser):
 
 @pytest.mark.parametrize(
     "html,expected, parser",
-    [
-        ("<div id='my_node'></div>", "my_node", HTMLParser),
-        ("<div></div>", None, HTMLParser),
-        ("<div id='my_node'></div>", "my_node", LexborHTMLParser),
-        ("<div></div>", None, LexborHTMLParser),
-    ],
+    _NODE_ID_CASES,
 )
 def test_get_node_id(html, expected, parser):
     html_parser = parser(html)
@@ -268,6 +279,7 @@ def test_text_node_returns_text_parent(parser):
     assert node.text(deep=False) == "foo bar"
 
 
+@requires_modest
 def test_text_node_returns_text_when_deep():
     html = "<div>foo bar</div>"
     html_parser = HTMLParser(html)
@@ -565,6 +577,7 @@ def test_node_comparison_fails(parser):
     assert node != 123
 
 
+@requires_modest
 def test_raw_value():
     html_parser = HTMLParser("<div>&#x3C;test&#x3E;</div>")
     selector = html_parser.css_first("div")
@@ -606,6 +619,7 @@ def test_srcs_contain(parser):
     assert html_parser.script_srcs_contain(("analytics.js",))
 
 
+@requires_modest
 @pytest.mark.parametrize("parser", (HTMLParser,))
 def test_css_chaining(parser):
     html = """
@@ -622,6 +636,7 @@ def test_css_chaining(parser):
     assert len(tree.select("div").css("span").css(".red").matches) == 2
 
 
+@requires_modest
 @pytest.mark.parametrize("parser", (HTMLParser,))
 def test_css_chaining_two(parser):
     html = """
@@ -639,7 +654,7 @@ def test_css_chaining_two(parser):
     assert query
 
 
-@pytest.mark.parametrize("parser", (HTMLParser, LexborHTMLParser))
+@pytest.mark.parametrize("parser", _PARSERS)
 def test_content_method(parser):
     html = """
     <div>
@@ -651,7 +666,7 @@ def test_content_method(parser):
     assert tree.css_first("#main").text_content is None
 
 
-@pytest.mark.parametrize("parser", (HTMLParser, LexborHTMLParser))
+@pytest.mark.parametrize("parser", _PARSERS)
 def test_merge_text_nodes(parser):
     html = """<div><p><strong>J</strong>ohn</p><p>Doe</p></div>"""
     tree = parser(html)
@@ -663,7 +678,7 @@ def test_merge_text_nodes(parser):
     assert text == "John Doe"
 
 
-@pytest.mark.parametrize("parser", (HTMLParser, LexborHTMLParser))
+@pytest.mark.parametrize("parser", _PARSERS)
 def test_merge_text_nodes_complex(parser):
     from textwrap import dedent
 
@@ -689,7 +704,7 @@ def test_merge_text_nodes_complex(parser):
     assert root.css_first("section > div").text() == "with more nesting here"
 
 
-@pytest.mark.parametrize("parser", (HTMLParser, LexborHTMLParser))
+@pytest.mark.parametrize("parser", _PARSERS)
 def test_merge_text_nodes_three_plus(parser):
     html = """<div><em>O</em><strong>n</strong><b>e</b> <i>T</i><span>w</span><u>o</u> <small>T</small><big>h</big><mark>r</mark><sub>e</sub><sup>e</sup></div>"""
     tree = parser(html)
@@ -743,6 +758,7 @@ def test_text_strip_and_separator(parser):
     assert result == "hello|world"
 
 
+@requires_modest
 def test_attribute_longer_than_missing_attribute():
     html = """
     <div>
@@ -758,6 +774,7 @@ def test_attribute_longer_than_missing_attribute():
     assert "very-long-url" in matches[0].attributes["href"]
 
 
+@requires_modest
 def test_attribute_longer_than_missing_attribute_with_start():
     html = """
     <div>

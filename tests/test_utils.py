@@ -20,7 +20,8 @@ from selectolax.lexbor import (
 from selectolax.lexbor import (
     parse_fragment as lexbor_parse_fragment,
 )
-from selectolax.parser import HTMLParser, Node, create_tag, parse_fragment
+
+from ._engines import HTMLParser, Node, create_tag, parse_fragment
 
 
 class Impl(NamedTuple):
@@ -30,22 +31,29 @@ class Impl(NamedTuple):
     parse_fragment_fn: Callable[[str], Sequence[Node | LexborNode]]
 
 
-_IMPL_PARAMETRIZER = (
-    "impl",
-    (
+_IMPLS = [
+    Impl(
+        parser=LexborHTMLParser,
+        node=LexborNode,
+        tag_fn=lexbor_create_tag,
+        parse_fragment_fn=lexbor_parse_fragment,
+    ),
+]
+
+if HTMLParser is not None:
+    _IMPLS.insert(
+        0,
         Impl(
             parser=HTMLParser,
             node=Node,
             tag_fn=create_tag,
             parse_fragment_fn=parse_fragment,
         ),
-        Impl(
-            parser=LexborHTMLParser,
-            node=LexborNode,
-            tag_fn=lexbor_create_tag,
-            parse_fragment_fn=lexbor_parse_fragment,
-        ),
-    ),
+    )
+
+_IMPL_PARAMETRIZER = (
+    "impl",
+    _IMPLS,
 )
 
 

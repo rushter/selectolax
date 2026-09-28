@@ -1,5 +1,9 @@
 # selectolax Changelog
 
+
+- Support lexbor-only builds with `--disable-modest`
+- Importing `selectolax` no longer automatically imports `selectolax.parser` and `selectolax.lexbor`
+
 # Version 0.4.12
 
 - Add `options` parameter to `LexborHTMLParser` to pass Lexbor document parsing options

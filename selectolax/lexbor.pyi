@@ -27,7 +27,7 @@ class LexborDocumentOptions(IntFlag):
 
     Default value. No options are set.
     """
-    UNDEF: int
+    UNDEF = ...
 
     """Original Lexbor name: ``LXB_DOM_DOCUMENT_OPT_WO_EVENTS``.
 
@@ -38,7 +38,7 @@ class LexborDocumentOptions(IntFlag):
     disables behaviors implemented through those callbacks, such as
     ``<selectedcontent>`` copying the selected ``<option>``.
     """
-    WO_EVENTS: int
+    WO_EVENTS = ...
 
 class LexborAttributes:
     """A dict-like object that represents attributes."""

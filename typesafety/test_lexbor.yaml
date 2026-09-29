@@ -6,7 +6,7 @@
     from selectolax.parser import HTMLParser
     parser = HTMLParser("")
     node = parser.css_first(query="", strict= {{ strict }})
-    reveal_type(node) # N: Revealed type is "Union[selectolax.parser.Node, None]"
+    reveal_type(node) # N: Revealed type is "selectolax.parser.Node | None"
 
 - case: html_parser_css_first_with_none_default
   parametrized:
@@ -16,7 +16,7 @@
     from selectolax.parser import HTMLParser
     parser = HTMLParser("")
     node = parser.css_first(query="",default=None,strict= {{strict}})
-    reveal_type(node) # N: Revealed type is "Union[selectolax.parser.Node, None]"
+    reveal_type(node) # N: Revealed type is "selectolax.parser.Node | None"
 
 - case: html_parser_css_first_with_default
   parametrized:
@@ -26,7 +26,7 @@
     from selectolax.parser import HTMLParser
     parser = HTMLParser("")
     node = parser.css_first(query="",default="", strict ={{strict}})
-    reveal_type(node) # N: Revealed type is "Union[selectolax.parser.Node, builtins.str]"
+    reveal_type(node) # N: Revealed type is "selectolax.parser.Node | str"
 
 
 - case: lexbor_node_css_first_without_default
@@ -39,7 +39,7 @@
     node = parser.root
     if node is not None:
       res = node.css_first(query="", strict ={{strict}})
-      reveal_type(res) # N: Revealed type is "Union[selectolax.parser.Node, None]"
+      reveal_type(res) # N: Revealed type is "selectolax.parser.Node | None"
 
 - case: lexbor_node_css_first_with_none_default
   parametrized:
@@ -51,7 +51,7 @@
     node = parser.root
     if node is not None:
       res = node.css_first(query="",default=None, strict ={{strict}})
-      reveal_type(res) # N: Revealed type is "Union[selectolax.parser.Node, None]"
+      reveal_type(res) # N: Revealed type is "selectolax.parser.Node | None"
 
 - case: lexbor_node_css_first_with_default
   parametrized:
@@ -63,4 +63,4 @@
     node = parser.root
     if node is not None:
       res = node.css_first(query="",default="", strict ={{strict}})
-      reveal_type(res) # N: Revealed type is "Union[selectolax.parser.Node, builtins.str]"
+      reveal_type(res) # N: Revealed type is "selectolax.parser.Node | str"

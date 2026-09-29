@@ -996,6 +996,7 @@ cdef class LexborHTMLParser:
         -------
         LexborNode
             Newly created element node.
+
         Raises
         ------
         SelectolaxError

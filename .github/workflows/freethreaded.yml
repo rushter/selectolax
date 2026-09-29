@@ -1,0 +1,52 @@
+name: Free-threaded Python
+
+on:
+  pull_request:
+    branches:
+      - master
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  test-freethreaded:
+    name: Free-threaded ${{ matrix.python-version }} on ${{ matrix.platform }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # Free-threading is stable and ABI-supported since 3.14. 3.13t was
+        # experimental and is intentionally not tested here.
+        python-version: ["3.14t"]
+        platform: [ubuntu-24.04]
+    runs-on: ${{ matrix.platform }}
+    timeout-minutes: 15
+    env:
+      # Force the GIL to stay disabled, even if an imported extension did not
+      # declare Py_mod_gil compatibility, so problems surface as failures.
+      PYTHON_GIL: "0"
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: true
+    - name: Set up free-threaded Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v6
+      with:
+        python-version: ${{ matrix.python-version }}
+        allow-prereleases: true
+    - name: Verify free-threaded interpreter
+      run: |
+        python --version --version
+        python -c "import sysconfig; assert sysconfig.get_config_var('Py_GIL_DISABLED') == 1, 'not a free-threaded build'"
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip setuptools
+        pip install -r requirements_dev.txt
+        pip install "Cython>=3.1"
+        USE_LEXBOR=1 python setup.py build_ext --inplace --cython
+    - name: Verify the GIL stays disabled after import
+      run: |
+        python -W error::RuntimeWarning -c "import sys, selectolax.parser, selectolax.lexbor; assert not sys._is_gil_enabled(), 'an extension re-enabled the GIL'"
+    - name: Test with pytest
+      run: |
+        USE_LEXBOR=1 pytest tests

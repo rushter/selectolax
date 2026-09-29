@@ -770,7 +770,7 @@ def test_css_selector_invalid_syntax():
 
     root.css("[invalid")
     with pytest.raises(SelectolaxError):
-        root.css("[invalid")
+        root.css("[invalid&]")
 
 
 def test_selector_attribute_longer_than_edge_cases():

@@ -17,7 +17,7 @@ jobs:
       matrix:
         # Free-threading is stable and ABI-supported since 3.14. 3.13t was
         # experimental and is intentionally not tested here.
-        python-version: ["3.14t"]
+        python-version: ["3.15t"]
         platform: [ubuntu-24.04]
     runs-on: ${{ matrix.platform }}
     timeout-minutes: 15

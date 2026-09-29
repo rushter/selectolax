@@ -54,44 +54,44 @@ Here are some basic examples to get you started with selectolax:
 Parsing HTML and extracting text:
 
 ```python
-In [1]: from selectolax.lexbor import LexborHTMLParser
-   ...:
-   ...: html = """
-   ...: <h1 id="title" data-updated="20201101">Hi there</h1>
-   ...: <div class="post">Lorem Ipsum is simply dummy text of the printing and typesetting industry. </div>
-   ...: <div class="post">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</div>
-   ...: """
-   ...: tree = LexborHTMLParser(html)
+from selectolax.lexbor import LexborHTMLParser
 
-In [2]: tree.css_first('h1#title').text()
-Out[2]: 'Hi there'
+html = """
+<h1 id="title" data-updated="20201101">Hi there</h1>
+<div class="post">Lorem Ipsum is simply dummy text of the printing and typesetting industry. </div>
+<div class="post">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</div>
+"""
+tree = LexborHTMLParser(html)
 
-In [3]: tree.css_first('h1#title').attributes
-Out[3]: {'id': 'title', 'data-updated': '20201101'}
+print(tree.css_first('h1#title').text())
+# 'Hi there'
 
-In [4]: [node.text() for node in tree.css('.post')]
-Out[4]:
-['Lorem Ipsum is simply dummy text of the printing and typesetting industry. ',
- 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.']
+print(tree.css_first('h1#title').attributes)
+# {'id': 'title', 'data-updated': '20201101'}
+
+print([node.text() for node in tree.css('.post')])
+# ['Lorem Ipsum is simply dummy text of the printing and typesetting industry. ',
+#  'Lorem ipsum dolor sit amet, consectetur adipiscing elit.']
 ```
 
 ### Using advanced CSS selectors
 
 ```python
-In [1]: html = "<div><p id=p1><p id=p2><p id=p3><a>link</a><p id=p4><p id=p5>text<p id=p6></div>"
-   ...: selector = "div > :nth-child(2n+1):not(:has(a))"
+from selectolax.lexbor import LexborHTMLParser
 
-In [2]: for node in LexborHTMLParser(html).css(selector):
-   ...:     print(node.attributes, node.text(), node.tag)
-   ...:     print(node.parent.tag)
-   ...:     print(node.html)
-   ...:
-{'id': 'p1'}  p
-div
-<p id="p1"></p>
-{'id': 'p5'} text p
-div
-<p id="p5">text</p>
+html = "<div><p id=p1><p id=p2><p id=p3><a>link</a><p id=p4><p id=p5>text<p id=p6></div>"
+selector = "div > :nth-child(2n+1):not(:has(a))"
+
+for node in LexborHTMLParser(html).css(selector):
+    print(node.attributes, node.text(), node.tag)
+    print(node.parent.tag)
+    print(node.html)
+# {'id': 'p1'}  p
+# div
+# <p id="p1"></p>
+# {'id': 'p5'} text p
+# div
+# <p id="p5">text</p>
 ```
 
 #### Using `lexbor-contains` CSS pseudo-class to match text
@@ -121,16 +121,16 @@ and the underlying C library that selectolax uses is not maintained anymore.
 To use `lexbor`, just import the parser and use it in the similar way to the `HTMLParser`.
 
 ```python
-In [1]: from selectolax.lexbor import LexborHTMLParser
+from selectolax.lexbor import LexborHTMLParser
 
-In [2]: html = """
-   ...: <title>Hi there</title>
-   ...: <div id="updated">2021-08-15</div>
-   ...: """
+html = """
+<title>Hi there</title>
+<div id="updated">2021-08-15</div>
+"""
 
-In [3]: parser = LexborHTMLParser(html)
-In [4]: parser.root.css_first("#updated").text()
-Out[4]: '2021-08-15'
+parser = LexborHTMLParser(html)
+print(parser.root.css_first("#updated").text())
+# '2021-08-15'
 ```
 
 ## Simple Benchmark

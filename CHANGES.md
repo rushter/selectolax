@@ -1,8 +1,10 @@
 # selectolax Changelog
 
+# Version 0.4.13
 
 - Support lexbor-only builds with `--disable-modest`
 - Importing `selectolax` no longer automatically imports `selectolax.parser` and `selectolax.lexbor`
+- Update lexbor
 
 # Version 0.4.12
 

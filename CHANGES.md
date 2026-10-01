@@ -2,7 +2,9 @@
 
 # Version 1.0 (Unreleased)
 
-- **Breaking change**: remove the Modest backend. `selectolax.parser` is now a stub that raises `ImportError`
+This release contains **breaking changes**.
+
+- Remove the Modest backend. `selectolax.parser` is now a stub that raises `ImportError`
   on import, use the lexbor backend (`from selectolax.lexbor import LexborHTMLParser`) instead.
 - Fix memory leak in `text_lexbor` for lexbor backend
 - Fix memory leak and extraction speed in `merge_text_nodes` for lexbor backend. It's now up to 10 times faster
@@ -10,6 +12,13 @@
 - Fix `inner_html` setter attaching element children to non-element nodes for lexbor backend.
 - Fix `head` and `body` of lexbor backend dangling after setting `inner_html` on the `<html>` element
 - Avoid segfaults when getting OOM errors
+- Improve performance of `text` method. Text fragments are now concatenated as raw bytes
+  and decoded once instead of decoding every text node separately, which makes `text()` up to 5x faster.
+- Fix `skip_empty` being ignored by `text(deep=True)` in the lexbor backend.
+- Fix `text()` raising `UnicodeDecodeError` on undecodable bytes when `deep=False`; it substitutes
+  U+FFFD like the deep path always did
+- Avoid reading trailing NUL bytes and uninitialised slack into the output of `text` and `text_content`
+  in the lexbor backend
 
 # Version 0.4.13
 

@@ -1,4 +1,5 @@
 from cpython.bool cimport bool
+from cpython.bytes cimport PyBytes_AS_STRING
 from cpython.exc cimport PyErr_SetObject
 from cpython.mem cimport (
     PyMem_RawCalloc,
@@ -7,6 +8,7 @@ from cpython.mem cimport (
     PyMem_RawRealloc
 )
 from enum import IntFlag
+from libc.string cimport memcpy
 
 _ENCODING = 'UTF-8'
 

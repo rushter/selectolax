@@ -31,6 +31,7 @@ cdef extern from "lexbor/core/core.h" nogil:
 
     lexbor_str_t* lexbor_str_create()
     lxb_char_t * lexbor_str_data_noi(lexbor_str_t *str)
+    size_t lexbor_str_length_noi(lexbor_str_t *str)
     lxb_char_t * lexbor_str_append(lexbor_str_t *str, lexbor_mraw_t *mraw,
                                    const lxb_char_t *data, size_t length)
 

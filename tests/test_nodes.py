@@ -717,3 +717,393 @@ def test_any_attribute_longer_than_all_missing(parser):
     html = "<div><a>one</a><a>two</a></div>"
     tree = parser(html)
     assert tree.root.select("a").any_attribute_longer_than("href", 0) is False
+
+
+def _descendants(node):
+    """Every descendant of ``node`` in lexbor's walk order."""
+    out = []
+    stack = list(reversed(list(node.iter(include_text=True))))
+    while stack:
+        current = stack.pop()
+        out.append(current)
+        stack.extend(reversed(list(current.iter(include_text=True))))
+    return out
+
+
+def _reference_text(node, deep, separator, strip, skip_empty):
+    """Recompute text() in pure Python, as ``separator.join(parts)``."""
+    parts = []
+
+    def add(candidate):
+        content = candidate.text_content
+        if content is None:
+            return
+        if skip_empty and candidate.is_empty_text_node:
+            return
+        parts.append(content.strip() if strip else content)
+
+    if node.is_text_node:
+        add(node)
+    if deep:
+        for descendant in _descendants(node):
+            if descendant.is_text_node:
+                add(descendant)
+    else:
+        for child in node.iter(include_text=True):
+            if child.is_text_node:
+                add(child)
+    return separator.join(parts)
+
+
+_TEXT_ASSEMBLY_CASES = [
+    "<div>a<span>b</span>c</div>",
+    "<div><span>  x  </span><span>\t y \n</span></div>",
+]
+
+# Tuple layout:
+#   (html, selector, is_fragment, deep, separator, strip, skip_empty, expected)
+# ``selector`` of None means the parser root.
+_TEXT_EXPECTED_CASES = [
+    # <div>a<span>b</span>c</div> has three text nodes, "a", "b" and "c", so the
+    # deep walk concatenates them to "abc".
+    ("<div>a<span>b</span>c</div>", "div", False, True, "", False, False, "abc"),
+    ("<div>a<span>b</span>c</div>", "div", False, True, "|", False, False, "a|b|c"),
+    ("<div>a<span>b</span>c</div>", "div", False, True, " ", False, False, "a b c"),
+    ("<div>a<span>b</span>c</div>", "div", False, True, "-", True, False, "a-b-c"),
+    ("<div>a<span>b</span>c</div>", "div", False, True, "", True, True, "abc"),
+    # deep=False only sees the div's own text children, "a" and "c"; the text
+    # inside the span is not a direct child.
+    ("<div>a<span>b</span>c</div>", "div", False, False, "", False, False, "ac"),
+    ("<div>a<span>b</span>c</div>", "div", False, False, "|", False, False, "a|c"),
+    # Text inside <script> and <style> is text like any other.
+    (
+        "<div><script>var x=1;</script><style>a{}</style>ok</div>",
+        "div",
+        False,
+        True,
+        "",
+        False,
+        False,
+        "var x=1;a{}ok",
+    ),
+    (
+        "<div><script>var x=1;</script><style>a{}</style>ok</div>",
+        "div",
+        False,
+        True,
+        "|",
+        False,
+        False,
+        "var x=1;|a{}|ok",
+    ),
+    # Whitespace around the fragments survives unless strip is set, and strip
+    # is applied per fragment rather than to the joined result, so both the
+    # leading and the trailing whitespace of each fragment disappear. The
+    # single space inside "  x  " and inside "\t y \n" is interior and stays.
+    (
+        "<div><span>  x  </span><span>\t y \n</span></div>",
+        "div",
+        False,
+        True,
+        "",
+        False,
+        False,
+        "  x  \t y \n",
+    ),
+    (
+        "<div><span>  x  </span><span>\t y \n</span></div>",
+        "div",
+        False,
+        True,
+        "|",
+        False,
+        False,
+        "  x  |\t y \n",
+    ),
+    (
+        "<div><span>  x  </span><span>\t y \n</span></div>",
+        "div",
+        False,
+        True,
+        "|",
+        True,
+        False,
+        "x|y",
+    ),
+    (
+        "<div><span>  x  </span><span>\t y \n</span></div>",
+        "div",
+        False,
+        True,
+        "",
+        True,
+        False,
+        "xy",
+    ),
+    (
+        "<div><span>  x  </span><span>\t y \n</span></div>",
+        "div",
+        False,
+        True,
+        "",
+        True,
+        True,
+        "xy",
+    ),
+    # Both text nodes here are whitespace only, so skip_empty drops both. It
+    # used to be ignored entirely on the deep walk.
+    (
+        "<div>\n  \n<span>\t</span></div>",
+        "div",
+        False,
+        True,
+        "",
+        False,
+        False,
+        "\n  \n\t",
+    ),
+    ("<div>\n  \n<span>\t</span></div>", "div", False, True, "", True, True, ""),
+    (
+        "<div>\n  \n<span>\t</span></div>",
+        "div",
+        False,
+        True,
+        "|",
+        False,
+        False,
+        "\n  \n|\t",
+    ),
+    ("<div>\n  \n<span>\t</span></div>", "div", False, True, "|", True, True, ""),
+    (
+        "<div>\n  \n<span>\t</span></div>",
+        "div",
+        False,
+        False,
+        "",
+        False,
+        False,
+        "\n  \n",
+    ),
+    ("<div>\n  \n<span>\t</span></div>", "div", False, False, "", True, True, ""),
+    # skip_empty on the deep walk drops leading whitespace before a non-empty
+    # fragment too.
+    (
+        "<div>\n  <span>\t</span><span>keep</span></div>",
+        "div",
+        False,
+        True,
+        "",
+        False,
+        False,
+        "\n  \tkeep",
+    ),
+    (
+        "<div>\n  <span>\t</span><span>keep</span></div>",
+        "div",
+        False,
+        True,
+        "|",
+        True,
+        True,
+        "keep",
+    ),
+    # A plain space is ASCII whitespace, so it counts as empty.
+    ("<div> </div>", "div", False, True, "", False, False, " "),
+    ("<div> </div>", "div", False, True, "", True, False, ""),
+    ("<div> </div>", "div", False, True, "", True, True, ""),
+    # NBSP and the ideographic space are stripped by str.strip(), but they are
+    # not ASCII whitespace, so skip_empty keeps them.
+    ("<div>\u00a0</div>", "div", False, True, "", False, False, "\u00a0"),
+    ("<div>\u00a0</div>", "div", False, True, "", True, False, ""),
+    ("<div>\u00a0</div>", "div", False, True, "", False, True, "\u00a0"),
+    ("<div>\u3000</div>", "div", False, True, "", False, False, "\u3000"),
+    ("<div>\u3000</div>", "div", False, True, "", True, False, ""),
+    # Empty and text-free elements yield an empty string, not None.
+    ("<div></div>", "div", False, True, "", False, False, ""),
+    ("<div></div>", "div", False, True, "|", False, False, ""),
+    ("<div></div>", "div", False, False, "", False, False, ""),
+    # Non-recursive text around an inline element.
+    (
+        "<p>lead<em>mid</em>trail</p>",
+        "p",
+        False,
+        True,
+        "",
+        False,
+        False,
+        "leadmidtrail",
+    ),
+    ("<p>lead<em>mid</em>trail</p>", "p", False, False, "", False, False, "leadtrail"),
+    # <br> contributes nothing, so deep and shallow agree.
+    ("<div>a<br>b<br>c</div>", "div", False, True, "", False, False, "abc"),
+    ("<div>a<br>b<br>c</div>", "div", False, False, "", False, False, "abc"),
+    (
+        "<table><tr><td>x</td><td>y</td></tr></table>",
+        "td",
+        False,
+        True,
+        "",
+        False,
+        False,
+        "x",
+    ),
+    # Multibyte characters survive verbatim and are counted once.
+    (
+        "<div>\u00e9\u4e16\u754c\U0001f680</div>",
+        "div",
+        False,
+        True,
+        "",
+        False,
+        False,
+        "\u00e9\u4e16\u754c\U0001f680",
+    ),
+    (
+        "<div><span>\u00e9</span><span>\u4e16</span><span>\U0001f680</span></div>",
+        "div",
+        False,
+        True,
+        "|",
+        False,
+        False,
+        "\u00e9|\u4e16|\U0001f680",
+    ),
+    # <div>a<b>a<b>a<b>z</b></b></b></div> has four text nodes, "a", "a",
+    # "a", "z". Nesting adds elements, not text.
+    (
+        "<div>a<b>" * 3 + "z" + "</b>" * 3 + "</div>",
+        "div",
+        False,
+        True,
+        "",
+        False,
+        False,
+        "aaaz",
+    ),
+    (
+        "<div>a<b>" * 3 + "z" + "</b>" * 3 + "</div>",
+        "div",
+        False,
+        True,
+        "|",
+        False,
+        False,
+        "a|a|a|z",
+    ),
+    # Repeated sibling elements: one separator between each, none trailing.
+    (
+        "<div><span>w0</span><span>w1</span><span>w2</span></div>",
+        "div",
+        False,
+        True,
+        "",
+        False,
+        False,
+        "w0w1w2",
+    ),
+    (
+        "<div><span>w0</span><span>w1</span><span>w2</span></div>",
+        "div",
+        False,
+        True,
+        "|",
+        False,
+        False,
+        "w0|w1|w2",
+    ),
+    (
+        "<div><span>w0</span><span>w1</span><span>w2</span></div>",
+        "div",
+        False,
+        True,
+        "|",
+        True,
+        False,
+        "w0|w1|w2",
+    ),
+    # Fragments: the root is the first node of the fragment, and deep=True
+    # reaches the siblings that follow it. A bare text root is covered by
+    # test_text_does_not_duplicate_fragment_root_text_node in test_lexbor.py.
+    ("<p>one</p><p>two</p>", None, True, True, "|", False, False, "one|two"),
+    ("<p>one</p><p>two</p>", None, True, True, "", False, False, "onetwo"),
+    # Not pinned here: deep=False on a fragment root walks the *parent's*
+    # direct children, which are elements, so it returns "" while deep=True
+    # returns "onetwo". That asymmetry is still unresolved, so no expected
+    # value is asserted for it.
+    # css_first() hands back an ordinary node rather than the fragment root,
+    # so it only sees its own subtree.
+    ("<p>one</p><p>two</p>", "p", True, True, "", False, False, "one"),
+    ("<p>a<b>x</b>c</p>", "p", True, True, "", False, False, "axc"),
+]
+
+
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+@pytest.mark.parametrize(
+    "html,selector,is_fragment,deep,separator,strip,skip_empty,expected",
+    _TEXT_EXPECTED_CASES,
+)
+def test_text_expected_value(
+    parser, html, selector, is_fragment, deep, separator, strip, skip_empty, expected
+):
+    """Pin text() to literal expected strings."""
+    node = parser(html, is_fragment=is_fragment).root
+    assert node is not None
+    if selector is not None:
+        node = node.css_first(selector)
+        assert node is not None, f"selector {selector!r} not found in {html!r}"
+    assert (
+        node.text(deep=deep, separator=separator, strip=strip, skip_empty=skip_empty)
+        == expected
+    )
+
+
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+@pytest.mark.parametrize("html", _TEXT_ASSEMBLY_CASES)
+@pytest.mark.parametrize("is_fragment", [False, True])
+@pytest.mark.parametrize("deep", [True, False])
+@pytest.mark.parametrize("separator", ["", "|"])
+@pytest.mark.parametrize("strip", [True, False])
+@pytest.mark.parametrize("skip_empty", [True, False])
+def test_text_matches_join_of_parts(
+    parser, html, is_fragment, deep, separator, strip, skip_empty
+):
+    """Every combination of text() options must equal ``separator.join(parts)``."""
+    tree = parser(html, is_fragment=is_fragment)
+    node = tree.root
+    if node is None:
+        pytest.skip("empty fragment has no root")
+    expected = _reference_text(node, deep, separator, strip, skip_empty)
+    assert (
+        node.text(deep=deep, separator=separator, strip=strip, skip_empty=skip_empty)
+        == expected
+    )
+
+
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_text_replaces_undecodable_bytes_instead_of_raising(parser):
+    """text() substitutes U+FFFD rather than raising, on both paths."""
+    node = parser(b"<div>\xff\xfe bad \x80bytes</div>").css_first("div")
+    for kwargs in ({}, {"deep": False}, {"strip": True}, {"separator": "|"}):
+        result = node.text(**kwargs)
+        assert isinstance(result, str)
+        assert "bad" in result
+        assert "\ufffd" in result
+
+
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_text_content_exact_for_text_nodes(parser):
+    """text_content returns this node's own characters verbatim."""
+    tree = parser("<div>Super<b>Test</b></div>")
+    child = tree.css_first("div").child
+    assert child.is_text_node
+    assert child.text_content == "Super"
+    assert tree.css_first("b").text_content is None
+    assert tree.css_first("div").text_content is None
+
+
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_text_and_text_lexbor_agree(parser):
+    tree = parser("<div>a<span>b</span>c</div>")
+    node = tree.css_first("div")
+    assert node.text() == node.text_lexbor()
+    assert tree.root.text() == tree.root.text_lexbor()

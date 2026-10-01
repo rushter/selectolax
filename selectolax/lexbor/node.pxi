@@ -1,5 +1,12 @@
 cimport cython
+from cpython.bytearray cimport (
+    PyByteArray_AS_STRING,
+    PyByteArray_GET_SIZE,
+    PyByteArray_Resize,
+)
 from cpython.exc cimport PyErr_SetNone
+from cpython.list cimport PyList_Append
+from cpython.unicode cimport PyUnicode_DecodeUTF8
 
 import logging
 
@@ -325,39 +332,34 @@ cdef class LexborNode:
         cdef unsigned char * text
         cdef LexborNode start_node = self._get_node()
         cdef lxb_dom_node_t * node = <lxb_dom_node_t *> start_node.node.first_child
+        cdef TextContainer container = TextContainer.create(separator, strip, skip_empty)
+
+        if _is_node_type(self.node, LXB_DOM_NODE_TYPE_TEXT):
+            if not skip_empty or not is_empty_text_node(<lxb_dom_node_t *> self.node):
+                text = <unsigned char *> lexbor_str_data_noi(&(<lxb_dom_character_data_t *> self.node).data)
+                if text != NULL:
+                    container.add_bytes(
+                        text, lexbor_str_length_noi(&(<lxb_dom_character_data_t *> self.node).data)
+                    )
 
         if not deep:
-            container = TextContainer(separator, strip)
-            if _is_node_type(self.node, LXB_DOM_NODE_TYPE_TEXT):
-                text = <unsigned char *> lexbor_str_data_noi(&(<lxb_dom_character_data_t *> self.node).data)
-                if text != NULL:
-                    if not skip_empty or not self.is_empty_text_node:
-                        py_text = text.decode(_ENCODING)
-                        container.append(py_text)
-
             while node != NULL:
                 if _is_node_type(node, LXB_DOM_NODE_TYPE_TEXT):
-                    text = <unsigned char *> lexbor_str_data_noi(&(<lxb_dom_character_data_t *> node).data)
-                    if text != NULL:
-                        if not skip_empty or not is_empty_text_node(node):
-                            py_text = text.decode(_ENCODING)
-                            container.append(py_text)
+                    if not skip_empty or not is_empty_text_node(node):
+                        text = <unsigned char *> lexbor_str_data_noi(&(<lxb_dom_character_data_t *> node).data)
+                        if text != NULL:
+                            container.add_bytes(
+                                text, lexbor_str_length_noi(&(<lxb_dom_character_data_t *> node).data)
+                            )
                 node = node.next
             return container.text
-        else:
-            container = TextContainer(separator, strip)
-            if _is_node_type(self.node, LXB_DOM_NODE_TYPE_TEXT):
-                text = <unsigned char *> lexbor_str_data_noi(&(<lxb_dom_character_data_t *> self.node).data)
-                if text != NULL:
-                    if not skip_empty or not self.is_empty_text_node:
-                        container.append(text.decode(_ENCODING))
 
-            lxb_dom_node_simple_walk(
-                <lxb_dom_node_t *> start_node.node,
-                <lxb_dom_node_simple_walker_f> text_callback,
-                <void *> container
-            )
-            return container.text
+        lxb_dom_node_simple_walk(
+            <lxb_dom_node_t *> start_node.node,
+            <lxb_dom_node_simple_walker_f> text_callback,
+            <void *> container
+        )
+        return container.text
 
     cdef inline LexborNode _get_node(self):
         cdef LexborNode node
@@ -1114,17 +1116,14 @@ cdef class LexborNode:
         text : str or None.
         """
         cdef unsigned char * text
-        cdef lxb_dom_node_t * node = <lxb_dom_node_t *> self.node.first_child
-        cdef TextContainer container
+        cdef lexbor_str_t * str_data
         if not _is_node_type(self.node, LXB_DOM_NODE_TYPE_TEXT):
             return None
 
-        text = <unsigned char *> lexbor_str_data_noi(&(<lxb_dom_character_data_t *> self.node).data)
+        str_data = &(<lxb_dom_character_data_t *> self.node).data
+        text = <unsigned char *> lexbor_str_data_noi(str_data)
         if text != NULL:
-            container = TextContainer.new_with_defaults()
-            py_text = text.decode(_ENCODING)
-            container.append(py_text)
-            return container.text
+            return PyUnicode_DecodeUTF8(<char *> text, lexbor_str_length_noi(str_data), "strict")
         return None
 
     @property
@@ -1255,53 +1254,95 @@ cdef class LexborNode:
 @cython.internal
 @cython.final
 cdef class TextContainer:
+    """Accumulates the text of consecutive text nodes into a single ``str``."""
+
+    cdef bytearray _buf
+    cdef bytes _sep_bytes
     cdef list _parts
     cdef str separator
     cdef bint strip
+    cdef bint skip_empty
+    cdef Py_ssize_t _count
+
+    @staticmethod
+    cdef TextContainer create(str separator, bint strip, bint skip_empty=False):
+        cdef TextContainer cls = <TextContainer> TextContainer.__new__(TextContainer)
+        cls._buf = bytearray()
+        cls._sep_bytes = separator.encode(_ENCODING) if separator else b''
+        cls._parts = [] if strip else None
+        cls.separator = separator
+        cls.strip = strip
+        cls.skip_empty = skip_empty
+        cls._count = 0
+        return cls
 
     @staticmethod
     cdef TextContainer new_with_defaults():
-        cdef TextContainer cls = TextContainer.__new__(TextContainer)
-        cls._parts = []
-        cls.separator = ''
-        cls.strip = False
-        return cls
+        return TextContainer.create('', False)
 
-    def __init__(self, str separator = '', bool strip = False):
-        self._parts = []
-        self.separator = separator
-        self.strip = strip
+    cdef inline int add_bytes(self, const unsigned char *data, Py_ssize_t length) except -1:
+        """Append one raw fragment, inserting the separator before it.
 
-    def append(self, str node_text):
+        The separator is placed *between* fragments rather than after each one
+        so the result matches ``separator.join(parts)`` exactly.
+        """
+        cdef Py_ssize_t size
+        cdef Py_ssize_t sep_len
+
         if self.strip:
-            self._parts.append(node_text.strip())
-        else:
-            self._parts.append(node_text)
+            py_str = PyUnicode_DecodeUTF8(<char *> data, length, "replace")
+            PyList_Append(self._parts, py_str.strip())
+            return 0
+
+        sep_len = len(self._sep_bytes)
+        if self._count > 0 and sep_len > 0:
+            size = PyByteArray_GET_SIZE(self._buf)
+            PyByteArray_Resize(self._buf, size + sep_len)
+            memcpy(
+                PyByteArray_AS_STRING(self._buf) + size,
+                PyBytes_AS_STRING(self._sep_bytes),
+                sep_len
+            )
+
+        size = PyByteArray_GET_SIZE(self._buf)
+        PyByteArray_Resize(self._buf, size + length)
+        if length > 0:
+            memcpy(PyByteArray_AS_STRING(self._buf) + size, <char *> data, length)
+        self._count += 1
+        return 0
 
     @property
     def text(self):
-        return self.separator.join(self._parts)
+        if self.strip:
+            return self.separator.join(self._parts)
+        size = PyByteArray_GET_SIZE(self._buf)
+        if size == 0:
+            return ''
+        return PyUnicode_DecodeUTF8(PyByteArray_AS_STRING(self._buf), size, "replace")
+
 
 cdef lexbor_action_t text_callback(lxb_dom_node_t *node, void *ctx):
     cdef unsigned char *text
+    cdef lexbor_str_t *str_data
+    cdef TextContainer container = <TextContainer> ctx
     cdef lxb_tag_id_t tag_id = lxb_dom_node_tag_id_noi(node)
+
     if tag_id != LXB_TAG__TEXT:
         return LEXBOR_ACTION_OK
 
-    text = <unsigned char *> lexbor_str_data_noi(&(<lxb_dom_text_t *> node).char_data.data)
-    if not text:
+    if container.skip_empty and is_empty_text_node(node):
+        return LEXBOR_ACTION_OK
+
+    str_data = &(<lxb_dom_text_t *> node).char_data.data
+    text = <unsigned char *> lexbor_str_data_noi(str_data)
+    if text == NULL:
         return LEXBOR_ACTION_OK
 
     try:
-        py_str = text.decode(_ENCODING, "replace")
-
-    except Exception as e:
-        PyErr_SetNone(e)
+        container.add_bytes(text, lexbor_str_length_noi(str_data))
+    except Exception:
         return LEXBOR_ACTION_STOP
 
-    cdef TextContainer cls
-    cls = <TextContainer> ctx
-    cls.append(py_str)
     return LEXBOR_ACTION_OK
 
 cdef lxb_status_t serialize_fragment(lxb_dom_node_t *node, lexbor_str_t *lxb_str):

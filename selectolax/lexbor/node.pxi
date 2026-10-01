@@ -449,7 +449,7 @@ cdef class LexborNode:
         text : str
         """
 
-        cdef lxb_char_t *c_text
+        cdef const lxb_char_t *c_text
         cdef size_t str_len = 0
         if self.tag_id in [LXB_TAG__EM_DOCTYPE, LXB_TAG__TEXT, LXB_TAG__EM_COMMENT]:
             return _TAG_TO_NAME[self.tag_id]

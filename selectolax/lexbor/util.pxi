@@ -73,7 +73,7 @@ cdef inline bint is_empty_text_node(lxb_dom_node_t *text_node):
     return _is_whitespace_only(text_bytes, text_length)
 
 
-cdef inline bint _is_whitespace_only(const lxb_char_t *buffer, size_t buffer_length) nogil:
+cdef inline bint _is_whitespace_only(const lxb_char_t *buffer, size_t buffer_length) noexcept nogil:
     """
     Determine whether a byte buffer consists only of HTML ASCII whitespace.
 

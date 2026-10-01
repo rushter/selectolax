@@ -116,7 +116,7 @@ cdef class LexborAttributes:
             return True
 
     def __repr__(self):
-        cdef lxb_char_t *c_text
+        cdef const lxb_char_t *c_text
         cdef size_t str_len = 0
         c_text = lxb_dom_element_qualified_name(<lxb_dom_element_t *> self.node, &str_len)
         tag_name = c_text.decode(_ENCODING, 'ignore') if c_text != NULL else 'unknown'

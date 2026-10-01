@@ -273,7 +273,7 @@ cdef class LexborHTMLParser:
             return -1
         return 0
 
-    cdef inline lxb_status_t _parse_html_document(self, char *html, size_t html_len) nogil:
+    cdef inline lxb_status_t _parse_html_document(self, char *html, size_t html_len) noexcept nogil:
         """Parse HTML as a full HTML document.
         If the input is only a fragment, the parser still accepts it and inserts any missing required elements,
         (such as `<html>`, `<head>`, and `<body>`) into the tree,
@@ -294,7 +294,7 @@ cdef class LexborHTMLParser:
         """
         return lxb_html_document_parse(self.document, <lxb_char_t *> html, html_len)
 
-    cdef inline lxb_status_t _parse_html_fragment(self, char *html, size_t html_len) nogil:
+    cdef inline lxb_status_t _parse_html_fragment(self, char *html, size_t html_len) noexcept nogil:
         """Parse HTML as an HTML fragment.
         The parser does not insert any missing required HTML elements.
 

@@ -292,7 +292,7 @@ cdef class LexborNode:
 
 
 cdef bint is_empty_text_node(lxb_dom_node_t *node)
-cdef inline bint _is_whitespace_only(const lxb_char_t *buffer, size_t buffer_length) nogil
+cdef bint _is_whitespace_only(const lxb_char_t *buffer, size_t buffer_length) noexcept nogil
 
 
 cdef class LexborCSSSelector:
@@ -317,8 +317,8 @@ cdef class LexborHTMLParser:
     cdef public bytes raw_html
     cdef LexborCSSSelector _selector
     cdef inline void _new_html_document(self)
-    cdef inline lxb_status_t _parse_html_document(self, char *html, size_t html_len) nogil
-    cdef inline lxb_status_t _parse_html_fragment(self, char *html, size_t html_len) nogil
+    cdef inline lxb_status_t _parse_html_document(self, char *html, size_t html_len) noexcept nogil
+    cdef inline lxb_status_t _parse_html_fragment(self, char *html, size_t html_len) noexcept nogil
     cdef int _parse_html(self, char *html, size_t html_len) except -1
     cdef object cached_script_texts
     cdef object cached_script_srcs
@@ -331,8 +331,6 @@ cdef extern from "lexbor/dom/dom.h" nogil:
         LEXBOR_ACTION_OK    = 0x00
         LEXBOR_ACTION_STOP  = 0x01
         LEXBOR_ACTION_NEXT  = 0x02
-
-    ctypedef lexbor_action_t (*lxb_dom_node_simple_walker_f)(lxb_dom_node_t *node, void *ctx)
 
     ctypedef struct lxb_dom_character_data_t:
         lxb_dom_node_t node
@@ -367,7 +365,7 @@ cdef extern from "lexbor/dom/dom.h" nogil:
     void * lxb_dom_document_destroy_text_noi(lxb_dom_document_t *document, lxb_char_t *text)
     lxb_dom_node_t * lxb_dom_document_root(lxb_dom_document_t *document)
     lxb_dom_element_t * lxb_dom_interface_element(lxb_dom_node_t *node)
-    lxb_char_t * lxb_dom_element_qualified_name(lxb_dom_element_t *element, size_t *len)
+    const lxb_char_t * lxb_dom_element_qualified_name(const lxb_dom_element_t *element, size_t *len)
     lxb_dom_node_t * lxb_dom_node_destroy(lxb_dom_node_t *node)
     lxb_dom_node_t * lxb_dom_node_destroy_deep(lxb_dom_node_t *root)
     lxb_dom_attr_t * lxb_dom_element_first_attribute_noi(lxb_dom_element_t *element)
@@ -390,8 +388,15 @@ cdef extern from "lexbor/dom/dom.h" nogil:
     void lxb_dom_node_insert_before(lxb_dom_node_t *to, lxb_dom_node_t *node)
     void lxb_dom_node_insert_after(lxb_dom_node_t *to, lxb_dom_node_t *node)
     lxb_dom_text_t * lxb_dom_document_create_text_node(lxb_dom_document_t *document, const lxb_char_t *data, size_t len)
-    void lxb_dom_node_simple_walk(lxb_dom_node_t *root, lxb_dom_node_simple_walker_f walker_cb, void *ctx)
     lxb_dom_node_t* lxb_dom_node_clone(lxb_dom_node_t *node, bint deep)
+
+
+# ``lxb_dom_node_simple_walk`` invokes the callback for every node in the
+# subtree, and selectolax's callback appends to a Python list, so it requires
+# the GIL. These are therefore declared as GIL-requiring rather than ``nogil``.
+cdef extern from "lexbor/dom/dom.h":
+    ctypedef lexbor_action_t (*lxb_dom_node_simple_walker_f)(lxb_dom_node_t *node, void *ctx)
+    void lxb_dom_node_simple_walk(lxb_dom_node_t *root, lxb_dom_node_simple_walker_f walker_cb, void *ctx)
 
 
 cdef extern from "lexbor/dom/interfaces/element.h" nogil:
@@ -664,7 +669,6 @@ cdef extern from "lexbor/selectors/selectors.h" nogil:
     ctypedef struct lxb_selectors_t
     ctypedef struct lxb_css_selector_list_t
     ctypedef struct lxb_css_selector_specificity_t
-    ctypedef lxb_status_t (*lxb_selectors_cb_f)(lxb_dom_node_t *node, lxb_css_selector_specificity_t *spec, void *ctx)
     ctypedef enum lxb_selectors_opt_t:
         LXB_SELECTORS_OPT_DEFAULT = 0x00
         LXB_SELECTORS_OPT_MATCH_ROOT = 1 << 1
@@ -680,5 +684,12 @@ cdef extern from "lexbor/selectors/selectors.h" nogil:
     lxb_selectors_t * lxb_selectors_create()
     lxb_status_t lxb_selectors_init(lxb_selectors_t *selectors)
     lxb_selectors_t * lxb_selectors_destroy(lxb_selectors_t *selectors, bint self_destroy)
+
+
+# ``lxb_selectors_find`` invokes the callback for every matched node, and
+# selectolax's callbacks append to Python lists, so they require the GIL.
+# These are therefore declared as GIL-requiring rather than ``nogil``.
+cdef extern from "lexbor/selectors/selectors.h":
+    ctypedef lxb_status_t (*lxb_selectors_cb_f)(lxb_dom_node_t *node, lxb_css_selector_specificity_t *spec, void *ctx)
     lxb_status_t lxb_selectors_find(lxb_selectors_t *selectors, lxb_dom_node_t *root,
                                     lxb_css_selector_list_t *list, lxb_selectors_cb_f cb, void *ctx)

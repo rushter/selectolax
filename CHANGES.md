@@ -5,6 +5,8 @@
 - Fix memory leak in `text_lexbor` for lexbor backend
 - Fix memory leak and extraction speed in `merge_text_nodes` for lexbor backend. It's now up to 10 times faster
 - Improve speed of `__eq__` for lexbor backend
+- Fix `inner_html` setter attaching element children to non-element nodes for lexbor backend.
+- Fix `head` and `body` of lexbor backend dangling after setting `inner_html` on the `<html>` element
 
 # Version 0.4.13
 

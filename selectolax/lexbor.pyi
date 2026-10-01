@@ -135,6 +135,8 @@ class LexborSelector:
         Replaces existing data inside the node.
         Works similar to innerHTML in JavaScript.
 
+        Only available for element nodes.
+
         Parameters
         ----------
         html : str
@@ -835,9 +837,18 @@ class LexborNode:
         Replaces existing data inside the node.
         Works similar to innerHTML in JavaScript.
 
+        Only available for element nodes.
+
         Parameters
         ----------
         html : str
+
+        Raises
+        ------
+        TypeError
+            If the current node is not an element node.
+        SelectolaxError
+            If the HTML could not be parsed into the node.
 
         """
         ...

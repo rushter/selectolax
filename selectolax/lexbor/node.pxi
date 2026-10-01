@@ -1158,17 +1158,37 @@ cdef class LexborNode:
         Replaces existing data inside the node.
         Works similar to innerHTML in JavaScript.
 
+        Only available for element nodes.
+
         Parameters
         ----------
         html : str | None
 
+        Raises
+        ------
+        TypeError
+            If the current node is not an element node.
+        SelectolaxError
+            If the HTML could not be parsed into the node.
+
         """
         cdef bytes bytes_val
+
+        if not _is_node_type(self.node, LXB_DOM_NODE_TYPE_ELEMENT):
+            raise TypeError("inner_html is only available for element nodes")
+
         bytes_val = <bytes> html.encode("utf-8")
-        lxb_html_element_inner_html_set(
+        if lxb_html_element_inner_html_set(
             <lxb_html_element_t *> self.node,
             <lxb_char_t *> bytes_val, len(bytes_val)
-        )
+        ) == NULL:
+            raise SelectolaxError("Can't set inner HTML.")
+
+        # Replacing the children of <html> destroys the old <head>/<body> without
+        # going through the insertion modes that normally keep the document's
+        # cached head/body pointers valid, so they have to be recomputed.
+        if lxb_dom_node_tag_id_noi(self.node) == LXB_TAG_HTML:
+            _refresh_head_body(self.parser.document)
 
     def clone(self) -> LexborNode:
         """Clone the current node.

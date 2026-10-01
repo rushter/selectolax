@@ -90,6 +90,51 @@ cdef lxb_dom_node_t* _clone_node_into_document(
     return cloned
 
 
+cdef inline void _refresh_head_body(lxb_html_document_t* document):
+    """Recompute the cached ``head``/``body`` pointers of a document.
+
+    Lexbor caches ``document->head`` and ``document->body`` while building the
+    tree, from its insertion modes. Code that destroys and recreates children
+    directly, such as ``lxb_html_element_inner_html_set`` on the ``<html>``
+    element, bypasses those insertion modes and leaves the cached pointers
+    dangling. Since freed lexbor blocks go back onto a size-keyed free list,
+    the very next same-size allocation can hand the same address out again, so
+    a stale pointer is not merely wrong but can alias an unrelated live node.
+
+    Both pointers are reset to ``NULL`` before the tree is scanned, so a document
+    that no longer has a ``<head>``/``<body>`` reports them as absent.
+
+    Returns
+    -------
+    None
+    """
+    cdef lxb_dom_node_t* html_node
+    cdef lxb_dom_node_t* child
+
+    if document == NULL:
+        return
+
+    document.head = NULL
+    document.body = NULL
+
+    html_node = document.dom_document.node.first_child
+    while html_node != NULL:
+        if lxb_dom_node_tag_id_noi(html_node) == LXB_TAG_HTML:
+            break
+        html_node = html_node.next
+
+    if html_node == NULL:
+        return
+
+    child = html_node.first_child
+    while child != NULL:
+        if lxb_dom_node_tag_id_noi(child) == LXB_TAG_HEAD:
+            document.head = <lxb_html_head_element_t *> child
+        elif lxb_dom_node_tag_id_noi(child) == LXB_TAG_BODY:
+            document.body = <lxb_html_body_element_t *> child
+        child = child.next
+
+
 # We don't inherit from HTMLParser here, because it also includes all the C code from Modest.
 cdef class LexborHTMLParser:
     """The lexbor HTML parser.
@@ -823,8 +868,6 @@ cdef class LexborHTMLParser:
         cdef lxb_dom_node_t* cloned_node
         cdef lxb_dom_node_t* source_child
         cdef lxb_dom_node_t* next_child
-        cdef lxb_dom_node_t* cloned_html
-        cdef lxb_dom_node_t* child
         cdef LexborHTMLParser cls
 
         with nogil:
@@ -840,7 +883,6 @@ cdef class LexborHTMLParser:
         cloned_document.ready_state = LXB_HTML_DOCUMENT_READY_STATE_COMPLETE
 
         cloned_node = NULL
-        cloned_html = NULL
 
         if self._is_fragment:
             if self._fragment_wrapper != NULL and self._fragment_root != NULL:
@@ -852,18 +894,9 @@ cdef class LexborHTMLParser:
             while source_child != NULL:
                 next_child = source_child.next
                 cloned_node = _clone_node_into_document(cloned_document, source_child)
-                if cloned_html == NULL and lxb_dom_node_tag_id_noi(cloned_node) == LXB_TAG_HTML:
-                    cloned_html = cloned_node
                 source_child = next_child
 
-            if cloned_html != NULL:
-                child = cloned_html.first_child
-                while child != NULL:
-                    if lxb_dom_node_tag_id_noi(child) == LXB_TAG_HEAD:
-                        cloned_document.head = <lxb_html_head_element_t *> child
-                    elif lxb_dom_node_tag_id_noi(child) == LXB_TAG_BODY:
-                        cloned_document.body = <lxb_html_body_element_t *> child
-                    child = child.next
+            _refresh_head_body(cloned_document)
 
         cls = LexborHTMLParser.from_document(cloned_document, self.raw_html)
         if self._is_fragment:

@@ -1,5 +1,10 @@
 # selectolax Changelog
 
+# Unreleased
+
+- Fix memory leak in `text_lexbor` for lexbor backend
+- Fix memory leak and extraction speed in `merge_text_nodes` for lexbor backend. It's now up to 10 times faster.
+
 # Version 0.4.13
 
 - Support lexbor-only builds with `--disable-modest`

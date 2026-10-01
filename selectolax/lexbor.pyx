@@ -637,7 +637,10 @@ cdef class LexborHTMLParser:
         -------
         selector : list of `Node` objects
         """
-        return self.root.css(query)
+        cdef LexborNode node = self.root
+        if node is None:
+            return []
+        return node.css(query)
 
     def css_first(self, str query, default=None, strict=False):
         """Same as `css` but returns only the first match.
@@ -656,7 +659,10 @@ cdef class LexborHTMLParser:
         -------
         selector : `LexborNode` object
         """
-        return self.root.css_first(query, default, strict)
+        cdef LexborNode node = self.root
+        if node is None:
+            return default
+        return node.css_first(query, default, strict)
 
     def strip_tags(self, list tags, bool recursive = False):
         """Remove specified tags from the node.
@@ -743,7 +749,10 @@ cdef class LexborHTMLParser:
         bool
             ``True`` when at least one selector matches.
         """
-        return self.root.any_css_matches(selectors)
+        cdef LexborNode node = self.root
+        if node is None:
+            return False
+        return node.any_css_matches(selectors)
 
     def scripts_contain(self, str query):
         """Return ``True`` if any script tag contains the given text.
@@ -760,7 +769,10 @@ cdef class LexborHTMLParser:
         bool
             ``True`` when a matching script tag is found.
         """
-        return self.root.scripts_contain(query)
+        cdef LexborNode node = self.root
+        if node is None:
+            return False
+        return node.scripts_contain(query)
 
     def script_srcs_contain(self, tuple queries):
         """Return ``True`` if any script ``src`` contains one of the strings.
@@ -777,7 +789,10 @@ cdef class LexborHTMLParser:
         bool
             ``True`` when a matching source value is found.
         """
-        return self.root.script_srcs_contain(queries)
+        cdef LexborNode node = self.root
+        if node is None:
+            return False
+        return node.script_srcs_contain(queries)
 
     def css_matches(self, str selector):
         """Return ``True`` if the document matches the selector at least once.
@@ -792,7 +807,10 @@ cdef class LexborHTMLParser:
         bool
             ``True`` when a match exists.
         """
-        return self.root.css_matches(selector)
+        cdef LexborNode node = self.root
+        if node is None:
+            return False
+        return node.css_matches(selector)
 
     def merge_text_nodes(self):
         """Iterates over all text nodes and merges all text nodes that are close to each other.
@@ -816,7 +834,10 @@ cdef class LexborHTMLParser:
         -------
         None
         """
-        return self.root.merge_text_nodes()
+        cdef LexborNode node = self.root
+        if node is None:
+            return
+        return node.merge_text_nodes()
 
     @staticmethod
     cdef LexborHTMLParser from_document(lxb_html_document_t *document, bytes raw_html):
@@ -930,8 +951,11 @@ cdef class LexborHTMLParser:
         None
         """
         # faster to check if the document is empty which should determine if we have a root
+        cdef LexborNode node
         if self.document != NULL:
-            self.root.unwrap_tags(tags, delete_empty=delete_empty)
+            node = self.root
+            if node is not None:
+                node.unwrap_tags(tags, delete_empty=delete_empty)
 
     @property
     def inner_html(self) -> str:
@@ -945,7 +969,10 @@ cdef class LexborHTMLParser:
         -------
         text : str | None
         """
-        return self.root.inner_html
+        cdef LexborNode node = self.root
+        if node is None:
+            return ""
+        return node.inner_html
 
     @inner_html.setter
     def inner_html(self, str html):
@@ -962,7 +989,10 @@ cdef class LexborHTMLParser:
         -------
         None
         """
-        self.root.inner_html = html
+        cdef LexborNode node = self.root
+        if node is None:
+            return
+        node.inner_html = html
 
     def inner_html_pretty(
         self,

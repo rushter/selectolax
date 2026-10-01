@@ -560,3 +560,110 @@ def test_fragment_empty_html():
     html = ""
     tree = LexborHTMLParser(html, is_fragment=True)
     assert tree.html == ""
+
+
+def test_empty_fragment_has_no_root():
+    tree = LexborHTMLParser("", is_fragment=True)
+    assert tree.root is None
+    assert tree.body is None
+    assert tree.head is None
+
+
+def test_empty_fragment_css_returns_empty_list():
+    tree = LexborHTMLParser("", is_fragment=True)
+    assert tree.css("div") == []
+    assert tree.css("div, span") == []
+    # the selector is not even compiled, but must still raise nothing
+    assert tree.css("!!! invalid") == []
+
+
+def test_empty_fragment_css_first_returns_default():
+    tree = LexborHTMLParser("", is_fragment=True)
+    assert tree.css_first("div") is None
+    assert tree.css_first("div", default="fallback") == "fallback"
+    assert tree.css_first("div", default=0) == 0
+    assert tree.css_first("div", strict=True) is None
+    assert tree.css_first("div", "fallback", True) == "fallback"
+
+
+@pytest.mark.parametrize(
+    "method, args",
+    [
+        ("css_matches", ("div",)),
+        ("any_css_matches", (("div", "span"),)),
+        ("scripts_contain", ("needle",)),
+        ("script_srcs_contain", (("needle",),)),
+    ],
+)
+def test_empty_fragment_match_helpers_return_false(method, args):
+    tree = LexborHTMLParser("", is_fragment=True)
+    assert getattr(tree, method)(*args) is False
+
+
+def test_empty_fragment_mutating_methods_are_noops():
+    tree = LexborHTMLParser("", is_fragment=True)
+    assert tree.merge_text_nodes() is None
+    assert tree.unwrap_tags(["div", "span"]) is None
+    assert tree.unwrap_tags(["div"], delete_empty=True) is None
+    assert tree.html == ""
+
+
+def test_empty_fragment_inner_html_getter_returns_empty_string():
+    tree = LexborHTMLParser("", is_fragment=True)
+    assert tree.inner_html == ""
+
+
+def test_empty_fragment_inner_html_setter_is_noop():
+    tree = LexborHTMLParser("", is_fragment=True)
+    tree.inner_html = "<p>ignored</p>"
+    assert tree.inner_html == ""
+    assert tree.html == ""
+    assert tree.root is None
+
+
+def test_empty_fragment_methods_agree_with_empty_document():
+    """Every root-deref helper must behave the same for a rootless fragment."""
+    empty_fragment = LexborHTMLParser("", is_fragment=True)
+
+    assert empty_fragment.css("div") == []
+    assert empty_fragment.css_first("div") is None
+    assert empty_fragment.css_matches("div") is False
+    assert empty_fragment.any_css_matches(("div",)) is False
+    assert empty_fragment.scripts_contain("x") is False
+    assert empty_fragment.script_srcs_contain(("x",)) is False
+    assert empty_fragment.merge_text_nodes() is None
+    assert empty_fragment.inner_html == ""
+    assert empty_fragment.tags("div") == []
+    assert empty_fragment.text() == ""
+    assert empty_fragment.select() is None
+
+
+def test_non_empty_fragment_queries_still_work():
+    """The root guard must not shadow normal results."""
+    tree = LexborHTMLParser(
+        "<div><p>a</p><script src='x.js'>y</script></div>", is_fragment=True
+    )
+    assert tree.root is not None
+    assert len(tree.css("div")) == 1
+    assert tree.css_first("p").text() == "a"
+    assert tree.css_matches("p") is True
+    assert tree.css_matches("table") is False
+    assert tree.any_css_matches(("table", "p")) is True
+    assert tree.scripts_contain("y") is True
+    assert tree.script_srcs_contain(("x.js",)) is True
+    assert tree.inner_html == '<p>a</p><script src="x.js">y</script>'
+
+
+def test_full_document_queries_still_work():
+    """A full document always has a root, so behaviour must be unchanged."""
+    tree = LexborHTMLParser("<div><p>hi</p></div>")
+    assert tree.root is not None
+    assert len(tree.css("p")) == 1
+    assert tree.css_first("p").text() == "hi"
+    assert tree.css_first("table") is None
+    assert tree.css_first("table", default="d") == "d"
+    assert tree.css_matches("p") is True
+    assert tree.any_css_matches(("p",)) is True
+    assert tree.scripts_contain("nope") is False
+    assert tree.merge_text_nodes() is None
+    assert tree.inner_html == "<head></head><body><div><p>hi</p></div></body>"

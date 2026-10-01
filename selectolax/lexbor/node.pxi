@@ -275,10 +275,20 @@ cdef class LexborNode:
         cdef size_t str_len = 0
         cdef lxb_char_t * text
         text = lxb_dom_node_text_content(self.node, &str_len)
-        if text == NULL or <int> str_len == 0:
+        if text == NULL:
             return ""
 
-        unicode_text = text.decode(_ENCODING)
+        try:
+            if str_len == 0:
+                return ""
+            unicode_text = text.decode(_ENCODING)
+        finally:
+            # lxb_dom_node_text_content() copies the content into a buffer taken
+            # from the document's text memory arena, which is only released
+            # wholesale by lxb_html_document_destroy(). Give it back here.
+            lxb_dom_document_destroy_text_noi(
+                &self.parser.document.dom_document, text
+            )
         return unicode_text
 
     def text(self, bool deep=True, str separator='', bool strip=False, bool skip_empty=False):

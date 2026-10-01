@@ -1326,37 +1326,28 @@ cdef void _merge_text_nodes(lxb_dom_node_t *root):
 
     cdef lxb_dom_node_t *node
     cdef lxb_dom_node_t *next_node
-    cdef lxb_dom_text_t *new_text_node
-    cdef lxb_char_t *left_text
-    cdef lxb_char_t *right_text
-    cdef size_t left_length, right_length
-    cdef bytes combined
+    cdef lexbor_str_t *left_str
+    cdef lexbor_str_t *right_str
+    cdef lexbor_mraw_t *text_mraw
 
-    cdef bint changed = 1
-    while changed:
-        changed = 0
-        node = root.first_child
-        while node != NULL:
-            next_node = node.next
-            if node.type == LXB_DOM_NODE_TYPE_TEXT and next_node != NULL and next_node.type == LXB_DOM_NODE_TYPE_TEXT:
-                left_text = lxb_dom_node_text_content(node, &left_length)
-                right_text = lxb_dom_node_text_content(next_node, &right_length)
-
-                if left_text != NULL and right_text != NULL:
-                    combined = (<bytes>left_text[:left_length]) + (<bytes>right_text[:right_length])
-                    new_text_node = lxb_dom_document_create_text_node(
-                        root.owner_document,
-                        <lxb_char_t *>combined,
-                        len(combined)
-                    )
-                    if new_text_node != NULL:
-                        lxb_dom_node_insert_before(node, <lxb_dom_node_t *>new_text_node)
-                        lxb_dom_node_remove(node)
-                        lxb_dom_node_remove(next_node)
-                        changed = 1
-                        break
-
-            node = next_node
+    # Text nodes own their character data inline, so a run of adjacent text
+    # nodes can be collapsed straight into the first one. Appending in place
+    # keeps this linear and, unlike lxb_dom_node_text_content(), needs no
+    # scratch buffer taken from the document's text arena.
+    text_mraw = root.owner_document.text
+    node = root.first_child
+    while node != NULL:
+        if node.type == LXB_DOM_NODE_TYPE_TEXT:
+            left_str = &(<lxb_dom_text_t *> node).char_data.data
+            # Merge the whole run into `node`, which stays put so that every
+            # following sibling gets folded in as well.
+            while node.next != NULL and node.next.type == LXB_DOM_NODE_TYPE_TEXT:
+                next_node = node.next
+                right_str = &(<lxb_dom_text_t *> next_node).char_data.data
+                if lexbor_str_append(left_str, text_mraw, right_str.data, right_str.length) == NULL:
+                    break
+                lxb_dom_node_remove(next_node)
+        node = node.next
 
     node = root.first_child
     while node != NULL:

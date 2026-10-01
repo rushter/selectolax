@@ -3,7 +3,8 @@
 # Unreleased
 
 - Fix memory leak in `text_lexbor` for lexbor backend
-- Fix memory leak and extraction speed in `merge_text_nodes` for lexbor backend. It's now up to 10 times faster.
+- Fix memory leak and extraction speed in `merge_text_nodes` for lexbor backend. It's now up to 10 times faster
+- Improve speed of `__eq__` for lexbor backend
 
 # Version 0.4.13
 

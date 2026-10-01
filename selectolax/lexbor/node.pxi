@@ -1071,11 +1071,20 @@ cdef class LexborNode:
         return LexborSelector(self._get_node(), query)
 
     def __eq__(self, other):
+        """Compare by serialized HTML.
+
+        Comparing against a ``str`` compares it to this node's ``html``.
+        Comparing against another ``LexborNode`` compares the two serialized
+        subtrees, which costs two HTML serializations.
+        """
         if isinstance(other, str):
             return self.html == other
         if not isinstance(other, LexborNode):
             return False
-        return self.html == other.html
+        cdef LexborNode other_node = <LexborNode> other
+        if self.node == other_node.node and self._is_fragment_root == other_node._is_fragment_root:
+            return True
+        return self.html == other_node.html
 
     @property
     def text_content(self):

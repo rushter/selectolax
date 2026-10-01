@@ -383,10 +383,13 @@ class LexborNode:
          * `-text` - text node
          * `-document` - document node
          * `-comment` - comment node
+         * `-doctype` - doctype node
+
+        Returns ``None`` for any other non-element node.
 
         Returns
         -------
-        text : str
+        text : str or None
         """
         ...
 

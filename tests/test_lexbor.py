@@ -259,6 +259,32 @@ def test_inner_html_setter_rejects_document_node():
     assert parser.html == before
 
 
+def test_tag_of_document_node_is_document():
+    doctypes = [
+        "<!DOCTYPE html>",
+        "<!DOCTYPE svg>",
+        '<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "x.dtd">',
+    ]
+    for doctype in [*doctypes, None]:
+        html = f"{doctype or ''}<div>hi</div>"
+        document = LexborHTMLParser(html).root.parent
+        assert document is not None
+        assert document.is_document_node
+        assert document.tag == "-document"
+        assert repr(document) == "<LexborNode -document>"
+
+
+def test_tag_of_non_element_nodes():
+    parser = LexborHTMLParser("<!DOCTYPE html><div>text<!--comment--></div>")
+    div = parser.css_first("div")
+
+    assert div.tag == "div"
+    assert div.first_child.tag == "-text"
+    assert div.last_child.tag == "-comment"
+    assert parser.root.prev.tag == "-doctype"
+    assert parser.root.parent.tag == "-document"
+
+
 def test_sets_inner_html_on_html_keeps_head_and_body_in_sync():
     """Regression test: parser.head/parser.body used to dangle.
 

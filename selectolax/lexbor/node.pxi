@@ -6,9 +6,10 @@ import logging
 logger = logging.getLogger("selectolax")
 
 _TAG_TO_NAME = {
-    0x0005: "-doctype",
-    0x0002: "-text",
-    0x0004: "-comment",
+    LXB_TAG__EM_DOCTYPE: "-doctype",
+    LXB_TAG__TEXT: "-text",
+    LXB_TAG__EM_COMMENT: "-comment",
+    LXB_TAG__DOCUMENT: "-document",
 }
 ctypedef fused str_or_LexborNode:
     str
@@ -441,18 +442,25 @@ cdef class LexborNode:
          * `-text` - text node
          * `-document` - document node
          * `-comment` - comment node
+         * `-doctype` - doctype node
 
-        This
+        Returns ``None`` for any other non-element node.
 
         Returns
         -------
-        text : str
+        text : str or None
         """
 
         cdef const lxb_char_t *c_text
         cdef size_t str_len = 0
-        if self.tag_id in [LXB_TAG__EM_DOCTYPE, LXB_TAG__TEXT, LXB_TAG__EM_COMMENT]:
-            return _TAG_TO_NAME[self.tag_id]
+        cdef lxb_tag_id_t tag_id = lxb_dom_node_tag_id_noi(self.node)
+
+        if tag_id in _TAG_TO_NAME:
+            return _TAG_TO_NAME[tag_id]
+
+        if not _is_node_type(self.node, LXB_DOM_NODE_TYPE_ELEMENT):
+            return None
+
         c_text = lxb_dom_element_qualified_name(<lxb_dom_element_t *> self.node, &str_len)
         text = None
         if c_text:

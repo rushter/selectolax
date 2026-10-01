@@ -112,6 +112,8 @@ cdef class LexborNode:
         cdef lexbor_str_t *lxb_str
         cdef lxb_status_t status
         lxb_str = lexbor_str_create()
+        if lxb_str == NULL:
+            raise MemoryError("Can't allocate memory for the output string.")
         if self._is_fragment_root:
             status = serialize_fragment(self.node, lxb_str)
             # status = lxb_html_serialize_tree_str(self.node, lxb_str)
@@ -129,6 +131,8 @@ cdef class LexborNode:
         cdef lxb_status_t status
 
         lxb_str = lexbor_str_create()
+        if lxb_str == NULL:
+            raise MemoryError("Can't allocate memory for the output string.")
         if self._is_fragment_root:
             if pretty:
                 status = serialize_fragment_pretty(self.node, lxb_str, options, indent)
@@ -152,6 +156,8 @@ cdef class LexborNode:
         cdef lxb_status_t status
 
         lxb_str = lexbor_str_create()
+        if lxb_str == NULL:
+            raise MemoryError("Can't allocate memory for the output string.")
         if pretty:
             status = lxb_html_serialize_pretty_deep_str(self.node, options, indent, lxb_str)
         else:

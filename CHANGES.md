@@ -9,6 +9,7 @@
 - Improve speed of `__eq__` for lexbor backend
 - Fix `inner_html` setter attaching element children to non-element nodes for lexbor backend.
 - Fix `head` and `body` of lexbor backend dangling after setting `inner_html` on the `<html>` element
+- Avoid segfaults when getting OOM errors
 
 # Version 0.4.13
 

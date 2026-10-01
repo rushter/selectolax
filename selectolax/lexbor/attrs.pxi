@@ -9,6 +9,8 @@ cdef class LexborAttributes:
 
     @staticmethod
     cdef LexborAttributes create(lxb_dom_node_t *node):
+        if not _is_node_type(node, LXB_DOM_NODE_TYPE_ELEMENT):
+            raise TypeError("attrs is only available for element nodes")
         obj = <LexborAttributes> LexborAttributes.__new__(LexborAttributes)
         obj.node = node
         return obj

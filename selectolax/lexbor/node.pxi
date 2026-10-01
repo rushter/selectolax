@@ -540,12 +540,14 @@ cdef class LexborNode:
         >>> node.attributes
         {'data': None, 'id': 'my_id'}
         """
-        cdef lxb_dom_attr_t *attr = lxb_dom_element_first_attribute_noi(<lxb_dom_element_t *> self.node)
+        cdef lxb_dom_attr_t *attr
         cdef size_t str_len = 0
         attributes = dict()
 
         if not _is_node_type(self.node, LXB_DOM_NODE_TYPE_ELEMENT):
             return attributes
+
+        attr = lxb_dom_element_first_attribute_noi(<lxb_dom_element_t *> self.node)
 
         while attr != NULL:
             key = lxb_dom_attr_local_name_noi(attr, &str_len)

@@ -342,7 +342,9 @@ def test_sets_inner_html_on_head_or_body_keeps_pointers_valid(target: str):
     parser = LexborHTMLParser(
         "<html><head><title>Title</title></head><body><div>hi</div></body></html>"
     )
-    parser.css_first(target).inner_html = "<meta charset='utf-8'>"
+    node = parser.css_first(target)
+    assert node is not None
+    node.inner_html = "<meta charset='utf-8'>"
 
     head, body = parser.head, parser.body
     assert head is not None
@@ -501,7 +503,9 @@ def test_is_empty_text_node_property():
 
 def test_comment_content_property() -> None:
     parser = LexborHTMLParser("<div><span><!-- hello --></span><title>X</title></div>")
-    text_node = parser.css_first("span").first_child
+    span = parser.css_first("span")
+    assert span is not None
+    text_node = span.first_child
     assert text_node is not None
     assert text_node.is_comment_node
     assert text_node.comment_content == "hello"

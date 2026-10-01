@@ -1,7 +1,7 @@
 - case: html_parser_css_first_without_default
   parametrized:
     - strict: True
-      revealed: LexborNode
+      revealed: LexborNode | None
     - strict: False
       revealed: LexborNode | None
   main: |
@@ -13,7 +13,7 @@
 - case: html_parser_css_first_with_none_default
   parametrized:
     - strict: True
-      revealed: LexborNode
+      revealed: LexborNode | None
     - strict: False
       revealed: LexborNode | None
   main: |
@@ -25,7 +25,7 @@
 - case: html_parser_css_first_with_default
   parametrized:
     - strict: True
-      revealed: LexborNode
+      revealed: LexborNode | str
     - strict: False
       revealed: LexborNode | str
   main: |
@@ -38,7 +38,7 @@
 - case: lexbor_node_css_first_without_default
   parametrized:
     - strict: True
-      revealed: LexborNode
+      revealed: LexborNode | None
     - strict: False
       revealed: LexborNode | None
   main: |
@@ -52,7 +52,7 @@
 - case: lexbor_node_css_first_with_none_default
   parametrized:
     - strict: True
-      revealed: LexborNode
+      revealed: LexborNode | None
     - strict: False
       revealed: LexborNode | None
   main: |
@@ -66,7 +66,7 @@
 - case: lexbor_node_css_first_with_default
   parametrized:
     - strict: True
-      revealed: LexborNode
+      revealed: LexborNode | str
     - strict: False
       revealed: LexborNode | str
   main: |

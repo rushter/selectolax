@@ -1,66 +1,78 @@
 - case: html_parser_css_first_without_default
   parametrized:
     - strict: True
+      revealed: LexborNode
     - strict: False
+      revealed: LexborNode | None
   main: |
-    from selectolax.parser import HTMLParser
-    parser = HTMLParser("")
+    from selectolax.lexbor import LexborHTMLParser
+    parser = LexborHTMLParser("")
     node = parser.css_first(query="", strict= {{ strict }})
-    reveal_type(node) # N: Revealed type is "selectolax.parser.Node | None"
+    reveal_type(node) # N: Revealed type is "selectolax.lexbor.{{ revealed }}"
 
 - case: html_parser_css_first_with_none_default
   parametrized:
     - strict: True
+      revealed: LexborNode
     - strict: False
+      revealed: LexborNode | None
   main: |
-    from selectolax.parser import HTMLParser
-    parser = HTMLParser("")
+    from selectolax.lexbor import LexborHTMLParser
+    parser = LexborHTMLParser("")
     node = parser.css_first(query="",default=None,strict= {{strict}})
-    reveal_type(node) # N: Revealed type is "selectolax.parser.Node | None"
+    reveal_type(node) # N: Revealed type is "selectolax.lexbor.{{ revealed }}"
 
 - case: html_parser_css_first_with_default
   parametrized:
     - strict: True
+      revealed: LexborNode
     - strict: False
+      revealed: LexborNode | str
   main: |
-    from selectolax.parser import HTMLParser
-    parser = HTMLParser("")
+    from selectolax.lexbor import LexborHTMLParser
+    parser = LexborHTMLParser("")
     node = parser.css_first(query="",default="", strict ={{strict}})
-    reveal_type(node) # N: Revealed type is "selectolax.parser.Node | str"
+    reveal_type(node) # N: Revealed type is "selectolax.lexbor.{{ revealed }}"
 
 
 - case: lexbor_node_css_first_without_default
   parametrized:
     - strict: True
+      revealed: LexborNode
     - strict: False
+      revealed: LexborNode | None
   main: |
-    from selectolax.parser import HTMLParser
-    parser = HTMLParser("")
+    from selectolax.lexbor import LexborHTMLParser
+    parser = LexborHTMLParser("")
     node = parser.root
     if node is not None:
       res = node.css_first(query="", strict ={{strict}})
-      reveal_type(res) # N: Revealed type is "selectolax.parser.Node | None"
+      reveal_type(res) # N: Revealed type is "selectolax.lexbor.{{ revealed }}"
 
 - case: lexbor_node_css_first_with_none_default
   parametrized:
     - strict: True
+      revealed: LexborNode
     - strict: False
+      revealed: LexborNode | None
   main: |
-    from selectolax.parser import HTMLParser
-    parser = HTMLParser("")
+    from selectolax.lexbor import LexborHTMLParser
+    parser = LexborHTMLParser("")
     node = parser.root
     if node is not None:
       res = node.css_first(query="",default=None, strict ={{strict}})
-      reveal_type(res) # N: Revealed type is "selectolax.parser.Node | None"
+      reveal_type(res) # N: Revealed type is "selectolax.lexbor.{{ revealed }}"
 
 - case: lexbor_node_css_first_with_default
   parametrized:
     - strict: True
+      revealed: LexborNode
     - strict: False
+      revealed: LexborNode | str
   main: |
-    from selectolax.parser import HTMLParser
-    parser = HTMLParser("")
+    from selectolax.lexbor import LexborHTMLParser
+    parser = LexborHTMLParser("")
     node = parser.root
     if node is not None:
       res = node.css_first(query="",default="", strict ={{strict}})
-      reveal_type(res) # N: Revealed type is "selectolax.parser.Node | str"
+      reveal_type(res) # N: Revealed type is "selectolax.lexbor.{{ revealed }}"

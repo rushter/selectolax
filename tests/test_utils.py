@@ -1,6 +1,6 @@
 """
 We'are testing only our own code.
-Many functionality are already tested in the Modest engine, so there is no reason to test every case.
+Many functionality are already tested in the Lexbor engine, so there is no reason to test every case.
 """
 
 from __future__ import annotations
@@ -21,14 +21,12 @@ from selectolax.lexbor import (
     parse_fragment as lexbor_parse_fragment,
 )
 
-from ._engines import HTMLParser, Node, create_tag, parse_fragment
-
 
 class Impl(NamedTuple):
-    parser: type[HTMLParser | LexborHTMLParser]
-    node: type[Node | LexborNode]
-    tag_fn: Callable[[str], Node | LexborNode]
-    parse_fragment_fn: Callable[[str], Sequence[Node | LexborNode]]
+    parser: type[LexborHTMLParser]
+    node: type[LexborNode]
+    tag_fn: Callable[[str], LexborNode]
+    parse_fragment_fn: Callable[[str], Sequence[LexborNode]]
 
 
 _IMPLS = [
@@ -39,17 +37,6 @@ _IMPLS = [
         parse_fragment_fn=lexbor_parse_fragment,
     ),
 ]
-
-if HTMLParser is not None:
-    _IMPLS.insert(
-        0,
-        Impl(
-            parser=HTMLParser,
-            node=Node,
-            tag_fn=create_tag,
-            parse_fragment_fn=parse_fragment,
-        ),
-    )
 
 _IMPL_PARAMETRIZER = (
     "impl",

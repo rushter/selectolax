@@ -996,7 +996,7 @@ cdef class LexborNode:
         >>> selector.child.raw_value
         b'&#x3C;test&#x3E;'
         """
-        raise NotImplementedError("This features is not supported by the lexbor backend. Please use Modest backend.")
+        raise NotImplementedError("This feature is not supported by the lexbor backend.")
 
     def scripts_contain(self, str query):
         """Returns True if any of the script tags contain specified text.

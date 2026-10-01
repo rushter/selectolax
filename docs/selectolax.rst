@@ -12,14 +12,6 @@ selectolax.lexbor module
    :undoc-members:
    :show-inheritance:
 
-selectolax.parser module
-------------------------
-
-.. automodule:: selectolax.parser
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 Module contents
 ---------------
 

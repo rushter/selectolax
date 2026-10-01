@@ -135,13 +135,10 @@ cdef inline void _refresh_head_body(lxb_html_document_t* document):
         child = child.next
 
 
-# We don't inherit from HTMLParser here, because it also includes all the C code from Modest.
 cdef class LexborHTMLParser:
     """The lexbor HTML parser.
 
     Use this class to parse raw HTML.
-
-    This parser mimics most of the stuff from ``HTMLParser`` but not inherits it directly.
 
     Parameters
     ----------

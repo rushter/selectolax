@@ -6,17 +6,10 @@ include CHANGES.md
 
 include selectolax/*
 include selectolax/lexbor/*
-include selectolax/modest/*
 
 include selectolax/lexbor/*.so
 exclude selectolax/*.so
 
-
-recursive-include modest/source *.c *.h
-recursive-include modest/include *.h
-include modest/*
-include modest/include/*
-include modest/source/*
 
 recursive-include lexbor/source *.c *.h
 include lexbor/*

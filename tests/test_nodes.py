@@ -2,16 +2,12 @@ import pytest
 
 from selectolax.lexbor import LexborHTMLParser, SelectolaxError
 
-from ._engines import HTMLParser, requires_modest
-
 """
 We'are testing only our own code.
-Many functionality are already tested in the Modest engine, so there is no reason to test every case.
+Many functionality are already tested in the Lexbor engine, so there is no reason to test every case.
 """
 
-_PARSERS = (
-    (HTMLParser, LexborHTMLParser) if HTMLParser is not None else (LexborHTMLParser,)
-)
+_PARSERS = (LexborHTMLParser,)
 
 _PARSERS_PARAMETRIZER = (
     "parser",
@@ -22,12 +18,6 @@ _NODE_ID_CASES = [
     ("<div id='my_node'></div>", "my_node", LexborHTMLParser),
     ("<div></div>", None, LexborHTMLParser),
 ]
-if HTMLParser is not None:
-    _NODE_ID_CASES = [
-        ("<div id='my_node'></div>", "my_node", HTMLParser),
-        ("<div></div>", None, HTMLParser),
-        *_NODE_ID_CASES,
-    ]
 
 
 @pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
@@ -277,14 +267,6 @@ def test_text_node_returns_text_parent(parser):
     html_parser = parser(html)
     node = html_parser.css_first("div")
     assert node.text(deep=False) == "foo bar"
-
-
-@requires_modest
-def test_text_node_returns_text_when_deep():
-    html = "<div>foo bar</div>"
-    html_parser = HTMLParser(html)
-    node = html_parser.css_first("div").child
-    assert node.text(deep=True) == "foo bar"
 
 
 @pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
@@ -577,14 +559,6 @@ def test_node_comparison_fails(parser):
     assert node != 123
 
 
-@requires_modest
-def test_raw_value():
-    html_parser = HTMLParser("<div>&#x3C;test&#x3E;</div>")
-    selector = html_parser.css_first("div")
-    assert selector.child.raw_value == b"&#x3C;test&#x3E;"
-    assert selector.child.html == "&lt;test&gt;"
-
-
 @pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
 def test_adavanced_selector(parser):
     html_parser = parser("""
@@ -617,41 +591,6 @@ def test_hash_nodes(parser):
 def test_srcs_contain(parser):
     html_parser = parser("""<script src="http://google.com/analytics.js"></script>""")
     assert html_parser.script_srcs_contain(("analytics.js",))
-
-
-@requires_modest
-@pytest.mark.parametrize("parser", (HTMLParser,))
-def test_css_chaining(parser):
-    html = """
-    <span class="red"></span>
-    <div id="container">
-        <span class="red"></span>
-        <span class="green"></span>
-        <span class="red"></span>
-        <span class="green"></span>
-    </div>
-    <span class="red"></span>
-    """
-    tree = parser(html)
-    assert len(tree.select("div").css("span").css(".red").matches) == 2
-
-
-@requires_modest
-@pytest.mark.parametrize("parser", (HTMLParser,))
-def test_css_chaining_two(parser):
-    html = """
-    <script  integrity="sha512-DHpNaMnQ8GaECHElNcJkpGhIThksyXA==" type="application/javascript" class="weird_script">
-        var counter = 10;
-    </script>
-    """
-    tree = parser(html)
-    query = (
-        tree.select("script")
-        .text_contains("var counter = ")
-        .css(".weird_script")
-        .attribute_longer_than("integrity", 25)
-    )
-    assert query
 
 
 @pytest.mark.parametrize("parser", _PARSERS)
@@ -756,36 +695,6 @@ def test_text_strip_and_separator(parser):
 
     result = node.text(deep=True, separator="|", strip=True)
     assert result == "hello|world"
-
-
-@requires_modest
-def test_attribute_longer_than_missing_attribute():
-    html = """
-    <div>
-        <a href="http://very-long-url.example.com/path/to/page">with href</a>
-        <a>no href at all</a>
-        <a href="short">short href</a>
-    </div>
-    """
-    tree = HTMLParser(html)
-    selector = tree.root.select("a").attribute_longer_than("href", 10)
-    matches = selector.matches
-    assert len(matches) == 1
-    assert "very-long-url" in matches[0].attributes["href"]
-
-
-@requires_modest
-def test_attribute_longer_than_missing_attribute_with_start():
-    html = """
-    <div>
-        <a href="http://long-domain.example.com/page">with href</a>
-        <a>no href</a>
-    </div>
-    """
-    tree = HTMLParser(html)
-    selector = tree.root.select("a").attribute_longer_than("href", 15, "http://")
-    matches = selector.matches
-    assert len(matches) == 1
 
 
 @pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)

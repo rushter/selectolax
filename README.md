@@ -2,8 +2,7 @@
 
 ---
 
-A fast HTML5 parser with CSS selectors, written in Cython,
-using [Modest](https://github.com/lexborisov/Modest/) and [Lexbor](https://github.com/lexbor/lexbor) engines.
+A fast HTML5 parser with CSS selectors, written in Cython, using the [Lexbor](https://github.com/lexbor/lexbor) engine.
 
 ---
 
@@ -109,29 +108,6 @@ assert results[0].text() == "lexbor is AwesOme"
 
 * [More examples](https://selectolax.readthedocs.io/en/latest/examples.html)
 
-### Available backends
-
-Selectolax supports two backends: `Modest` and `Lexbor`. By default, all examples use the `Lexbor` backend.
-Most of the features between backends are almost identical, but there are some differences.
-
-As of 2024, the preferred backend is `Lexbor`. The `Modest` backend is still available for compatibility reasons
-and the underlying C library that selectolax uses is not maintained anymore.
-
-To use `lexbor`, just import the parser and use it in the similar way to the `HTMLParser`.
-
-```python
-from selectolax.lexbor import LexborHTMLParser
-
-html = """
-<title>Hi there</title>
-<div id="updated">2021-08-15</div>
-"""
-
-parser = LexborHTMLParser(html)
-print(parser.root.css_first("#updated").text())
-# '2021-08-15'
-```
-
 ## Simple Benchmark
 
 * Extract title, links, scripts and a meta tag from main pages of top 754 domains. See `examples/benchmark.py` for more information.
@@ -141,7 +117,6 @@ print(parser.root.css_first("#updated").text())
 | Beautiful Soup (html.parser)  | 61.02 sec.|
 | lxml / Beautiful Soup (lxml)  | 9.09 sec. |
 | html5_parser                  | 16.10 sec.|
-| selectolax (Modest)           | 2.94 sec. |
 | selectolax (Lexbor)           | 2.39 sec. |
 
 ## Links
@@ -149,15 +124,13 @@ print(parser.root.css_first("#updated").text())
 * [selectolax API reference and examples](https://selectolax.readthedocs.io/en/latest/index.html)
 * [Video introduction to web scraping using selectolax](https://youtu.be/HpRsfpPuUzE)
 * [How to Scrape 7k Products with Python using selectolax and httpx](https://www.youtube.com/watch?v=XpGvq755J2U)
-* [Modest introduction](https://lexborisov.github.io/Modest/)
-* [Modest benchmark](https://lexborisov.github.io/benchmark-html-parsers/)
+* [Lexbor benchmark](https://lexborisov.github.io/benchmark-html-parsers/)
 * [Python benchmark](https://rushter.com/blog/python-fast-html-parser/)
 * [Another Python benchmark](https://www.peterbe.com/plog/selectolax-or-pyquery)
 * [Universal interface to lxml and selectolax](https://github.com/lorien/domselect)
 
 ## License
 
-* Modest engine — [LGPL2.1](https://github.com/lexborisov/Modest/blob/master/LICENSE)
 * lexbor engine — [Apache-2.0 license](https://github.com/lexbor/lexbor?tab=Apache-2.0-1-ov-file#readme)
 * selectolax - [MIT](https://github.com/rushter/selectolax/blob/master/LICENSE)
 

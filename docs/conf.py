@@ -53,6 +53,9 @@ extensions = [
     "sphinx_copybutton",
 ]
 
+# The removed Modest backend is kept as a stub that raises on import.
+autodoc_mock_imports = ["selectolax.parser"]
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
 

@@ -4,8 +4,7 @@ Examples
 This page contains simple examples of how to use Selectolax for HTML parsing and manipulation.
 
 .. note::
-   All examples use the Lexbor backend (``from selectolax.lexbor import LexborHTMLParser``)
-   which provides better performance and features compared to the older Modest backend.
+   All examples use the Lexbor backend (``from selectolax.lexbor import LexborHTMLParser``).
 
 Basic HTML Parsing
 ------------------

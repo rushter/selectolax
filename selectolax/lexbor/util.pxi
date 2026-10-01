@@ -18,7 +18,7 @@ def parse_fragment(html: str):
     Given HTML, parse it into a list of Nodes, such that the nodes
     correspond to the given HTML.
 
-    For contrast, HTMLParser adds `<html>`, `<head>`, and `<body>` tags
+    For contrast, LexborHTMLParser adds `<html>`, `<head>`, and `<body>` tags
     if they are missing. This function does not add these tags.
     """
     return do_parse_fragment(html, LexborHTMLParser)

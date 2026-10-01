@@ -938,8 +938,6 @@ class LexborHTMLParser:
 
     Use this class to parse raw HTML.
 
-    This parser mimics most of the stuff from ``HTMLParser`` but not inherits it directly.
-
     Parameters
     ----------
 
@@ -1535,7 +1533,7 @@ def parse_fragment(html: str) -> list[LexborNode]:
     Given HTML, parse it into a list of Nodes, such that the nodes
     correspond to the given HTML.
 
-    For contrast, HTMLParser adds `<html>`, `<head>`, and `<body>` tags
+    For contrast, ``LexborHTMLParser()`` adds `<html>`, `<head>`, and `<body>` tags
     if they are missing. This function does not add these tags.
     """
     ...

@@ -1,9 +1,9 @@
-from typing import Literal, Optional, Union, Type
+from typing import Literal, Optional, Type
 
 MAX_HTML_INPUT_SIZE = 250e+7
 
-ParserCls = Union[Type["HTMLParser"], Type["LexborHTMLParser"]]
-Parser = Union["HTMLParser", "LexborHTMLParser"]
+ParserCls = Type["LexborHTMLParser"]
+Parser = "LexborHTMLParser"
 FRAGMENT = Literal[
     "document",
     "fragment",
@@ -83,7 +83,7 @@ def do_parse_fragment(html: str, parser_cls: ParserCls):
     Given HTML, parse it into a list of Nodes, such that the nodes
     correspond to the given HTML.
 
-    For contrast, HTMLParser adds `<html>`, `<head>`, and `<body>` tags
+    For contrast, ``LexborHTMLParser()`` adds `<html>`, `<head>`, and `<body>` tags
     if they are missing. This function does not add these tags.
     """
     html = html.strip()

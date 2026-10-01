@@ -1,6 +1,3 @@
-[submodule "modest"]
-	path = modest
-	url = https://github.com/lexborisov/modest
 [submodule "lexbor"]
 	path = lexbor
 	url = https://github.com/lexbor/lexbor

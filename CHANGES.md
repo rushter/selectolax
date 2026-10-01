@@ -1,7 +1,9 @@
 # selectolax Changelog
 
-# Unreleased
+# Version 1.0 (Unreleased)
 
+- **Breaking change**: remove the Modest backend. `selectolax.parser` is now a stub that raises `ImportError`
+  on import, use the lexbor backend (`from selectolax.lexbor import LexborHTMLParser`) instead.
 - Fix memory leak in `text_lexbor` for lexbor backend
 - Fix memory leak and extraction speed in `merge_text_nodes` for lexbor backend. It's now up to 10 times faster
 - Improve speed of `__eq__` for lexbor backend

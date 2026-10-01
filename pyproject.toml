@@ -8,7 +8,7 @@ requires = [
 [project]
 name = 'selectolax'
 version = '0.4.13'
-description = 'A fast HTML5 parser with CSS selectors, written in Cython, using Modest and Lexbor engines.'
+description = 'A fast HTML5 parser with CSS selectors, written in Cython, using the Lexbor engine.'
 readme = 'README.md'
 requires-python = '>=3.9,<3.16'
 license = 'MIT'
@@ -24,7 +24,6 @@ keywords = [
     "css",
     "fast",
     "lexbor",
-    "modest",
 ]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
@@ -60,7 +59,7 @@ classifiers = [
 [project.urls]
 Homepage = "https://github.com/rushter/selectolax"
 Repository = "https://github.com/rushter/selectolax"
-Documentation = "https://selectolax.readthedocs.io/en/latest/parser.html"
+Documentation = "https://selectolax.readthedocs.io/en/latest/lexbor.html"
 Changelog = "https://github.com/rushter/selectolax/blob/master/CHANGES.md"
 
 [tool.cibuildwheel]

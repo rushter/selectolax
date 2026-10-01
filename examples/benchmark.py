@@ -12,21 +12,19 @@ For each page, we extract:
 4) The content of the Meta description tag
 
 """
-import functools
 import json
 import time
 
 from bs4 import BeautifulSoup
 from html5_parser import parse
 from lxml.html import fromstring
-from selectolax.parser import HTMLParser
 
 from selectolax.lexbor import LexborHTMLParser
 
 bad_urls = []
 
 
-def bs4_parser(html_content, parser=HTMLParser):
+def bs4_parser(html_content, parser=LexborHTMLParser):
     soup = BeautifulSoup(html_content, 'html.parser')
     title_text = soup.title.string
     assert title_text
@@ -41,7 +39,7 @@ def bs4_parser(html_content, parser=HTMLParser):
         meta_content = meta_description.get('content')
 
 
-def selectolax_parser(html_content, parser=HTMLParser):
+def selectolax_parser(html_content, parser=LexborHTMLParser):
     tree = parser(html_content)
     title_text = ""
     title_node = tree.css_first('title')
@@ -105,8 +103,7 @@ def main():
         ('bs4', bs4_parser,),
         ('lxml', lxml_parser,),
         ('html5_parser', html5_parser,),
-        ('modest', selectolax_parser,),
-        ('lexbor', functools.partial(selectolax_parser, parser=LexborHTMLParser)),
+        ('lexbor', selectolax_parser,),
     ]
     for parser_name, parser in available_parsers:
         start = time.time()

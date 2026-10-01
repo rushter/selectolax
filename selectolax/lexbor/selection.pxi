@@ -158,7 +158,7 @@ cdef class LexborSelector:
 
     cpdef css(self, str query):
         """Evaluate CSS selector against current scope."""
-        raise NotImplementedError("This features is not supported by the lexbor backend. Please use Modest backend.")
+        raise NotImplementedError("This feature is not supported by the lexbor backend.")
 
     @property
     def matches(self) -> list:

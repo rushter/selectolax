@@ -5,57 +5,18 @@ import pytest
 
 from selectolax.lexbor import LexborHTMLParser, LexborNode, SelectolaxError, create_tag
 
-from ._engines import HTMLParser, Node, requires_modest
-
 """
 We'are testing only our own code.
-Many functionality are already tested in the Modest engine, so there is no reason to test every case.
+Many functionality are already tested in the Lexbor engine, so there is no reason to test every case.
 """
 
-_PARSERS = (
-    (HTMLParser, LexborHTMLParser) if HTMLParser is not None else (LexborHTMLParser,)
-)
-_NODE_TYPES = (Node, LexborNode) if Node is not None else (LexborNode,)
+_PARSERS = (LexborHTMLParser,)
+_NODE_TYPES = (LexborNode,)
 
 _PARSERS_PARAMETRIZER = (
     "parser",
     _PARSERS,
 )
-
-
-@requires_modest
-def test_encoding():
-    html = "<div><p id=p1><p id=p2><p id=p3><a>link</a><p id=p4><p id=p5>text<p id=p6></div>"
-    html = HTMLParser(html)
-    assert html.input_encoding == "UTF-8"
-
-    html = b"<div><p id=p1><p id=p2><p id=p3><a>link</a><p id=p4><p id=p5>text<p id=p6></div>"
-    html = HTMLParser(html)
-    assert html.input_encoding == "UTF-8"
-
-    html = "<div>Привет мир!</div>".encode("cp1251")
-    assert HTMLParser(html, detect_encoding=True).input_encoding == "WINDOWS-1251"
-
-    html_utf = b'<head><meta charset="WINDOWS-1251"></head>'
-    assert (
-        HTMLParser(html_utf, detect_encoding=True, use_meta_tags=True).input_encoding
-        == "WINDOWS-1251"
-    )
-
-    # UTF-16 not ASCII-readable
-    html_utf = '<head><meta charset="WINDOWS-1251"></head>'.encode("utf-16le")
-    assert (
-        HTMLParser(html_utf, detect_encoding=True, use_meta_tags=True).input_encoding
-        == "UTF-16LE"
-    )
-
-    # Unencodable characters in string, should not throw an exception by default
-    html_unencodable = b"<div>Roboto+Condensed</div>".decode("utf-7", errors="ignore")
-    assert HTMLParser(html_unencodable).input_encoding == "UTF-8"
-
-    # decode_errrors='strict' should error out
-    with pytest.raises(UnicodeEncodeError):
-        HTMLParser(html_unencodable, decode_errors="strict")
 
 
 @pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)

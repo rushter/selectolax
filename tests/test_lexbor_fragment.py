@@ -667,3 +667,59 @@ def test_full_document_queries_still_work():
     assert tree.scripts_contain("nope") is False
     assert tree.merge_text_nodes() is None
     assert tree.inner_html == "<head></head><body><div><p>hi</p></div></body>"
+
+
+def test_fragment_root_match_helpers_use_the_same_scope_as_css():
+    """Regression test: the match helpers searched the wrong subtree.
+
+    ``css`` evaluates a fragment root against the whole fragment, via the
+    fragment wrapper, but ``css_matches``/``any_css_matches`` were handed the
+    root element itself. They therefore missed matches that ``css`` returned
+    whenever the match sat outside the first top-level node.
+    """
+    tree = LexborHTMLParser("<div>x</div><p>sibling</p>", is_fragment=True)
+    root = tree.root
+
+    assert [node.html for node in root.css("p")] == ["<p>sibling</p>"]
+    assert root.css_matches("p") is True
+    assert root.any_css_matches(("p",)) is True
+    assert root.any_css_matches(("table", "p")) is True
+
+    # Also reachable through the parser, which delegates to the root node.
+    assert [node.html for node in tree.css("p")] == ["<p>sibling</p>"]
+    assert tree.css_matches("p") is True
+    assert tree.any_css_matches(("table", "p")) is True
+
+
+def test_fragment_root_match_helpers_still_reject_absent_selectors():
+    """Widening the scope must not turn non-matches into matches."""
+    tree = LexborHTMLParser("<div>x</div><p>sibling</p>", is_fragment=True)
+    root = tree.root
+
+    assert root.css_matches("table") is False
+    assert root.any_css_matches(("table",)) is False
+    assert root.any_css_matches(("table", "section")) is False
+    # `p` is not a child of `div`, it is a sibling of it
+    assert root.css_matches("div > p") is False
+    # the root node itself and its own subtree are still reachable
+    assert root.css_matches("div") is True
+
+
+@pytest.mark.parametrize(
+    "method, args", [("css_matches", ("p",)), ("any_css_matches", (("p",),))]
+)
+def test_match_helpers_agree_for_non_fragment_nodes(method, args):
+    """Only fragment roots change scope; ordinary nodes keep matching their subtree."""
+    tree = LexborHTMLParser('<div id="a"><p>x</p><span>s</span></div>')
+    div = tree.css_first("div")
+
+    assert getattr(div, method)(*args) is True
+    assert (
+        getattr(div, method)(
+            *(("table",) if method == "css_matches" else (("table",),))
+        )
+        is False
+    )
+
+    assert getattr(tree.root, method)(*args) is True
+    assert getattr(tree.body, method)(*args) is True

@@ -18,6 +18,8 @@ This release contains **breaking changes**.
 - Fix `text()` raising `UnicodeDecodeError` on undecodable bytes when `deep=False`; it substitutes
   U+FFFD like the deep path always did
 - Avoid reading trailing NUL bytes and uninitialised slack into the output of `text` and `text_content`
+- Fix `css_matches` and `any_css_matches` missing matches outside the first top-level node of an HTML
+  fragment. They now search the same scope as `css`.
   in the lexbor backend
 - Fix handling of the `id` method on text nodes
 - Fix `iter()` skipping the remaining children when a node is removed during iteration

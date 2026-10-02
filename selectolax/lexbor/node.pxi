@@ -423,15 +423,16 @@ cdef class LexborNode:
         return default
 
     def any_css_matches(self, tuple selectors):
-        """Returns True if any of CSS selectors matches a node"""
+        """Returns True if any of CSS selectors matches a node."""
+        cdef LexborNode start_node = self._get_node()
         for selector in selectors:
-            if self.parser.selector.any_matches(selector, self):
+            if self.parser.selector.any_matches(selector, start_node):
                 return True
         return False
 
     def css_matches(self, str selector):
         """Returns True if CSS selector matches a node."""
-        return bool(self.parser.selector.any_matches(selector, self))
+        return bool(self.parser.selector.any_matches(selector, self._get_node()))
 
     def __repr__(self):
         return '<LexborNode %s>' % self.tag

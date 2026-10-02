@@ -507,6 +507,8 @@ cdef class LexborNode:
         else:
             lxb_dom_node_remove(<lxb_dom_node_t *> self.node)
 
+        _maybe_refresh_head_body(self.parser.document, <lxb_dom_node_t *> self.node)
+
     def strip_tags(self, list tags, bool recursive = False):
         """Remove specified tags from the HTML tree.
 
@@ -707,6 +709,9 @@ cdef class LexborNode:
         if current_node == NULL:
             if delete_empty:
                 lxb_dom_node_remove(<lxb_dom_node_t *> self.node)
+                _maybe_refresh_head_body(
+                    self.parser.document, <lxb_dom_node_t *> self.node
+                )
             return
 
         while current_node != NULL:
@@ -721,6 +726,7 @@ cdef class LexborNode:
             current_node = next_node
 
         lxb_dom_node_remove(<lxb_dom_node_t *> self.node)
+        _maybe_refresh_head_body(self.parser.document, <lxb_dom_node_t *> self.node)
 
     def unwrap_tags(self, list tags, bint delete_empty = False):
         """Unwraps specified tags from the HTML tree.
@@ -848,6 +854,9 @@ cdef class LexborNode:
                 raise SelectolaxError("Can't create a new node")
             lxb_dom_node_insert_before(self.node, new_node)
             lxb_dom_node_remove(<lxb_dom_node_t *> self.node)
+            _maybe_refresh_head_body(
+                self.parser.document, <lxb_dom_node_t *> self.node
+            )
         elif isinstance(value, LexborNode):
             new_node = lxb_dom_document_import_node(
                 &self.parser.document.dom_document,
@@ -858,6 +867,9 @@ cdef class LexborNode:
                 raise SelectolaxError("Can't create a new node")
             lxb_dom_node_insert_before(self.node, <lxb_dom_node_t *> new_node)
             lxb_dom_node_remove(<lxb_dom_node_t *> self.node)
+            _maybe_refresh_head_body(
+                self.parser.document, <lxb_dom_node_t *> self.node
+            )
         else:
             raise SelectolaxError("Expected a string or LexborNode instance, but %s found" % type(value).__name__)
 

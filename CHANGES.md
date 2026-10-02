@@ -1,6 +1,6 @@
 # selectolax Changelog
 
-# Version 1.0 (Unreleased)
+# Version 1.0.0 (Unreleased)
 
 This release contains **breaking changes**.
 
@@ -24,6 +24,8 @@ This release contains **breaking changes**.
 - Fix `attrs[key] = value` raising `AttributeError` instead of `TypeError` when `value` is not a string
 - Prevent segfaults when instantiating `LexborNode` or `LexborAttributes` directly.
 - Fix `unwrap()` corrupting the tree in some cases.
+- Fix `head` and `body` going stale once `<head>`/`<body>` is removed from the document.
+   This also fixes `parse_fragment()` exposing a detached `head`/`body` on the nodes it returns.
 
 # Version 0.4.13
 

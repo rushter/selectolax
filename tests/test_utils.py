@@ -98,6 +98,10 @@ def test_parse_fragment_html_with_head(impl: Impl):
 
     assert len(nodes[0].parser.css("head")) == 1
     assert len(nodes[0].parser.css("body")) == 0
+    # do_parse_fragment() decomposes <body> to return the root alone, so the
+    # parser must no longer report the body it detached.
+    assert nodes[0].parser.head is not None
+    assert nodes[0].parser.body is None
 
 
 @pytest.mark.parametrize(*_IMPL_PARAMETRIZER)
@@ -117,6 +121,9 @@ def test_parse_fragment_html_with_body(impl: Impl):
 
     assert len(nodes[0].parser.css("head")) == 0
     assert len(nodes[0].parser.css("body")) == 1
+    # do_parse_fragment() decomposes <head> here, so it must stop being reported.
+    assert nodes[0].parser.head is None
+    assert nodes[0].parser.body is not None
 
 
 @pytest.mark.parametrize(*_IMPL_PARAMETRIZER)

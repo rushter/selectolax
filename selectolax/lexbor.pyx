@@ -137,6 +137,48 @@ cdef inline void _refresh_head_body(lxb_html_document_t* document):
         child = child.next
 
 
+cdef inline void _maybe_refresh_head_body(
+    lxb_html_document_t* document, lxb_dom_node_t* removed
+):
+    """Re-point a document's cached ``head``/``body`` if ``removed`` was one.
+
+    ``document->head`` and ``document->body`` are written only by the parser's
+    insertion modes and are never cleared afterwards, so unlinking or freeing
+    either element leaves the cache pointing at a node that is no longer part
+    of the document. ``lxb_html_document_head_element_noi`` returns that cache
+    verbatim, which is what makes ``parser.head`` / ``parser.body`` hand out a
+    detached node after e.g. ``parser.body.unwrap()``.
+
+    Comparing pointer values is safe even when the cached node has already been
+    freed; the pointers are only ever assigned by ``_refresh_head_body``,
+    which rescans the tree instead of reading the stale value.
+
+    Any mutation that detaches a node must call this, so that the removal
+    sources of truth stay in sync. It is deliberately not fired when the
+    removed node merely *contains* the head/body (``<html>``): unwrapping
+    ``<html>`` leaves both elements alive and attached to the document, which
+    is a legitimate state that ``parser.head`` / ``parser.body`` keep reporting.
+
+    Parameters
+    ----------
+    document : lxb_html_document_t *
+        Document whose caches may need updating. ``NULL`` is ignored.
+    removed : lxb_dom_node_t *
+        The node that has just been unlinked from the tree. ``NULL`` is ignored.
+
+    Returns
+    -------
+    None
+    """
+    if document == NULL or removed == NULL:
+        return
+
+    if removed == <lxb_dom_node_t *> document.head:
+        _refresh_head_body(document)
+    elif removed == <lxb_dom_node_t *> document.body:
+        _refresh_head_body(document)
+
+
 cdef class LexborHTMLParser:
     """The lexbor HTML parser.
 
@@ -423,12 +465,19 @@ cdef class LexborHTMLParser:
     def body(self):
         """Return document body.
 
-        Returns
-        -------
-        LexborNode or None
-            ``<body>`` element when present, otherwise ``None``.
-        """
+Reflects the current tree: returns ``None`` once the ``<body>`` has been
+removed from the document, for example by ``unwrap()``,
+``unwrap_tags()``, ``strip_tags()``, ``decompose()`` or
+``replace_with()``.
+
+Returns
+-------
+LexborNode or None
+    ``<body>`` element when present, otherwise ``None``.
+"""
         cdef lxb_html_body_element_t* body
+        if self.document == NULL:
+            return None
         body = lxb_html_document_body_element_noi(self.document)
         if body == NULL:
             return None
@@ -438,12 +487,19 @@ cdef class LexborHTMLParser:
     def head(self):
         """Return document head.
 
+        Reflects the current tree: returns ``None`` once the ``<head>`` has
+        been removed from the document, for example by ``unwrap()``,
+        ``unwrap_tags()``, ``strip_tags()``, ``decompose()`` or
+        ``replace_with()``.
+
         Returns
         -------
         LexborNode or None
             ``<head>`` element when present, otherwise ``None``.
         """
         cdef lxb_html_head_element_t* head
+        if self.document == NULL:
+            return None
         head = lxb_html_document_head_element_noi(self.document)
         if head == NULL:
             return None
@@ -690,6 +746,7 @@ cdef class LexborHTMLParser:
         None
         """
         cdef lxb_dom_collection_t* collection = NULL
+        cdef lxb_dom_element_t* element
         cdef lxb_status_t status
 
         for tag in tags:
@@ -711,10 +768,12 @@ cdef class LexborHTMLParser:
                 raise SelectolaxError("Can't locate elements.")
 
             for i in range(lxb_dom_collection_length_noi(collection)):
+                element = lxb_dom_collection_element_noi(collection, i)
                 if recursive:
-                    node_remove_deep(<lxb_dom_node_t *> lxb_dom_collection_element_noi(collection, i))
+                    node_remove_deep(<lxb_dom_node_t *> element)
                 else:
-                    lxb_dom_node_remove(<lxb_dom_node_t *> lxb_dom_collection_element_noi(collection, i))
+                    lxb_dom_node_remove(<lxb_dom_node_t *> element)
+                _maybe_refresh_head_body(self.document, <lxb_dom_node_t *> element)
             lxb_dom_collection_destroy(collection, <bint> True)
 
     def select(self, query=None):

@@ -342,9 +342,11 @@ def test_unwrap_detaches_node_from_its_children(parser):
     assert body.last_child is None
     assert list(body) == []
     assert body.inner_html == ""
-    # The live tree is unaffected by the move.
-    assert html_parser.body is not None
-    assert html_parser.html.count("<p>") == 2
+    # The live tree is unaffected by the move: the children keep their order and
+    # now sit directly under <html>.
+    html_node = html_parser.css_first("html")
+    assert html_node is not None
+    assert [child.tag for child in html_node.iter()] == ["head", "p", "p"]
 
 
 @pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)

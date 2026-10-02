@@ -412,7 +412,110 @@ def test_sets_inner_html_on_fragment_root_leaves_head_and_body_absent():
 
     assert parser.head is None
     assert parser.body is None
-    assert parser.html == "<div><span>new</span></div>"
+
+
+_HEAD_BODY_HTML = (
+    "<html><head><title>Title</title></head><body><div>hi</div></body></html>"
+)
+_EMPTY_HEAD_BODY_HTML = "<html><head></head><body></body></html>"
+
+# Every operation that can unlink <head>/<body> from the document.
+_HEAD_BODY_DETACHING_OPS = [
+    "unwrap",
+    "unwrap_empty",
+    "decompose",
+    "decompose_shallow",
+    "remove",
+    "replace_with",
+    "strip_tags",
+    "unwrap_tags",
+    "parser_strip_tags",
+]
+
+
+@pytest.mark.parametrize("target", ["head", "body"])
+@pytest.mark.parametrize("operation", _HEAD_BODY_DETACHING_OPS)
+def test_head_and_body_are_cleared_once_detached(target: str, operation: str):
+    """Regression test: ``parser.head`` / ``parser.body`` returned a stale node.
+
+    Lexbor writes ``document->head`` and ``document->body`` from the parser's
+    insertion modes and never clears them again, and
+    ``lxb_html_document_head_element_noi`` returns that cache verbatim. So
+    unlinking either element left the cache pointing at a node that was no
+    longer part of the document, and ``parser.body`` happily handed out a
+    detached ``<body></body>`` after ``parser.body.unwrap()``.
+    """
+    # ``unwrap(delete_empty=True)`` only removes a childless node, so that one
+    # case needs an empty <head>/<body>.
+    parser = LexborHTMLParser(
+        _EMPTY_HEAD_BODY_HTML if operation == "unwrap_empty" else _HEAD_BODY_HTML
+    )
+    node = parser.css_first(target)
+    assert node is not None
+
+    if operation == "unwrap":
+        node.unwrap()
+    elif operation == "unwrap_empty":
+        node.unwrap(delete_empty=True)
+    elif operation == "decompose":
+        node.decompose()
+    elif operation == "decompose_shallow":
+        node.decompose(recursive=False)
+    elif operation == "remove":
+        node.remove()
+    elif operation == "replace_with":
+        node.replace_with("<div>replacement</div>")
+    elif operation == "strip_tags":
+        node.strip_tags([target])
+    elif operation == "unwrap_tags":
+        node.unwrap_tags([target])
+    elif operation == "parser_strip_tags":
+        parser.strip_tags([target])
+    else:  # pragma: no cover - guards against an unhandled new case
+        raise AssertionError(f"unhandled operation {operation!r}")
+
+    assert node.parent is None
+    assert getattr(parser, target) is None
+
+
+def test_unwrapping_html_keeps_head_and_body():
+    """Removing ``<html>`` must not orphan the elements it still contains.
+
+    ``unwrap()`` promotes ``<head>``/``<body>`` to children of the document
+    rather than destroying them, so the caches stay valid and both elements
+    must still be reported. Only detaching ``<head>``/``<body>`` themselves
+    clears them.
+    """
+    parser = LexborHTMLParser(_HEAD_BODY_HTML)
+    parser.css_first("html").unwrap()
+
+    head, body = parser.head, parser.body
+    assert head is not None
+    assert body is not None
+    assert head.tag == "head"
+    assert body.tag == "body"
+    assert head.parent is not None
+    assert head.parent.tag == "-document"
+    assert body.parent is not None
+    assert body.parent.tag == "-document"
+    assert head.html == "<head><title>Title</title></head>"
+    assert body.html == "<body><div>hi</div></body>"
+
+
+def test_detaching_body_leaves_head_reported():
+    """Clearing one must not disturb the other."""
+    parser = LexborHTMLParser(_HEAD_BODY_HTML)
+    head_before = parser.head
+    assert head_before is not None
+
+    parser.body.unwrap()
+
+    assert parser.body is None
+    head_after = parser.head
+    assert head_after is not None
+    assert head_after.mem_id == head_before.mem_id
+    assert head_after.html == "<head><title>Title</title></head>"
+    assert parser.html == "<html><head><title>Title</title></head><div>hi</div></html>"
 
 
 def test_text_does_not_duplicate_fragment_root_text_node():

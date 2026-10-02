@@ -644,6 +644,7 @@ cdef class LexborNode:
 
         cdef LexborNode start_node = self._get_node()
         cdef lxb_dom_node_t *node = start_node.node.first_child
+        cdef lxb_dom_node_t *following
         cdef LexborNode next_node
 
         while node != NULL:
@@ -654,9 +655,10 @@ cdef class LexborNode:
                 node = node.next
                 continue
 
+            following = node.next
             next_node = LexborNode.new(<lxb_dom_node_t *> node, self.parser)
             yield next_node
-            node = node.next
+            node = following
 
     def __iter__(self):
         return self.iter()

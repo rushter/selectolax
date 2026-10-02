@@ -222,6 +222,43 @@ def test_iter_no_text(parser):
 
 
 @pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+@pytest.mark.parametrize("remover", ["decompose", "remove", "unwrap"])
+def test_iter_visits_every_child_when_removed_mid_iteration(parser, remover):
+    """Removing the yielded node must not end the iteration early.
+
+    ``lxb_dom_node_remove`` clears the ``next`` pointer of the node it unlinks,
+    so reading ``node.next`` after resuming from the ``yield`` used to truncate
+    the walk to the first child and silently skip the rest.
+    """
+    tree = parser("<div><p>1</p><p>2</p><p>3</p><p>4</p></div>")
+    div = tree.css_first("div")
+
+    seen = []
+    for node in div.iter():
+        seen.append(node.text())
+        getattr(node, remover)()
+
+    assert seen == ["1", "2", "3", "4"]
+    assert tree.css("p") == []
+
+
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_iter_reports_all_children_when_some_are_removed_mid_iteration(parser):
+    """Skipping nodes must not disturb the traversal of their siblings."""
+    tree = parser("<div><p>1</p><p>2</p><p>3</p><p>4</p></div>")
+    div = tree.css_first("div")
+
+    seen = []
+    for node in div.iter():
+        seen.append(node.text())
+        if node.text() in ("1", "3"):
+            node.decompose()
+
+    assert seen == ["1", "2", "3", "4"]
+    assert [node.text() for node in tree.css("p")] == ["2", "4"]
+
+
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
 def test_node_navigation(parser):
     html = (
         '<div id="parent"><div id="prev"></div><div id="test_node"><h1 id="child">Title</h1>'

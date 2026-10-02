@@ -20,6 +20,7 @@ This release contains **breaking changes**.
 - Avoid reading trailing NUL bytes and uninitialised slack into the output of `text` and `text_content`
   in the lexbor backend
 - Fix handling of the `id` method on text nodes
+- Fix `iter()` skipping the remaining children when a node is removed during iteration
 
 # Version 0.4.13
 

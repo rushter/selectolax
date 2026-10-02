@@ -19,6 +19,7 @@ This release contains **breaking changes**.
   U+FFFD like the deep path always did
 - Avoid reading trailing NUL bytes and uninitialised slack into the output of `text` and `text_content`
   in the lexbor backend
+- Fix handling of the `id` method on text nodes
 
 # Version 0.4.13
 

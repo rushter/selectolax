@@ -46,7 +46,7 @@ def extract_html_comment(text: str) -> str:
     raise ValueError(msg)
 
 
-cdef inline bint is_empty_text_node(lxb_dom_node_t *text_node):
+cdef inline bint is_empty_text_node(lxb_dom_node_t *text_node) noexcept:
     """
     Check whether a node is a text node made up solely of HTML ASCII whitespace.
 

@@ -292,7 +292,7 @@ cdef class LexborNode:
     cdef inline LexborNode _get_node(self)
 
 
-cdef bint is_empty_text_node(lxb_dom_node_t *node)
+cdef bint is_empty_text_node(lxb_dom_node_t *node) noexcept
 cdef bint _is_whitespace_only(const lxb_char_t *buffer, size_t buffer_length) noexcept nogil
 
 

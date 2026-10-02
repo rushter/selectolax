@@ -404,11 +404,11 @@ class LexborNode:
     def id(self) -> str | None:
         """Get the id attribute of the node.
 
-        Returns None if id does not set.
+        Returns None if id does not set, or if the node is not an element node.
 
         Returns
         -------
-        text : str
+        text : str | None
         """
 
     def iter(

@@ -600,15 +600,20 @@ cdef class LexborNode:
     def id(self):
         """Get the id attribute of the node.
 
-        Returns None if id does not set.
+        Returns None if id does not set, or if the node is not an element node.
 
         Returns
         -------
-        text : str
+        text : str | None
         """
         cdef char * key = 'id'
         cdef size_t str_len
-        cdef lxb_dom_attr_t * attr = lxb_dom_element_attr_by_name(
+        cdef lxb_dom_attr_t * attr
+
+        if not _is_node_type(self.node, LXB_DOM_NODE_TYPE_ELEMENT):
+            return None
+
+        attr = lxb_dom_element_attr_by_name(
             <lxb_dom_element_t *> self.node,
             <lxb_char_t *> key, 2
         )

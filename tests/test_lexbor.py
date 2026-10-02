@@ -222,6 +222,37 @@ def test_attrs_reject_non_element_nodes():
         _ = comment_node.attrs
 
 
+def test_id_of_non_element_nodes_returns_none():
+    parser = LexborHTMLParser("<!DOCTYPE html><div id='real'>text<!--note--></div>")
+    div = parser.css_first("div")
+
+    text_node = div.first_child
+    comment_node = div.last_child
+    document_node = parser.root.parent
+    doctype_node = parser.root.prev
+
+    assert text_node is not None and text_node.is_text_node
+    assert comment_node is not None and comment_node.is_comment_node
+    assert document_node is not None and document_node.is_document_node
+
+    assert text_node.id is None
+    assert comment_node.id is None
+    assert document_node.id is None
+    assert doctype_node.id is None
+
+    assert div.id == "real"
+
+
+def test_id_of_element_nodes():
+    parser = LexborHTMLParser(
+        "<div id='a'><span id='b'>x</span></div><i id=''></i><p></p>"
+    )
+    assert parser.css_first("div").id == "a"
+    assert parser.css_first("span").id == "b"
+    assert parser.css_first("i").id == ""
+    assert parser.css_first("p").id is None
+
+
 def test_inner_html_setter_rejects_non_element_nodes():
     """Regression test: lexbor grafts children onto any node type.
 

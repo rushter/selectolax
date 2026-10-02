@@ -324,6 +324,51 @@ def test_unwrap(parser):
 
 
 @pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_unwrap_detaches_node_from_its_children(parser):
+    """An unwrapped node must stop referring to the children it just moved.
+
+    ``lxb_dom_node_insert_before()`` re-parents without unlinking from the old
+    parent, so without an explicit remove this node's ``first_child`` /
+    ``last_child`` kept pointing at children that had already moved up to its
+    own parent. Those nodes then belonged to two child lists at once, and
+    reading or serializing the unwrapped node walked a cycle and segfaulted.
+    """
+    html_parser = parser("<html><body><p>1</p><p>2</p></body></html>")
+    body = html_parser.body
+    body.unwrap()
+
+    assert body.parent is None
+    assert body.first_child is None
+    assert body.last_child is None
+    assert list(body) == []
+    assert body.inner_html == ""
+    # The live tree is unaffected by the move.
+    assert html_parser.body is not None
+    assert html_parser.html.count("<p>") == 2
+
+
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_unwrap_preserves_child_order(parser):
+    html_parser = parser("<div>a<b>1</b><i>2</i><u>3</u>z</div>")
+    html_parser.css_first("div").unwrap()
+    assert html_parser.body.inner_html == "a<b>1</b><i>2</i><u>3</u>z"
+
+
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_unwrap_moved_children_are_not_duplicated(parser):
+    html_parser = parser("<div><p><b>1</b></p><p><b>2</b></p></div>")
+    html_parser.css_first("div").unwrap()
+
+    assert html_parser.body.inner_html == "<p><b>1</b></p><p><b>2</b></p>"
+    assert len(html_parser.css("b")) == 2
+    # Every element's inner_html must still match its own children.
+    for node in html_parser.css("*"):
+        assert node.inner_html == "".join(
+            child.html for child in node.iter(include_text=True)
+        )
+
+
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
 def test_unwrap_empty_tag(parser):
     html = '<a id="url" href="https://rushter.com/">I linked to rushter.com<i></i></a>'
     html_parser = parser(html)

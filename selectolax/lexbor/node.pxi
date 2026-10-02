@@ -711,6 +711,12 @@ cdef class LexborNode:
 
         while current_node != NULL:
             next_node = current_node.next
+            # A DOM move is a "pre-insert": unlink from the old parent first, then
+            # insert. lxb_dom_node_insert_before() only re-parents and never unlinks,
+            # so without the remove this node keeps pointing at children that have
+            # already moved to its own parent, and they end up in two child lists at
+            # once. The traversal then walks a cycle and dereferences freed memory.
+            lxb_dom_node_remove(current_node)
             lxb_dom_node_insert_before(self.node, current_node)
             current_node = next_node
 

@@ -31,10 +31,10 @@ jobs:
       run: |
         python -m pip install --upgrade pip setuptools
         pip install -r requirements_dev.txt
-        USE_LEXBOR=1 python setup.py build_ext --inplace --cython
+        python setup.py build_ext --inplace --cython
     - name: Test with pytest
       run: |
-        USE_LEXBOR=1 pytest tests
+        pytest tests
     - name: Test typesafety
       run: |
         pytest typesafety
@@ -59,7 +59,7 @@ jobs:
           python -m pip install --upgrade pip setuptools
           pip install -r requirements_dev.txt
           python3 -m pip install types-pyinstaller
-          USE_LEXBOR=1 python setup.py build_ext --inplace --cython
+          python setup.py build_ext --inplace --cython
       - name: Lint using Ruff
         run: ruff check tests
       - name: Lint Mypy

@@ -18,7 +18,6 @@ with io.open("README.md", mode="rt", encoding="utf-8") as readme_file:
 USE_STATIC = False
 USE_CYTHON = False
 PLATFORM = "windows_nt" if platform.system() == "Windows" else "posix"
-INCLUDE_LEXBOR = bool(os.environ.get("USE_LEXBOR", True))
 
 ARCH = platform.architecture()[0]
 
@@ -33,10 +32,6 @@ except ImportError as err:
 if "--static" in sys.argv:
     USE_STATIC = True
     sys.argv.remove("--static")
-
-if "--lexbor" in sys.argv:
-    INCLUDE_LEXBOR = True
-    sys.argv.remove("--lexbor")
 
 if "--cython" in sys.argv:
     if HAS_CYTHON:
@@ -80,29 +75,23 @@ def find_lexbor_files(lexbor_path="lexbor/source"):
 
 def make_extensions():
     logging.info(f"USE_CYTHON: {USE_CYTHON}")
-    logging.info(f"INCLUDE_LEXBOR: {INCLUDE_LEXBOR}")
     logging.info(f"USE_STATIC: {USE_STATIC}")
 
-    files_to_compile_lxb = []
+    if USE_CYTHON:
+        files_to_compile_lxb = [
+            "selectolax/lexbor.pyx",
+        ]
+    else:
+        files_to_compile_lxb = [
+            "selectolax/lexbor.c",
+        ]
+
     extra_objects_lxb = []
 
-    if USE_CYTHON:
-        if INCLUDE_LEXBOR:
-            files_to_compile_lxb = [
-                "selectolax/lexbor.pyx",
-            ]
-    else:
-        if INCLUDE_LEXBOR:
-            files_to_compile_lxb = [
-                "selectolax/lexbor.c",
-            ]
-
     if USE_STATIC:
-        if INCLUDE_LEXBOR:
-            extra_objects_lxb = ["lexbor/liblexbor_static.a"]
+        extra_objects_lxb = ["lexbor/liblexbor_static.a"]
     else:
-        if INCLUDE_LEXBOR:
-            files_to_compile_lxb.extend(find_lexbor_files("lexbor/source"))
+        files_to_compile_lxb.extend(find_lexbor_files("lexbor/source"))
 
     compile_arguments_lxb = [
         "-DLEXBOR_STATIC",
@@ -151,21 +140,19 @@ def make_extensions():
         )
 
     extensions = []
-
-    if INCLUDE_LEXBOR:
-        extensions.append(
-            Extension(
-                "selectolax.lexbor",
-                files_to_compile_lxb,
-                language="c",
-                include_dirs=[
-                    "lexbor/source/",
-                ],
-                extra_objects=extra_objects_lxb,
-                extra_compile_args=compile_arguments_lxb,
-                extra_link_args=link_arguments_lxb,
-            )
+    extensions.append(
+        Extension(
+            "selectolax.lexbor",
+            files_to_compile_lxb,
+            language="c",
+            include_dirs=[
+                "lexbor/source/",
+            ],
+            extra_objects=extra_objects_lxb,
+            extra_compile_args=compile_arguments_lxb,
+            extra_link_args=link_arguments_lxb,
         )
+    )
     if USE_CYTHON:
         extensions = cythonize(extensions, compiler_directives=COMPILER_DIRECTIVES)
 

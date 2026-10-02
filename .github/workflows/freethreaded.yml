@@ -43,10 +43,10 @@ jobs:
         python -m pip install --upgrade pip setuptools
         pip install -r requirements_dev.txt
         pip install "Cython>=3.1"
-        USE_LEXBOR=1 python setup.py build_ext --inplace --cython
+        python setup.py build_ext --inplace --cython
     - name: Verify the GIL stays disabled after import
       run: |
         python -W error::RuntimeWarning -c "import sys, selectolax.lexbor; assert not sys._is_gil_enabled(), 'an extension re-enabled the GIL'"
     - name: Test with pytest
       run: |
-        USE_LEXBOR=1 pytest tests
+        pytest tests

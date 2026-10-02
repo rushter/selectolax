@@ -581,6 +581,18 @@ def test_attrs_test_dict_features(parser):
 
 
 @pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_attrs_keep_document_alive(parser):
+    # LexborAttributes holds a borrowed pointer into the owning document, so it
+    # has to keep the parser alive by itself. Here the parser is a temporary and
+    # is freed by reference counting as soon as `.attrs` is evaluated.
+    attrs = parser('<div id="id" data-x="1">text</div>').css_first("div").attrs
+
+    assert list(attrs) == ["id", "data-x"]
+    assert attrs["id"] == "id"
+    assert attrs["data-x"] == "1"
+
+
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
 def test_traverse(parser):
     html = (
         '<div id="parent"><div id="prev"></div><div id="test_node"><h1 id="child">Title</h1>'

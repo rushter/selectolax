@@ -26,6 +26,7 @@ This release contains **breaking changes**.
 - Fix `unwrap()` corrupting the tree in some cases.
 - Fix `head` and `body` going stale once `<head>`/`<body>` is removed from the document.
    This also fixes `parse_fragment()` exposing a detached `head`/`body` on the nodes it returns.
+- Fix `attrs` reading freed memory when it outlives the node it was obtained from.
 
 # Version 0.4.13
 

@@ -5,6 +5,11 @@ cimport cython
 cdef class LexborAttributes:
     """A dict-like object that represents attributes."""
     cdef lxb_dom_node_t *node
+    # Keeps the owning document alive. ``node`` is a borrowed pointer into
+    # ``parser.document``; without this reference the whole document is freed
+    # as soon as the LexborNode that produced these attrs is collected, leaving
+    # every method here reading freed memory.
+    cdef LexborHTMLParser parser
     cdef unicode decode_errors
 
     def __init__(self, *args, **kwargs):
@@ -14,11 +19,12 @@ cdef class LexborAttributes:
         )
 
     @staticmethod
-    cdef LexborAttributes create(lxb_dom_node_t *node):
+    cdef LexborAttributes create(lxb_dom_node_t *node, LexborHTMLParser parser):
         if not _is_node_type(node, LXB_DOM_NODE_TYPE_ELEMENT):
             raise TypeError("attrs is only available for element nodes")
         obj = <LexborAttributes> LexborAttributes.__new__(LexborAttributes)
         obj.node = node
+        obj.parser = parser
         return obj
 
     def __iter__(self):

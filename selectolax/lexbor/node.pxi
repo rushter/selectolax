@@ -603,7 +603,7 @@ cdef class LexborNode:
         """
         if not _is_node_type(self.node, LXB_DOM_NODE_TYPE_ELEMENT):
             raise TypeError("attrs is only available for element nodes")
-        cdef LexborAttributes attributes = LexborAttributes.create(<lxb_dom_node_t *> self.node)
+        cdef LexborAttributes attributes = LexborAttributes.create(<lxb_dom_node_t *> self.node, self.parser)
         return attributes
 
     @property

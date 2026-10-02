@@ -756,6 +756,38 @@ def test_attributes_modification():
         pass
 
 
+def test_attrs_setitem_rejects_non_str_values():
+    parser = LexborHTMLParser('<div id="a"></div>')
+    div = parser.root.css_first("div")
+    attrs = div.attrs
+
+    for value in (5, 0, 1.5, b"bytes", b"", [1], (), {"a": 1}, True, object()):
+        with pytest.raises(TypeError, match="Expected str or unicode"):
+            attrs["x"] = value
+
+    assert "x" not in attrs
+    assert div.html == '<div id="a"></div>'
+
+    attrs["x"] = "value"
+    assert attrs["x"] == "value"
+    attrs["x"] = ""
+    assert attrs["x"] == ""
+    attrs["x"] = "ünïcödé 中文"
+    assert attrs["x"] == "ünïcödé 中文"
+    attrs["x"] = None
+    assert attrs["x"] is None
+    assert div.html == '<div id="a" x=""></div>'
+
+
+def test_attrs_setitem_rejects_non_str_keys():
+    parser = LexborHTMLParser('<div id="a"></div>')
+    attrs = parser.root.css_first("div").attrs
+
+    with pytest.raises(TypeError, match="expected str"):
+        attrs[b"id"] = "b"
+    assert attrs["id"] == "a"
+
+
 def test_node_insert_operations_with_different_types():
     html = '<div><span id="target">target</span></div>'
     parser = LexborHTMLParser(html)

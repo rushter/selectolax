@@ -26,9 +26,8 @@ cdef class LexborAttributes:
             attr = attr.next
 
     def __setitem__(self, str key, object value):
-        value = value
         bytes_key = key.encode(_ENCODING)
-        bytes_value = value.encode(_ENCODING) if value else b""
+        cdef bytes bytes_value
         cdef lxb_dom_attr_t *attr
         cdef lxb_dom_document_t *doc
 
@@ -46,6 +45,7 @@ cdef class LexborAttributes:
             attr.value = NULL
 
         elif isinstance(value, str) or isinstance(value, unicode) :
+            bytes_value = value.encode(_ENCODING)
             attr = lxb_dom_element_set_attribute(
                 <lxb_dom_element_t *> self.node,
                 <lxb_char_t *> bytes_key, len(bytes_key),
@@ -54,7 +54,7 @@ cdef class LexborAttributes:
             if attr == NULL:
                 raise MemoryError("Failed to set attribute")
         else:
-            raise TypeError("Expected str or unicode, got %s" % type(value))
+            raise TypeError("Expected str or unicode, got %s" % type(value).__name__)
 
     def __delitem__(self, key):
         try:

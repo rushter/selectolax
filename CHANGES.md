@@ -23,6 +23,7 @@ This release contains **breaking changes**.
   in the lexbor backend
 - Fix handling of the `id` method on text nodes
 - Fix `iter()` skipping the remaining children when a node is removed during iteration
+- Fix `attrs[key] = value` raising `AttributeError` instead of `TypeError` when `value` is not a string
 
 # Version 0.4.13
 

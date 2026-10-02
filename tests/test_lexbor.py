@@ -1011,6 +1011,58 @@ def test_selector_attribute_longer_than_edge_cases():
     assert len(result.matches) == 1
 
 
+_LENGTH_FILTER_STATES_HTML = (
+    "<div>"
+    "<a href=''>empty value</a>"
+    "<a href>valueless</a>"
+    "<a>absent</a>"
+    "<a href='long-value'>long</a>"
+    "</div>"
+)
+
+
+def test_attribute_longer_than_agrees_with_any_variant():
+    """Regression test: the two filters disagreed on empty attribute values."""
+    root = LexborHTMLParser(_LENGTH_FILTER_STATES_HTML).root
+    assert root is not None
+
+    kept = root.select("a").attribute_longer_than("href", -1).matches
+    assert [node.text() for node in kept] == ["empty value", "long"]
+
+    for length in (-1, 0, 4, 11, 200):
+        matches = root.select("a").attribute_longer_than("href", length).matches
+        assert bool(matches) is (
+            root.select("a").any_attribute_longer_than("href", length)
+        ), f"the two filters disagree at length={length}"
+
+
+def test_attribute_longer_than_agrees_with_any_variant_with_start():
+    """Regression test: the same asymmetry was reachable through ``start``."""
+    html = (
+        "<div>"
+        "<a href='http://'>empty tail</a>"
+        "<a href='http://long-tail-here'>long tail</a>"
+        "<a href=''>empty value</a>"
+        "<a>absent</a>"
+        "</div>"
+    )
+    root = LexborHTMLParser(html).root
+    assert root is not None
+
+    kept = root.select("a").attribute_longer_than("href", -1, "http://").matches
+    assert [node.text() for node in kept] == [
+        "empty tail",
+        "long tail",
+        "empty value",
+    ]
+
+    for length in (-1, 0, 5, 100):
+        matches = root.select("a").attribute_longer_than("href", length, "http://")
+        assert bool(matches.matches) is (
+            root.select("a").any_attribute_longer_than("href", length, "http://")
+        ), f"the two filters disagree at length={length}, start='http://'"
+
+
 def test_node_replace_with_empty():
     html = "<div><span>target</span></div>"
     parser = LexborHTMLParser(html)

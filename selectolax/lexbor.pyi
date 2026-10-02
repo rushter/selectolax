@@ -98,13 +98,13 @@ class LexborSelector:
         Similar to string-length in XPath.
         """
 
-def any_attribute_longer_than(
-    self, attribute: str, length: int, start: str | None = None
-) -> bool:
-    """Returns True any href attribute longer than a specified length.
+    def any_attribute_longer_than(
+        self, attribute: str, length: int, start: str | None = None
+    ) -> bool:
+        """Returns True any href attribute longer than a specified length.
 
-    Similar to `string-length` in XPath.
-    """
+        Similar to `string-length` in XPath.
+        """
 
 class LexborCSSSelector:
     def __init__(self): ...

@@ -142,6 +142,22 @@ cdef class LexborCSSSelector:
             lxb_css_selectors_destroy(self.css_selectors, True)
 
 
+cdef inline bint _attribute_longer_than(
+    LexborNode node, str attribute, int length, str start
+):
+    # Absent and valueless attributes read back as None; an empty value reads
+    # back as "" and has the length 0, as string-length in XPath.
+    cdef object attr = node.attributes.get(attribute)
+
+    if attr is None:
+        return False
+
+    if start and start in attr:
+        attr = attr[attr.find(start) + len(start):]
+
+    return len(attr) > length
+
+
 cdef class LexborSelector:
     """An advanced CSS selector that supports additional operations.
 
@@ -196,12 +212,7 @@ cdef class LexborSelector:
         """
         cdef list nodes = []
         for node in self.nodes:
-            attr = node.attributes.get(attribute)
-            if not attr:
-                continue
-            if attr and start and start in attr:
-                attr = attr[attr.find(start) + len(start):]
-            if len(attr) > length:
+            if _attribute_longer_than(node, attribute, length, start):
                 nodes.append(node)
         self.nodes = nodes
         return self
@@ -213,12 +224,7 @@ cdef class LexborSelector:
         """
         cdef LexborNode node
         for node in self.nodes:
-            attr = node.attributes.get(attribute)
-            if attr is None:
-                continue
-            if start and start in attr:
-                attr = attr[attr.find(start) + len(start):]
-            if len(attr) > length:
+            if _attribute_longer_than(node, attribute, length, start):
                 return True
         return False
 

@@ -744,6 +744,39 @@ def test_merge_text_nodes_three_plus(parser):
     assert div.text() == "One Two Three"
 
 
+@pytest.mark.parametrize("parser", _PARSERS)
+def test_merge_text_nodes_visits_every_sibling_subtree(parser):
+    """Each element sibling must be descended into, not just the first one.
+
+    Guards the iterative traversal: descending into the first child and then
+    climbing out on ``next``/``parent`` has to pick up the remaining siblings,
+    otherwise whole subtrees silently keep their unmerged text nodes.
+    """
+    html = (
+        "<div>"
+        + "".join(
+            f"<section><b>x{i}</b>mid{i}<i>y{i}</i>tail{i}</section>"
+            f"<article><b>p{i}</b>mid{i}<i>q{i}</i>tail{i}</article>"
+            for i in range(50)
+        )
+        + "</div>"
+    )
+    tree = parser(html)
+    tree.unwrap_tags(["b", "i"])
+    root = tree.css_first("div", strict=True)
+    root.merge_text_nodes()
+
+    for node in root.css("section, article"):
+        kids = list(node.iter(include_text=True))
+        assert all(
+            not (a.is_text_node and b.is_text_node) for a, b in zip(kids, kids[1:])
+        ), f"{node.tag} still has adjacent text nodes: {node.html}"
+    assert root.css_first("section").text() == "x0mid0y0tail0"
+    assert root.css_first("article").text() == "p0mid0q0tail0"
+    assert root.css("section")[-1].text() == "x49mid49y49tail49"
+    assert root.css("article")[-1].text() == "p49mid49q49tail49"
+
+
 @pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
 def test_css_first_first(parser):
     html = '<h2 class="list-details__item__partial" id="js-partial">(1:1, 0:0, 0:0, 5:3)</h2>'

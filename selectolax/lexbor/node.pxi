@@ -1441,14 +1441,33 @@ cdef inline lxb_html_serialize_opt_t _html_pretty_options(
 cdef inline bint _is_node_type(lxb_dom_node_t *node, lxb_dom_node_type_t expected_type):
     return node != NULL and node.type == expected_type
 
+cdef inline void _collapse_text_runs(lxb_dom_node_t *node, lexbor_mraw_t *text_mraw):
+    """Collapse each run of adjacent text children into the run's first node."""
+    cdef lxb_dom_node_t *child
+    cdef lxb_dom_node_t *next_node
+    cdef lexbor_str_t *left_str
+    cdef lexbor_str_t *right_str
+
+    child = node.first_child
+    while child != NULL:
+        if child.type == LXB_DOM_NODE_TYPE_TEXT:
+            left_str = &(<lxb_dom_text_t *> child).char_data.data
+            # Merge the whole run into `child`, which stays put so that every
+            # following sibling gets folded in as well.
+            while child.next != NULL and child.next.type == LXB_DOM_NODE_TYPE_TEXT:
+                next_node = child.next
+                right_str = &(<lxb_dom_text_t *> next_node).char_data.data
+                if lexbor_str_append(left_str, text_mraw, right_str.data, right_str.length) == NULL:
+                    break
+                lxb_dom_node_remove(next_node)
+        child = child.next
+
+
 cdef void _merge_text_nodes(lxb_dom_node_t *root):
     if root == NULL or node_is_removed(root):
         return
 
     cdef lxb_dom_node_t *node
-    cdef lxb_dom_node_t *next_node
-    cdef lexbor_str_t *left_str
-    cdef lexbor_str_t *right_str
     cdef lexbor_mraw_t *text_mraw
 
     # Text nodes own their character data inline, so a run of adjacent text
@@ -1456,22 +1475,20 @@ cdef void _merge_text_nodes(lxb_dom_node_t *root):
     # keeps this linear and, unlike lxb_dom_node_text_content(), needs no
     # scratch buffer taken from the document's text arena.
     text_mraw = root.owner_document.text
-    node = root.first_child
-    while node != NULL:
-        if node.type == LXB_DOM_NODE_TYPE_TEXT:
-            left_str = &(<lxb_dom_text_t *> node).char_data.data
-            # Merge the whole run into `node`, which stays put so that every
-            # following sibling gets folded in as well.
-            while node.next != NULL and node.next.type == LXB_DOM_NODE_TYPE_TEXT:
-                next_node = node.next
-                right_str = &(<lxb_dom_text_t *> next_node).char_data.data
-                if lexbor_str_append(left_str, text_mraw, right_str.data, right_str.length) == NULL:
-                    break
-                lxb_dom_node_remove(next_node)
-        node = node.next
 
-    node = root.first_child
-    while node != NULL:
-        if node.type == LXB_DOM_NODE_TYPE_ELEMENT and node.first_child:
-            _merge_text_nodes(node)
-        node = node.next
+    # Iterative on purpose: recursing once per nesting level overflowed the C
+    # stack on deeply nested HTML. Climbing back out on parent/next needs no
+    # side stack and keeps each node's children visited exactly once.
+    node = root
+    _collapse_text_runs(node, text_mraw)
+
+    while True:
+        if node.first_child != NULL:
+            node = node.first_child
+        else:
+            while node != NULL and node != root and node.next == NULL:
+                node = node.parent
+            if node == NULL or node == root:
+                break
+            node = node.next
+        _collapse_text_runs(node, text_mraw)

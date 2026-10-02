@@ -7,7 +7,7 @@ This release contains **breaking changes**.
 - Remove the Modest backend. `selectolax.parser` is now a stub that raises `ImportError`
   on import, use the lexbor backend (`from selectolax.lexbor import LexborHTMLParser`) instead.
 - Fix memory leak in `text_lexbor`
-- Fix memory leak and extraction speed in `merge_text_nodes`. It's now up to 10 times faster
+- Fix memory leak, stack overflow and extraction speed in `merge_text_nodes()`. It's now up to 10 times faster
 - Improve speed of `__eq__`
 - Fix `inner_html` setter attaching element children to non-element nodes
 - Fix `head` and `body` dangling after setting `inner_html` on the `<html>` element

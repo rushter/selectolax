@@ -28,6 +28,7 @@ This release contains **breaking changes**.
    This also fixes `parse_fragment()` exposing a detached `head`/`body` on the nodes it returns.
 - Fix `attrs` reading freed memory when it outlives the node it was obtained from.
 - Fix memory leak in `attrs[key] = None`, it leaked the value buffer header on every call.
+- Fix possible memory leak in `clone()`
 
 # Version 0.4.13
 

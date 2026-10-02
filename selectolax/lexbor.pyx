@@ -955,29 +955,35 @@ LexborNode or None
         if cloned_document == NULL:
             raise SelectolaxError("Can't create a new document")
 
-        lxb_html_document_dom_opt_set(
-            cloned_document, lxb_html_document_dom_opt(self.document)
-        )
+        try:
+            lxb_html_document_dom_opt_set(
+                cloned_document, lxb_html_document_dom_opt(self.document)
+            )
 
-        cloned_document.ready_state = LXB_HTML_DOCUMENT_READY_STATE_COMPLETE
+            cloned_document.ready_state = LXB_HTML_DOCUMENT_READY_STATE_COMPLETE
 
-        cloned_node = NULL
+            cloned_node = NULL
 
-        if self._is_fragment:
-            if self._fragment_wrapper != NULL and self._fragment_root != NULL:
-                cloned_node = _clone_node_into_document(
-                    cloned_document, self._fragment_wrapper
-                )
-        else:
-            source_child = self.document.dom_document.node.first_child
-            while source_child != NULL:
-                next_child = source_child.next
-                cloned_node = _clone_node_into_document(cloned_document, source_child)
-                source_child = next_child
+            if self._is_fragment:
+                if self._fragment_wrapper != NULL and self._fragment_root != NULL:
+                    cloned_node = _clone_node_into_document(
+                        cloned_document, self._fragment_wrapper
+                    )
+            else:
+                source_child = self.document.dom_document.node.first_child
+                while source_child != NULL:
+                    next_child = source_child.next
+                    cloned_node = _clone_node_into_document(cloned_document, source_child)
+                    source_child = next_child
 
-            _refresh_head_body(cloned_document)
+                _refresh_head_body(cloned_document)
 
-        cls = LexborHTMLParser.from_document(cloned_document, self.raw_html)
+            cls = LexborHTMLParser.from_document(cloned_document, self.raw_html)
+        except BaseException:
+            # Ownership of the document only moves to cls once it exists.
+            lxb_html_document_destroy(cloned_document)
+            raise
+
         if self._is_fragment:
             cls._is_fragment = True
             cls._fragment_tag_id = self._fragment_tag_id

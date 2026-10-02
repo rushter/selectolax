@@ -53,8 +53,14 @@ cdef class LexborAttributes:
             if attr == NULL:
                 raise MemoryError("Failed to set attribute")
             doc = (<lxb_dom_node_t*>attr).owner_document
-            lexbor_str_destroy(attr.value, doc.text, 0)
-            attr.value = NULL
+            if attr.value != NULL:
+                # The header comes from doc.mraw and its data from doc.text, so each must go
+                # back to its own pool. lexbor_str_destroy() would release the
+                # header with a plain free(), which corrupts the mraw.
+                if attr.value.data != NULL:
+                    lexbor_mraw_free(doc.text, attr.value.data)
+                lexbor_mraw_free(doc.mraw, attr.value)
+                attr.value = NULL
 
         elif isinstance(value, str) or isinstance(value, unicode) :
             bytes_value = value.encode(_ENCODING)

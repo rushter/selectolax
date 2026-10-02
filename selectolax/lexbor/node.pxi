@@ -40,6 +40,13 @@ cdef inline bytes to_bytes(str_or_LexborNode value):
 cdef class LexborNode:
     """A class that represents HTML node (element)."""
 
+    def __init__(self, *args, **kwargs):
+        raise TypeError(
+            "LexborNode cannot be instantiated directly; it is a view onto a "
+            "DOM node owned by a parser. Use LexborHTMLParser.create_node(), "
+            "parse_fragment() or LexborNode.clone() instead."
+        )
+
     cdef void set_as_fragment_root(self):
         self._is_fragment_root = 1
 
@@ -1223,6 +1230,8 @@ cdef class LexborNode:
         """
         cdef lxb_dom_node_t * node
         node = lxb_dom_node_clone(<lxb_dom_node_t *> self.node, 1)
+        if node == NULL:
+            raise MemoryError("Can't clone the node")
         return LexborNode.new(node, self.parser)
 
     @property

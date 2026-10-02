@@ -22,6 +22,7 @@ This release contains **breaking changes**.
 - Fix handling of the `id` method on text nodes
 - Fix `iter()` skipping the remaining children when a node is removed during iteration
 - Fix `attrs[key] = value` raising `AttributeError` instead of `TypeError` when `value` is not a string
+- Prevent segfaults when instantiating `LexborNode` or `LexborAttributes` directly.
 
 # Version 0.4.13
 

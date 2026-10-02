@@ -7,6 +7,12 @@ cdef class LexborAttributes:
     cdef lxb_dom_node_t *node
     cdef unicode decode_errors
 
+    def __init__(self, *args, **kwargs):
+        raise TypeError(
+            "LexborAttributes cannot be instantiated directly; use LexborNode.attrs "
+            "on an existing element node instead."
+        )
+
     @staticmethod
     cdef LexborAttributes create(lxb_dom_node_t *node):
         if not _is_node_type(node, LXB_DOM_NODE_TYPE_ELEMENT):

@@ -1,6 +1,11 @@
 import pytest
 
-from selectolax.lexbor import LexborHTMLParser, SelectolaxError
+from selectolax.lexbor import (
+    LexborAttributes,
+    LexborHTMLParser,
+    LexborNode,
+    SelectolaxError,
+)
 
 """
 We'are testing only our own code.
@@ -1144,3 +1149,26 @@ def test_text_and_text_lexbor_agree(parser):
     node = tree.css_first("div")
     assert node.text() == node.text_lexbor()
     assert tree.root.text() == tree.root.text_lexbor()
+
+
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_node_is_not_publicly_constructible(parser):
+    with pytest.raises(TypeError, match="cannot be instantiated directly"):
+        LexborNode()
+
+    with pytest.raises(TypeError, match="cannot be instantiated directly"):
+        LexborNode(1)
+
+    node = parser("<div id='x'></div>").css_first("div")
+    assert isinstance(node, LexborNode)
+    assert node.id == "x"
+    assert node.clone().id == "x"
+
+
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_attributes_is_not_publicly_constructible(parser):
+    with pytest.raises(TypeError, match="cannot be instantiated directly"):
+        LexborAttributes()
+
+    node = parser("<div id='x' class='y'></div>").css_first("div")
+    assert list(node.attrs) == ["id", "class"]

@@ -1,6 +1,7 @@
 from typing import Literal, Optional, Type
 
-MAX_HTML_INPUT_SIZE = 250e+7
+# 2500 MB
+MAX_HTML_INPUT_SIZE = 2_500_000_000
 
 ParserCls = Type["LexborHTMLParser"]
 Parser = "LexborHTMLParser"

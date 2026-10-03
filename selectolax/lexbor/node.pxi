@@ -571,13 +571,22 @@ cdef class LexborNode:
 
         The value of empty attributes is None.
 
+        Keys are the attribute names as written in the markup, so a namespaced
+        attribute keeps its prefix and stays addressable. This matters whenever
+        an element carries both a plain and a prefixed variant of the same local
+        name, where reporting local names alone would collapse the two into one
+        key and silently drop one of the values:
+
+        >>> tree = LexborHTMLParser("<svg><use href='/a' xlink:href='/b'></use></svg>")
+        >>> tree.css_first("use").attributes
+        {'href': '/a', 'xlink:href': '/b'}
+
         Returns
         -------
         attributes : dictionary of all attributes.
 
         Examples
         --------
-
         >>> tree = LexborHTMLParser("<div data id='my_id'></div>")
         >>> node = tree.css_first('div')
         >>> node.attributes
@@ -593,7 +602,7 @@ cdef class LexborNode:
         attr = lxb_dom_element_first_attribute_noi(<lxb_dom_element_t *> self.node)
 
         while attr != NULL:
-            key = lxb_dom_attr_local_name_noi(attr, &str_len)
+            key = lxb_dom_attr_qualified_name(attr, &str_len)
             value = lxb_dom_attr_value_noi(attr, &str_len)
 
             if value:

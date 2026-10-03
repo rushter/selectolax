@@ -359,6 +359,16 @@ class LexborNode:
 
         The value of empty attributes is None.
 
+        Keys are the attribute names as written in the markup, so a namespaced
+        attribute keeps its prefix and stays addressable. This matters whenever
+        an element carries both a plain and a prefixed variant of the same local
+        name, where reporting local names alone would collapse the two into one
+        key and silently drop one of the values:
+
+        >>> tree = LexborHTMLParser("<svg><use href='/a' xlink:href='/b'></use></svg>")
+        >>> tree.css_first("use").attributes
+        {'href': '/a', 'xlink:href': '/b'}
+
         Returns
         -------
         attributes : dictionary of all attributes.
@@ -375,6 +385,10 @@ class LexborNode:
     @property
     def attrs(self) -> LexborAttributes:
         """A dict-like object that is similar to the ``attributes`` property, but operates directly on the Node data.
+
+        Iteration yields the same keys ``attributes`` reports, i.e. the attribute
+        names as written in the markup, so every iterated key round-trips
+        through ``attrs[key]`` and ``del attrs[key]``.
 
         .. warning:: Use ``attributes`` instead, if you don't want to modify Node attributes.
 

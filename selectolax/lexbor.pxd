@@ -375,11 +375,18 @@ cdef extern from "lexbor/dom/dom.h" nogil:
     lxb_dom_attr_t * lxb_dom_element_first_attribute_noi(lxb_dom_element_t *element)
 
     const lxb_char_t * lxb_dom_attr_local_name_noi(lxb_dom_attr_t *attr, size_t *len)
+    # Returns the qualified name (``xlink:href``) when the attribute carries a
+    # namespace prefix, and falls back to the local name otherwise. This is the
+    # spelling that iteration reports and that ``attrs[key]`` addresses, so
+    # reporting it is what keeps iteration, lookup and removal in agreement.
+    const lxb_char_t * lxb_dom_attr_qualified_name(lxb_dom_attr_t *attr, size_t *len)
     const lxb_char_t * lxb_dom_attr_value_noi(lxb_dom_attr_t *attr, size_t *len)
+    lxb_dom_attr_t * lxb_dom_attr_interface_destroy(lxb_dom_attr_t *attr)
 
     lxb_dom_attr_t * lxb_dom_element_set_attribute(lxb_dom_element_t *element,
                                                    const lxb_char_t *qualified_name, size_t qn_len,
                                                    const lxb_char_t *value, size_t value_len)
+    lxb_status_t lxb_dom_element_attr_remove(lxb_dom_element_t *element, lxb_dom_attr_t *attr)
     lxb_status_t lxb_dom_element_remove_attribute(lxb_dom_element_t *element,
                                                   const lxb_char_t *qualified_name, size_t qn_len)
     lxb_dom_attr_t * lxb_dom_element_attr_by_name(lxb_dom_element_t *element,

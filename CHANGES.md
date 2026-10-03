@@ -20,6 +20,8 @@ usually when heavily modifying the tree.
 - **Breaking**: Fix `css_matches` and `any_css_matches` missing matches outside the first top-level node of an HTML
   fragment. They now search the same scope as `css`.
 - **Breaking**: Fix `attribute_longer_than` and `any_attribute_longer_than` returning inconsistent results
+- **Breaking**: `attributes` and `attrs` now report an attribute's qualified name instead of its local name.
+  An element carrying both `href` and `xlink:href` used to collapse them into a single `href` key.
 - **Breaking**: Fix `iter()` skipping the remaining children when a node is removed during iteration
 - **Breaking**: Fix an HTML fragment whose first node is text dropping the rest of the fragment.
   `LexborHTMLParser('a<span>s</span>', is_fragment=True).text()` returned `'a'` instead of `'as'`.

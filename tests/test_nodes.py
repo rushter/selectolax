@@ -592,6 +592,113 @@ def test_attrs_keep_document_alive(parser):
     assert attrs["data-x"] == "1"
 
 
+# An element carrying both a plain and a namespace-prefixed variant of the same
+# local name. Reporting local names collapsed them into one key, dropping a
+# value, and iteration yielded the same key twice.
+_SHARED_LOCAL_NAME = [
+    ('<svg><use href="/plain" xlink:href="/xlinked"></use></svg>', "use"),
+    ('<svg><use xlink:href="/xlinked" href="/plain"></use></svg>', "use"),
+    ('<math><mi xlink:href="/xlinked" href="/plain"></mi></math>', "mi"),
+    ('<div xlink:href="/xlinked" href="/plain"></div>', "div"),
+]
+
+
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_attributes_keeps_both_names_of_a_shared_local_name(parser):
+    for html, selector in _SHARED_LOCAL_NAME:
+        node = parser(html).css_first(selector)
+        assert node.attributes == {"href": "/plain", "xlink:href": "/xlinked"}, html
+
+
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_attrs_iteration_yields_each_attribute_once(parser):
+    for html, selector in _SHARED_LOCAL_NAME:
+        node = parser(html).css_first(selector)
+        assert sorted(node.attrs) == ["href", "xlink:href"], html
+        assert len(node.attrs) == 2, html
+
+
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_attrs_keys_round_trip_through_lookup(parser):
+    # Whatever iteration yields has to address the attribute it names, whichever
+    # order the two attributes appear in. lxb_dom_element_attr_by_name() accepts
+    # a match on either the local or the qualified name, so it could answer a
+    # lookup of "href" with the value of "xlink:href".
+    for html, selector in _SHARED_LOCAL_NAME:
+        node = parser(html).css_first(selector)
+        attributes = node.attributes
+
+        for key in node.attrs:
+            assert key in node.attrs, (html, key)
+            assert node.attrs[key] == attributes[key], (html, key)
+
+        assert dict(node.attrs.items()) == attributes, html
+
+
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_attrs_removes_the_attribute_it_looked_up(parser):
+    # __delitem__ used to re-resolve the name through lexbor, which could drop
+    # the attribute sharing a local name instead of the requested one.
+    for html, selector in _SHARED_LOCAL_NAME:
+        node = parser(html).css_first(selector)
+        del node.attrs["href"]
+
+        assert node.attributes == {"xlink:href": "/xlinked"}, html
+        assert "href" not in node.attrs, html
+
+
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_attrs_prefixed_name_is_not_reachable_by_its_local_name(parser):
+    # Only `xlink:href` is set, so there is no `href` attribute to find. As with
+    # Element.getAttribute() in the DOM standard, a lookup matches the qualified
+    # name and must not fall back to the local name.
+    node = parser('<div xlink:href="/xlinked"></div>').css_first("div")
+
+    assert node.attributes == {"xlink:href": "/xlinked"}
+    assert node.attrs.get("xlink:href") == "/xlinked"
+    assert node.attrs.get("href") is None
+    assert "href" not in node.attrs
+    with pytest.raises(KeyError):
+        del node.attrs["href"]
+
+
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_attrs_lookup_stays_case_insensitive(parser):
+    node = parser('<div DATA-X="1" data-y="2"></div>').css_first("div")
+
+    assert node.attributes == {"data-x": "1", "data-y": "2"}
+    assert node.attrs["DATA-X"] == "1"
+    assert node.attrs["Data-X"] == "1"
+    assert "DATA-X" in node.attrs
+
+
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_attrs_del_removes_missing_attribute(parser):
+    node = parser('<div id="id"></div>').css_first("div")
+
+    del node.attrs["id"]
+    with pytest.raises(KeyError):
+        del node.attrs["id"]
+    with pytest.raises(KeyError):
+        del node.attrs["unknown"]
+
+
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_attrs_del_of_id_and_class_updates_the_tree(parser):
+    # lxb_dom_element_attr_remove() clears the element's cached id/class
+    # pointers, so a removed id or class must stop matching selectors.
+    html_parser = parser('<div id="id" class="cls"></div>')
+    node = html_parser.css_first("div")
+
+    del node.attrs["id"]
+    assert html_parser.css("#id") == []
+    assert len(html_parser.css(".cls")) == 1
+
+    del node.attrs["class"]
+    assert html_parser.css(".cls") == []
+    assert html_parser.css_first("div").attributes == {}
+
+
 @pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
 def test_traverse(parser):
     html = (

@@ -1,6 +1,104 @@
 cimport cython
 
 
+cdef inline bint _ascii_ieq(const lxb_char_t *left, const lxb_char_t *right, size_t length) noexcept nogil:
+    """Compare two ASCII byte strings, ignoring case.
+
+    Parameters
+    ----------
+    left, right : const lxb_char_t *
+        Buffers to compare. They must be at least ``length`` bytes long.
+    length : size_t
+        Number of bytes to compare.
+
+    Returns
+    -------
+    bint
+        ``True`` when both buffers spell the same case-insensitive word.
+    """
+    cdef size_t i
+    cdef lxb_char_t lchar
+    cdef lxb_char_t rchar
+
+    for i in range(length):
+        lchar = left[i]
+        rchar = right[i]
+        if lchar >= 'A' and lchar <= 'Z':
+            lchar = lchar + 32
+        if rchar >= 'A' and rchar <= 'Z':
+            rchar = rchar + 32
+        if lchar != rchar:
+            return False
+    return True
+
+
+cdef inline lxb_dom_attr_t* _attr_by_qualified_name(
+    lxb_dom_node_t *node,
+    const lxb_char_t *name,
+    size_t name_len,
+) noexcept nogil:
+    """Return the attribute of ``node`` whose qualified name is ``name``.
+
+    ``lxb_dom_element_attr_by_name()`` accepts a match on *either* the local name
+    or the qualified name, so on an element carrying both ``href`` and
+    ``xlink:href`` a lookup of ``href`` returns whichever of the two happens to
+    come first in the attribute list rather than the one that was asked for, and
+    reports the wrong value. Comparing the qualified name outright is what makes
+    a lookup address exactly the attribute that iteration reports.
+
+    The comparison is ASCII case-insensitive because HTML matches attribute
+    names that way, and ``lxb_dom_attr_qualified_name()`` already lowercases
+    every unprefixed name.
+
+    Parameters
+    ----------
+    node : lxb_dom_node_t *
+        The element node whose attributes are scanned.
+    name : const lxb_char_t *
+        The qualified name to look for, not necessarily NUL terminated.
+    name_len : size_t
+        Length of ``name`` in bytes.
+
+    Returns
+    -------
+    lxb_dom_attr_t *
+        The matching attribute, or ``NULL`` when the element has no such
+        attribute.
+    """
+    cdef lxb_dom_attr_t *attr = lxb_dom_element_first_attribute_noi(<lxb_dom_element_t *> node)
+    cdef const lxb_char_t *qualified
+    cdef size_t str_len = 0
+
+    while attr != NULL:
+        qualified = lxb_dom_attr_qualified_name(attr, &str_len)
+        if qualified != NULL and str_len == name_len and _ascii_ieq(name, qualified, name_len):
+            return attr
+        attr = attr.next
+    return NULL
+
+
+cdef inline lxb_status_t _remove_attr(lxb_dom_node_t *node, lxb_dom_attr_t *attr) noexcept nogil:
+    """Unlink and free an attribute already resolved to a pointer.
+
+    Mirrors ``lxb_dom_element_remove_attribute()``, which re-derives the
+    attribute from a name and so would drop a different one whenever the lookup
+    above is what disambiguated two attributes sharing a local name.
+
+    Returns
+    -------
+    lxb_status_t
+        ``LXB_STATUS_OK`` once the attribute is gone from the element.
+    """
+    cdef lxb_status_t status
+
+    status = lxb_dom_element_attr_remove(<lxb_dom_element_t *> node, attr)
+    if status != LXB_STATUS_OK:
+        return status
+
+    lxb_dom_attr_interface_destroy(attr)
+    return LXB_STATUS_OK
+
+
 @cython.final
 cdef class LexborAttributes:
     """A dict-like object that represents attributes."""
@@ -32,7 +130,12 @@ cdef class LexborAttributes:
         cdef size_t str_len = 0
 
         while attr != NULL:
-            key = lxb_dom_attr_local_name_noi(attr, &str_len)
+            # The qualified name, not the local name: __getitem__/__contains__/
+            # __delitem__ address attributes through lxb_dom_element_attr_by_name(),
+            # which expects this spelling. Yielding local names instead made the two
+            # disagree -- an element with both `href` and `xlink:href` iterated as
+            # ["href", "href"], and `del attrs["href"]` raised KeyError.
+            key = lxb_dom_attr_qualified_name(attr, &str_len)
             if key is not NULL:
                 yield key.decode(_ENCODING)
             attr = attr.next
@@ -77,22 +180,22 @@ cdef class LexborAttributes:
         self.parser._mark_mutated()
 
     def __delitem__(self, key):
-        try:
-            self.__getitem__(key)
-        except KeyError:
-            raise KeyError(key)
         bytes_key = key.encode(_ENCODING)
-        lxb_dom_element_remove_attribute(
-            <lxb_dom_element_t *> self.node,
-            <lxb_char_t *> bytes_key, len(bytes_key),
+        cdef lxb_dom_attr_t *attr = _attr_by_qualified_name(
+            <lxb_dom_node_t *> self.node,
+            <const lxb_char_t *> bytes_key, len(bytes_key)
         )
+        if attr == NULL:
+            raise KeyError(key)
+        if _remove_attr(<lxb_dom_node_t *> self.node, attr) != LXB_STATUS_OK:
+            raise SelectolaxError("Can't remove attribute %r" % key)
         self.parser._mark_mutated()
 
     def __getitem__(self, str key):
         bytes_key = key.encode(_ENCODING)
-        cdef lxb_dom_attr_t * attr = lxb_dom_element_attr_by_name(
-            <lxb_dom_element_t *> self.node,
-            <lxb_char_t *> bytes_key, len(bytes_key)
+        cdef lxb_dom_attr_t * attr = _attr_by_qualified_name(
+            <lxb_dom_node_t *> self.node,
+            <const lxb_char_t *> bytes_key, len(bytes_key)
         )
         cdef size_t str_len = 0
         if attr != NULL:

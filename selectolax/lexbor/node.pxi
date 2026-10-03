@@ -369,12 +369,33 @@ cdef class LexborNode:
         return container.text
 
     cdef inline LexborNode _get_node(self):
+        """Return the node that tree-walking operations should start from.
+
+        A fragment's root is a single node, but its siblings are part of the
+        fragment too, so operations that walk the tree start from the parent
+        instead and thus cover every top-level node. A text node is the one
+        exception: its own data is added separately by the callers, so walking
+        from the parent would count it twice.
+
+        Returns ``self`` when this node is not a fragment root, and also when a
+        fragment root has been detached from its wrapper, which is what
+        ``unwrap()``, ``decompose()`` and ``replace_with()`` do to it. The
+        detached node then stands in for the whole fragment, so its own subtree
+        is walked -- the same treatment every other detached node already gets.
+
+        Returns
+        -------
+        LexborNode
+            The node to start from. Never ``None``: callers dereference
+            ``.node`` on the result without checking, and a ``None`` here
+            segfaults.
+        """
         cdef LexborNode node
         if self._is_fragment_root and not _is_node_type(self.node, LXB_DOM_NODE_TYPE_TEXT):
             node = self.parent
-        else:
-            node = self
-        return node
+            if node is not None:
+                return node
+        return self
 
     def css(self, str query):
         """Evaluate CSS selector against current node and its child nodes.

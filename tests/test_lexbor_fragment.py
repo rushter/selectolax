@@ -377,6 +377,93 @@ def test_fragment_root_survives_repeated_unwrap_of_every_top_level_node():
     assert parser.html == ""
 
 
+def test_attached_fragment_root_still_covers_every_top_level_node():
+    """Tree walks from an attached fragment root must widen to its siblings."""
+    parser = LexborHTMLParser("<div>a</div><p>b</p><i>c</i>", is_fragment=True)
+    root = parser.root
+    assert root.tag == "div"
+
+    assert root.text() == "abc"
+    assert len(root.css("p")) == 1
+    assert root.css_matches("i") is True
+    assert [node.tag for node in root.iter()] == ["div", "p", "i"]
+    assert len(root.select("i").matches) == 1
+
+
+@pytest.mark.parametrize(
+    "mutate",
+    [
+        pytest.param(lambda node: node.unwrap(), id="unwrap"),
+        pytest.param(lambda node: node.decompose(), id="decompose"),
+        pytest.param(lambda node: node.remove(), id="remove"),
+        pytest.param(lambda node: node.replace_with("X"), id="replace_with"),
+        pytest.param(lambda node: node.strip_tags(["div"]), id="strip_tags"),
+        pytest.param(
+            lambda node: node.decompose(recursive=False), id="decompose_shallow"
+        ),
+    ],
+)
+def test_detached_fragment_root_does_not_crash(mutate):
+    """Every tree walk from a detached fragment root must stay in bounds.
+
+    Tree walks start at ``_get_node()``, which used to hand back ``None`` once
+    the root lost its parent, and the callers dereferenced it unconditionally.
+    """
+    parser = LexborHTMLParser("<div>a<span>s</span></div><p>b</p>", is_fragment=True)
+    root = parser.root
+    mutate(root)
+
+    # The detached node stands in for itself: only its own subtree is walked.
+    assert root.text() in ("", "a" + "s")
+    assert root.css("span") is not None
+    assert root.css_first("span") is None or root.css_first("span").tag == "span"
+    assert isinstance(root.css_matches("div"), bool)
+    assert isinstance(root.any_css_matches(("div", "span")), bool)
+    assert isinstance(list(root.iter()), list)
+    assert isinstance(list(root.iter(include_text=True)), list)
+    assert isinstance(root.select("span").matches, list)
+    assert root.text_content is None or isinstance(root.text_content, str)
+
+
+def test_detached_fragment_root_reports_its_own_subtree():
+    parser = LexborHTMLParser("<div>a<span>s</span></div>", is_fragment=True)
+    root = parser.root
+    root.unwrap()
+
+    # unwrap() lifts the children out of the root, leaving it empty and
+    # detached; the fragment itself keeps them.
+    assert root.text() == ""
+    assert root.css("span") == []
+    assert list(root.iter()) == []
+    assert root.parent is None
+    assert parser.html == "a<span>s</span>"
+
+
+def test_detached_fragment_root_can_be_decomposed_repeatedly():
+    parser = LexborHTMLParser("<div>a</div>", is_fragment=True)
+    root = parser.root
+
+    root.decompose()
+    root.decompose()
+    root.unwrap()
+
+    assert root.text() == ""
+    # Match-root is on, so a walk from a detached node still matches the node
+    # itself -- just nothing below it.
+    assert [node.tag for node in root.css("div")] == ["div"]
+    assert root.css("span") == []
+
+
+def test_detached_non_fragment_node_tree_walks_are_unaffected():
+    parser = LexborHTMLParser("<div><p>a</p></div><div>b</div>")
+    div = parser.css_first("div")
+    div.decompose()
+
+    assert div.text() == ""
+    assert div.css("p") == []
+    assert div.parent is None
+
+
 @pytest.mark.parametrize(
     "input_html, expected",
     [

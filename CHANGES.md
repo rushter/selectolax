@@ -27,6 +27,8 @@ usually when heavily modifying the tree.
 - Fix the `inner_html` setter attaching element children to non-element nodes
 - Fix `head` and `body` dangling after setting `inner_html` on the `<html>` element
 - Fix `root` going stale on an HTML fragment.
+- Fix a segfault when walking the tree from the root of an HTML fragment that had been detached from the
+  fragment, for example by `unwrap()`.
 - Avoid segfaults when hitting OOM
 - Improve performance of the `text` method. Text fragments are now concatenated as raw bytes, up to 5x faster.
 - Fix `skip_empty` being ignored by `text(deep=True)`

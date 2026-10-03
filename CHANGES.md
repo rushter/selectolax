@@ -4,30 +4,36 @@
 
 This release contains **breaking changes**.
 
-- Remove the Modest backend. `selectolax.parser` is now a stub that raises `ImportError`
-  on import, use the lexbor backend (`from selectolax.lexbor import LexborHTMLParser`) instead.
-- Fix memory leak in `text_lexbor`
-- Fix memory leak, stack overflow and extraction speed in `merge_text_nodes()`. It's now up to 10 times faster
-- Improve speed of `__eq__`
-- Fix `inner_html` setter attaching element children to non-element nodes
-- Fix `head` and `body` dangling after setting `inner_html` on the `<html>` element
-- Avoid segfaults when getting OOM errors
-- Improve performance of `text` method. Text fragments are now concatenated as raw bytes, up to 5x faster.
-- Fix `skip_empty` being ignored by `text(deep=True)`
-- Fix `text()` raising `UnicodeDecodeError` on undecodable bytes when `deep=False`. It substitutes
-  U+FFFD like the deep path always did
-- Fix `css_matches` and `any_css_matches` missing matches outside the first top-level node of an HTML
+The main change is that the Modest backend is no longer available.
+It is outdated and unmaintained, contains bugs, and does not follow modern HTML5 standards.
+
+The rest of the changes fix corner cases where the bugs were happening rarely,
+usually when heavily modifying the tree.
+
+- **Breaking**: Remove the Modest backend. `selectolax.parser` is now a stub that raises `ImportError`
+  on import. Use the lexbor backend (`from selectolax.lexbor import LexborHTMLParser`) instead.
+- **Breaking**: Fix `css_matches` and `any_css_matches` missing matches outside the first top-level node of an HTML
   fragment. They now search the same scope as `css`.
-- Fix `attribute_longer_than` and `any_attribute_longer_than` output different results
+- **Breaking**: Fix `attribute_longer_than` and `any_attribute_longer_than` returning inconsistent results
+- **Breaking**: Fix `iter()` skipping the remaining children when a node is removed during iteration
+- Fix `text_lexbor` sometimes holding temporary memory longer than needed
+- Improve memory consumption, potential stack overflow and slow extraction in `merge_text_nodes()`. It is now up to 10 times faster.
+- Improve speed of `__eq__`
+- Fix the `inner_html` setter attaching element children to non-element nodes
+- Fix `head` and `body` dangling after setting `inner_html` on the `<html>` element
+- Avoid segfaults when hitting OOM
+- Improve performance of the `text` method. Text fragments are now concatenated as raw bytes, up to 5x faster.
+- Fix `skip_empty` being ignored by `text(deep=True)`
+- Fix `text()` raising `UnicodeDecodeError` on undecodable bytes when `deep=False`. It now substitutes
+  U+FFFD, like the deep path always did
 - Fix handling of the `id` method on text nodes
-- Fix `iter()` skipping the remaining children when a node is removed during iteration
 - Fix `attrs[key] = value` raising `AttributeError` instead of `TypeError` when `value` is not a string
 - Prevent segfaults when instantiating `LexborNode` or `LexborAttributes` directly.
 - Fix `unwrap()` corrupting the tree in some cases.
 - Fix `head` and `body` going stale once `<head>`/`<body>` is removed from the document.
    This also fixes `parse_fragment()` exposing a detached `head`/`body` on the nodes it returns.
 - Fix `attrs` reading freed memory when it outlives the node it was obtained from.
-- Fix memory leak in `attrs[key] = None`, it leaked the value buffer header on every call.
+- Fix memory leak in `attrs[key] = None`; it leaked the value buffer header on every call.
 - Fix possible memory leak in `clone()`
 
 # Version 0.4.13

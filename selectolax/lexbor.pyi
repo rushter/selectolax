@@ -859,6 +859,12 @@ class LexborHTMLParser:
     ``raw_html`` holds the bytes that were parsed. That is the UTF-8 form of the
     input, so for non-UTF-8 input read with ``encoding=True`` it is the
     transcoded document rather than the bytes that were passed in.
+
+    Notes
+    -----
+    Not thread-safe: use one parser per thread, or lock the parser. The shared
+    per-parser ``LexborCSSSelector`` races on a free-threaded build, so even
+    read-only ``css()`` calls can interfere.
     """
 
     raw_html: bytes

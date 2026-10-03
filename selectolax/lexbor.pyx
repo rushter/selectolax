@@ -226,12 +226,18 @@ cdef inline list _cached_script_values(
     return <list> cached[2]
 
 
-cdef inline list _collect_script_texts(LexborNode scope):
-    """Collect the text of every ``<script>`` in the subtree of ``scope``."""
+cdef inline list _collect_script_texts(LexborNode root):
+    """Collect the text of every ``<script>`` in the subtree of ``root``.
+
+    ``root`` is the node the search is actually rooted at, so callers pass
+    ``node._get_node()``: a fragment's root is a single node whose siblings
+    belong to the fragment too, and searching from the node alone would skip
+    every script outside the first top-level node.
+    """
     cdef LexborNode node
 
     texts = []
-    for node in scope.parser.selector.find('script', scope):
+    for node in root.parser.selector.find('script', root):
         node_text = node.text(deep=True)
         if node_text:
             texts.append(node_text)
@@ -239,12 +245,16 @@ cdef inline list _collect_script_texts(LexborNode scope):
     return texts
 
 
-cdef inline list _collect_script_srcs(LexborNode scope):
-    """Collect the ``src`` of every ``<script>`` in the subtree of ``scope``."""
+cdef inline list _collect_script_srcs(LexborNode root):
+    """Collect the ``src`` of every ``<script>`` in the subtree of ``root``.
+
+    Rooted at ``node._get_node()`` for the same reason as
+    ``_collect_script_texts``.
+    """
     cdef LexborNode node
 
     srcs = []
-    for node in scope.parser.selector.find('script', scope):
+    for node in root.parser.selector.find('script', root):
         node_src = node.attrs.get('src')
         if node_src:
             srcs.append(node_src)

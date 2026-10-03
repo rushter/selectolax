@@ -847,12 +847,35 @@ cdef class LexborNode:
         LexborNode
             Nodes encountered in depth-first order beginning with the current
             node, filtered according to the provided options.
+
+        Notes
+        -----
+        Covers the whole fragment when called on the root of an HTML fragment,
+        like ``iter()`` and ``text()`` do.
         """
-        cdef lxb_dom_node_t * root = self.node
-        cdef lxb_dom_node_t * node = root
+        cdef LexborNode start_node = self._get_node()
+        cdef lxb_dom_node_t * root
+        cdef lxb_dom_node_t * node
+        cdef lxb_dom_node_t * next_top_level
         cdef LexborNode lxb_node
 
-        while node != NULL:
+        # A fragment root is searched through its wrapper, so the top-level nodes
+        # are walked one after another rather than as a single subtree.
+        cdef bint per_top_level = self._is_fragment_root and start_node is not self
+
+        if per_top_level:
+            root = start_node.node.first_child
+            if root == NULL:
+                return
+        else:
+            root = start_node.node
+
+        node = root
+        while True:
+            if node == root:
+                # Read before yielding, so unlinking this node does not end the walk.
+                next_top_level = node.next
+
             if include_text or node.type != LXB_DOM_NODE_TYPE_TEXT:
                 if not skip_empty or not is_empty_text_node(node):
                     lxb_node = LexborNode.new(<lxb_dom_node_t *> node, self.parser)
@@ -860,12 +883,22 @@ cdef class LexborNode:
 
             if node.first_child != NULL:
                 node = node.first_child
-            else:
-                while node != root and node.next == NULL:
-                    node = node.parent
-                if node == root:
-                    break
+                continue
+
+            while node != root and node.next == NULL:
+                node = node.parent
+
+            if node != root:
                 node = node.next
+                continue
+
+            if not per_top_level:
+                break
+
+            root = next_top_level
+            if root == NULL:
+                break
+            node = root
 
     def replace_with(self, str_or_LexborNode value):
         """Replace current Node with specified value.
@@ -1123,15 +1156,16 @@ cdef class LexborNode:
             The query to check.
 
         """
+        cdef LexborNode root = self._get_node()
         cdef list texts = _cached_script_values(
             self.parser.cached_script_texts,
-            <size_t> self.node,
+            <size_t> root.node,
             self.parser._mutation_count,
         )
         if texts is None:
-            texts = _collect_script_texts(self)
+            texts = _collect_script_texts(root)
             self.parser.cached_script_texts = (
-                <size_t> self.node,
+                <size_t> root.node,
                 self.parser._mutation_count,
                 texts,
             )
@@ -1155,15 +1189,16 @@ cdef class LexborNode:
         queries : tuple of str
 
         """
+        cdef LexborNode root = self._get_node()
         cdef list srcs = _cached_script_values(
             self.parser.cached_script_srcs,
-            <size_t> self.node,
+            <size_t> root.node,
             self.parser._mutation_count,
         )
         if srcs is None:
-            srcs = _collect_script_srcs(self)
+            srcs = _collect_script_srcs(root)
             self.parser.cached_script_srcs = (
-                <size_t> self.node,
+                <size_t> root.node,
                 self.parser._mutation_count,
                 srcs,
             )

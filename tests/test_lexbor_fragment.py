@@ -1008,3 +1008,127 @@ def test_full_document_still_reports_its_html_element():
     assert tree.css_matches("html") is True
     assert tree.any_css_matches(("html",)) is True
     assert [node.tag for node in tree.select("html").matches] == ["html"]
+
+
+def test_fragment_script_lookups_cover_every_top_level_node():
+    """Regression test: scripts outside the first top-level node were missed.
+
+    The lookup is rooted at the fragment's scope, so a script nested in a later
+    top-level node has to be found too.
+    """
+    tree = LexborHTMLParser(
+        "<script>first</script><div><script>second</script></div>", is_fragment=True
+    )
+
+    assert tree.scripts_contain("first") is True
+    assert tree.scripts_contain("second") is True
+    assert tree.scripts_contain("third") is False
+
+    sources = LexborHTMLParser(
+        '<script src="/a.js"></script><div><script src="/b.js"></script></div>',
+        is_fragment=True,
+    )
+
+    assert sources.script_srcs_contain(("/b.js",)) is True
+    assert sources.script_srcs_contain(("/a.js",)) is True
+    assert sources.script_srcs_contain(("/c.js",)) is False
+
+
+def test_fragment_script_lookups_stay_scoped_to_the_node_they_are_called_on():
+    tree = LexborHTMLParser(
+        "<div><script>inside</script></div><script>outside</script>",
+        is_fragment=True,
+    )
+    div = tree.css_first("div")
+
+    assert div.scripts_contain("inside") is True
+    assert div.scripts_contain("outside") is False
+    assert tree.scripts_contain("outside") is True
+
+
+def test_fragment_select_searches_the_same_scope_as_css():
+    """Regression test: ``select()`` only looked at the first top-level node."""
+    tree = LexborHTMLParser(
+        '<div>a</div><p class="t">b</p><span class="t">c</span>', is_fragment=True
+    )
+
+    assert [node.tag for node in tree.select(".t").matches] == ["p", "span"]
+    assert [node.tag for node in tree.select(".t").matches] == [
+        node.tag for node in tree.css(".t")
+    ]
+    # An unqueried selector is still rooted at the fragment root itself.
+    assert [node.tag for node in tree.select().matches] == ["div"]
+
+
+def test_fragment_traverse_covers_every_top_level_node():
+    """Regression test: ``traverse()`` stopped after the first top-level node."""
+    tree = LexborHTMLParser("<div>a</div><p>b</p><span>c</span>", is_fragment=True)
+
+    assert [node.tag for node in tree.root.traverse()] == ["div", "p", "span"]
+    assert [node.tag for node in tree.root.traverse()] == [
+        node.tag for node in tree.root.iter()
+    ]
+    assert [
+        (node.tag, node.text_content) for node in tree.root.traverse(include_text=True)
+    ] == [
+        ("div", None),
+        ("-text", "a"),
+        ("p", None),
+        ("-text", "b"),
+        ("span", None),
+        ("-text", "c"),
+    ]
+
+
+def test_fragment_traverse_covers_a_fragment_starting_with_text():
+    """Regression test: such a fragment yielded nothing at all."""
+    tree = LexborHTMLParser("one<div>two</div>three", is_fragment=True)
+
+    assert [node.tag for node in tree.root.traverse(include_text=True)] == [
+        "-text",
+        "div",
+        "-text",
+        "-text",
+    ]
+    assert [node.tag for node in tree.root.traverse()] == ["div"]
+
+
+def test_traverse_of_a_detached_fragment_root_is_unchanged():
+    """A detached root stands for itself again, so it covers only its subtree."""
+    tree = LexborHTMLParser("<div><span>a</span></div><p>b</p>", is_fragment=True)
+    root = tree.root
+    root.unwrap()
+
+    # The span was moved out of the div, which is what unwrapping does.
+    assert tree.html == "<span>a</span><p>b</p>"
+    assert [node.tag for node in root.traverse()] == ["div"]
+    assert [node.tag for node in tree.root.traverse()] == ["span", "p"]
+
+
+def test_script_lookups_on_a_detached_fragment_root_are_scoped_to_it():
+    """A detached root stands for itself again, so it no longer covers the fragment."""
+    tree = LexborHTMLParser(
+        "<div><script>inside</script></div><script>outside</script>", is_fragment=True
+    )
+    root = tree.root
+    root.unwrap()
+
+    assert root.scripts_contain("inside") is False
+    assert root.scripts_contain("outside") is False
+    assert tree.scripts_contain("inside") is True
+    assert tree.scripts_contain("outside") is True
+
+
+def test_fragment_traverse_survives_nodes_being_removed_during_iteration():
+    """A removed node must not end the walk, like it does not in ``iter()``."""
+    tree = LexborHTMLParser(
+        "<div>a</div><p>b</p><span>c</span><b>d</b>", is_fragment=True
+    )
+
+    seen = []
+    for node in tree.root.traverse():
+        seen.append(node.tag)
+        node.decompose()
+
+    assert seen == ["div", "p", "span", "b"]
+    assert tree.html == ""

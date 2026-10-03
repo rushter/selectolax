@@ -210,7 +210,9 @@ cdef class LexborSelector:
 
     def __init__(self, LexborNode node, query):
         self.node = node
-        self.nodes = self.node.parser.selector.find(query, self.node) if query else [node, ]
+        # Searched the way css() does, so a fragment root covers the whole
+        # fragment rather than only its first top-level node.
+        self.nodes = self.node.parser.selector.find(query, node._get_node()) if query else [node, ]
 
     cpdef css(self, str query):
         """Evaluate CSS selector against current scope."""

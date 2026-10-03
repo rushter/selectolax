@@ -3,6 +3,41 @@ from cpython.exc cimport PyErr_SetObject
 from cpython.list cimport PyList_GET_SIZE
 
 
+cdef inline size_t _wrapper_to_skip_for(LexborNode node):
+    """Return the address of the artificial wrapper a search must not report.
+
+    A fragment's top-level nodes are searched through the ``<html>`` wrapper that
+    Lexbor builds to hold them, so that wrapper is what the selector engine is
+    pointed at. With ``LXB_SELECTORS_OPT_MATCH_ROOT`` set, the search root is
+    itself a candidate for every query, which would make that internal wrapper
+    turn up in results -- ``parser.css('html')`` would answer with it, and
+    ``parser.css('*')`` would list it alongside the fragment's real nodes. Acting
+    on it is destructive: it owns the whole fragment, so decomposing or unwrapping
+    it discards everything the caller asked about.
+
+    Excluding it as the tree is walked, rather than dropping it from the finished
+    results, keeps ``find_first`` correct: the search continues past the wrapper,
+    so a genuine ``<html>`` element further on is still found.
+
+    The parser holds the wrapper, so this covers every way a search can be
+    rooted -- ``css``, ``select``, or a node's own lookup. A non-fragment parser
+    leaves the wrapper ``NULL``, which never compares equal to a live node.
+
+    Parameters
+    ----------
+    node : LexborNode
+        The node the search is rooted at.
+
+    Returns
+    -------
+    size_t
+        Address of the wrapper to skip, or ``0`` when there is none.
+    """
+    if node is None or node.parser is None:
+        return 0
+    return <size_t> node.parser._fragment_wrapper
+
+
 @cython.final
 cdef class LexborCSSSelector:
 
@@ -10,6 +45,7 @@ cdef class LexborCSSSelector:
         self._create_css_parser()
         self.results = []
         self.current_node = None
+        self._wrapper_to_skip = 0
 
     cdef int _create_css_parser(self) except -1:
         cdef lxb_status_t status
@@ -88,6 +124,7 @@ cdef class LexborCSSSelector:
             raise SelectolaxError("Can't parse CSS selector.")
 
         self.current_node = node
+        self._wrapper_to_skip = _wrapper_to_skip_for(node)
         self.results = []
         if only_first:
             status = lxb_selectors_find(self.selectors, node.node, selectors_list,
@@ -98,6 +135,7 @@ cdef class LexborCSSSelector:
         results = list(self.results)
         self.results = []
         self.current_node = None
+        self._wrapper_to_skip = 0
         lxb_css_selector_list_destroy_memory(selectors_list)
         self.parser.memory = NULL
         return results
@@ -119,8 +157,10 @@ cdef class LexborCSSSelector:
             return -1
 
         self.results = []
+        self._wrapper_to_skip = _wrapper_to_skip_for(node)
         status = lxb_selectors_find(self.selectors, node.node, selectors_list,
                                     <lxb_selectors_cb_f> css_matcher_callback, <void *> self)
+        self._wrapper_to_skip = 0
         if status != LXB_STATUS_OK:
             lxb_css_selector_list_destroy_memory(selectors_list)
             self.parser.memory = NULL
@@ -236,6 +276,8 @@ cdef lxb_status_t css_finder_callback(lxb_dom_node_t *node, lxb_css_selector_spe
     cdef LexborNode lxb_node
     cdef LexborCSSSelector cls
     cls = <LexborCSSSelector> ctx
+    if <size_t> node == cls._wrapper_to_skip:
+        return LXB_STATUS_OK
     lxb_node = LexborNode.new(<lxb_dom_node_t *> node, cls.current_node.parser)
     cls.results.append(lxb_node)
     return LXB_STATUS_OK
@@ -244,6 +286,8 @@ cdef lxb_status_t css_finder_callback_first(lxb_dom_node_t *node, lxb_css_select
     cdef LexborNode lxb_node
     cdef LexborCSSSelector cls
     cls = <LexborCSSSelector> ctx
+    if <size_t> node == cls._wrapper_to_skip:
+        return LXB_STATUS_OK
     lxb_node = LexborNode.new(<lxb_dom_node_t *> node, cls.current_node.parser)
     cls.results.append(lxb_node)
     return LXB_STATUS_STOP
@@ -253,5 +297,7 @@ cdef lxb_status_t css_matcher_callback(lxb_dom_node_t *node, lxb_css_selector_sp
     cdef LexborNode lxb_node
     cdef LexborCSSSelector cls
     cls = <LexborCSSSelector> ctx
+    if <size_t> node == cls._wrapper_to_skip:
+        return LXB_STATUS_OK
     cls.results.append(True)
     return LXB_STATUS_STOP

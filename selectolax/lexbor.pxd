@@ -303,6 +303,7 @@ cdef class LexborCSSSelector:
     cdef lxb_css_selectors_t * css_selectors
     cdef public list results
     cdef public LexborNode current_node
+    cdef size_t _wrapper_to_skip
     cdef int _create_css_parser(self) except -1
     cpdef list find(self, str query, LexborNode node)
     cpdef list find_first(self, str query, LexborNode node)

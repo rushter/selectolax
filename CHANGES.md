@@ -21,6 +21,7 @@ usually when heavily modifying the tree.
   fragment. They now search the same scope as `css`.
 - **Breaking**: Fix `tags` and `strip_tags` doing nothing on an HTML fragment. `tags` returned an empty list and
   `strip_tags` removed nothing, because the fragment was not reachable from the document node.
+- **Breaking**: Fix the internal `<html>` wrapper of an HTML fragment being reported as a match.
 - **Breaking**: Fix `attribute_longer_than` and `any_attribute_longer_than` returning inconsistent results
 - **Breaking**: `attributes` and `attrs` now report an attribute's qualified name instead of its local name.
   An element carrying both `href` and `xlink:href` used to collapse them into a single `href` key.

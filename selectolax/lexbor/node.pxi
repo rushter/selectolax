@@ -386,6 +386,11 @@ cdef class LexborNode:
         a text node as well, which happens whenever a fragment does not begin
         with an element.
 
+        The parent is Lexbor's internal ``<html>`` wrapper rather than something
+        the caller put in the document, so it is not a legitimate result of a
+        search rooted here. The selector keeps it out of every match; see
+        ``_wrapper_to_skip_for``.
+
         Returns ``self`` when this node is not a fragment root, and also when a
         fragment root has been detached from its wrapper, which is what
         ``unwrap()``, ``decompose()`` and ``replace_with()`` do to it. The

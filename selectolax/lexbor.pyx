@@ -655,16 +655,16 @@ cdef class LexborHTMLParser:
     def body(self):
         """Return document body.
 
-Reflects the current tree: returns ``None`` once the ``<body>`` has been
-removed from the document, for example by ``unwrap()``,
-``unwrap_tags()``, ``strip_tags()``, ``decompose()`` or
-``replace_with()``.
+        Reflects the current tree: returns ``None`` once the ``<body>`` has been
+        removed from the document, for example by ``unwrap()``,
+        ``unwrap_tags()``, ``strip_tags()``, ``decompose()`` or
+        ``replace_with()``.
 
-Returns
--------
-LexborNode or None
-    ``<body>`` element when present, otherwise ``None``.
-"""
+        Returns
+        -------
+        LexborNode or None
+            ``<body>`` element when present, otherwise ``None``.
+        """
         cdef lxb_html_body_element_t* body
         if self.document == NULL:
             return None

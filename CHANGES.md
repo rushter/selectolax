@@ -41,6 +41,7 @@ usually when heavily modifying the tree.
 - Fix `text_lexbor` sometimes holding temporary memory longer than needed
 - Improve memory consumption, potential stack overflow and slow extraction in `merge_text_nodes()`. It is now up to 10 times faster.
 - Improve speed of `__eq__`
+- Improve speed of `attrs.items()` and `attrs.values()`.
 - Fix the `inner_html` setter attaching element children to non-element nodes
 - Fix `head` and `body` dangling after setting `inner_html` on the `<html>` element
 - Fix `root` going stale on an HTML fragment.

@@ -125,9 +125,13 @@ cdef class LexborAttributes:
         obj.parser = parser
         return obj
 
+    cdef inline lxb_dom_attr_t* _first_attr(self) noexcept:
+        return lxb_dom_element_first_attribute_noi(<lxb_dom_element_t *> self.node)
+
     def __iter__(self):
-        cdef lxb_dom_attr_t *attr = lxb_dom_element_first_attribute_noi(<lxb_dom_element_t *> self.node)
+        cdef lxb_dom_attr_t *attr = self._first_attr()
         cdef size_t str_len = 0
+        cdef const lxb_char_t *key
 
         while attr != NULL:
             # The qualified name, not the local name: __getitem__/__contains__/
@@ -138,6 +142,28 @@ cdef class LexborAttributes:
             key = lxb_dom_attr_qualified_name(attr, &str_len)
             if key is not NULL:
                 yield key.decode(_ENCODING)
+            attr = attr.next
+
+    def _iter_pairs(self):
+        """Yield ``(name, value)`` for every attribute in a single pass.
+
+        Values are read off the attribute node the name came from rather than
+        through ``__getitem__``, whose lookup is a linear scan and made this
+        quadratic in the number of attributes.
+        """
+        cdef lxb_dom_attr_t *attr = self._first_attr()
+        cdef size_t str_len = 0
+        cdef const lxb_char_t *key
+        cdef const lxb_char_t *value
+
+        while attr != NULL:
+            key = lxb_dom_attr_qualified_name(attr, &str_len)
+            if key != NULL:
+                value = lxb_dom_attr_value_noi(attr, &str_len)
+                yield (
+                    key.decode(_ENCODING),
+                    value.decode(_ENCODING) if value != NULL else None,
+                )
             attr = attr.next
 
     def __setitem__(self, str key, object value):
@@ -210,12 +236,11 @@ cdef class LexborAttributes:
         return self.__iter__()
 
     def items(self):
-        for key in self.__iter__():
-            yield key, self[key]
+        return self._iter_pairs()
 
     def values(self):
-        for key in self.__iter__():
-            yield self[key]
+        for _, value in self._iter_pairs():
+            yield value
 
     def get(self, key, default=None):
         try:

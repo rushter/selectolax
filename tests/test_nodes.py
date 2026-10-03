@@ -636,6 +636,18 @@ def test_attrs_keys_round_trip_through_lookup(parser):
 
 
 @pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_attrs_items_and_values_agree_with_lookup(parser):
+    # items() and values() read each value off the attribute it belongs to instead
+    # of resolving every name again, so they still have to answer as __getitem__
+    # does: valueless is None, empty is an empty string.
+    node = parser('<div id="a" bare empty=""></div>').css_first("div")
+
+    assert list(node.attrs.items()) == [("id", "a"), ("bare", None), ("empty", "")]
+    assert list(node.attrs.values()) == ["a", None, ""]
+    assert dict(node.attrs.items()) == node.attributes
+
+
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
 def test_attrs_removes_the_attribute_it_looked_up(parser):
     # __delitem__ used to re-resolve the name through lexbor, which could drop
     # the attribute sharing a local name instead of the requested one.

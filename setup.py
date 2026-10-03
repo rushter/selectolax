@@ -96,22 +96,11 @@ def make_extensions():
     compile_arguments_lxb = [
         "-DLEXBOR_STATIC",
     ]
-    link_arguments_lxb = []
 
     if PLATFORM == "posix":
         args = [
             "-pedantic",
             "-fPIC",
-            # Required for --gc-sections to collect anything: LEXBOR_STATIC
-            # expands LXB_API to nothing, so every lexbor symbol would
-            # otherwise get default visibility and be treated as reachable
-            # from outside the shared object. The linker must then keep it
-            # along with any table it references, and none of the unused
-            # encoding/unicode/CSS-serialization tables can be dropped.
-            "-fvisibility=hidden",
-            "-fvisibility-inlines-hidden",
-            "-ffunction-sections",
-            "-fdata-sections",
             "-Wno-unused-variable",
             "-Wno-unused-function",
             "-std=c99",
@@ -119,23 +108,10 @@ def make_extensions():
             "-g0",
         ]
         compile_arguments_lxb.extend(args)
-        # The per-section compile flags above are only useful if the linker is
-        # allowed to drop unreferenced ones. Without this, lexbor's encoding
-        # resolution tables (encodings selectolax never uses) stay linked in.
-        # The flag name is linker-specific, so it cannot be shared.
-        if platform.system() == "Darwin":
-            link_arguments_lxb.append("-Wl,-dead_strip")
-        else:
-            link_arguments_lxb.append("-Wl,--gc-sections")
-
     elif PLATFORM == "windows_nt":
         compile_arguments_lxb.extend(
             [
                 "-D_WIN64" if ARCH == "64bit" else "-D_WIN32",
-                "/O2",
-                "/Gy",
-                "/OPT:REF",
-                "/OPT:ICF",
             ]
         )
 
@@ -150,7 +126,6 @@ def make_extensions():
             ],
             extra_objects=extra_objects_lxb,
             extra_compile_args=compile_arguments_lxb,
-            extra_link_args=link_arguments_lxb,
         )
     )
     if USE_CYTHON:

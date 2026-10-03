@@ -44,6 +44,7 @@ usually when heavily modifying the tree.
 - Improve speed of `attrs.items()` and `attrs.values()`.
 - Fix the `inner_html` setter attaching element children to non-element nodes
 - Fix `head` and `body` dangling after setting `inner_html` on the `<html>` element
+- Fix the `inner_html` setter freeing the replaced children
 - Fix `root` going stale on an HTML fragment.
 - Fix a segfault when walking the tree from the root of an HTML fragment that had been detached from the
   fragment, for example by `unwrap()`.

@@ -1501,3 +1501,62 @@ def test_script_contain_still_caches_for_the_whole_document(parser):
         assert tree.script_srcs_contain(("gone.js",)) is False
         assert tree.css_first("#a").scripts_contain("alpha") is True
         assert tree.css_first("#b").scripts_contain("alpha") is False
+
+
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_set_inner_html_leaves_replaced_nodes_readable(parser):
+    """Nodes from the replaced subtree stay intact instead of reading freed memory."""
+    tree = parser("<html><body><div id='a'><em>x</em></div></body></html>")
+    old_div = tree.css_first("#a")
+    old_em = tree.css_first("em")
+
+    tree.body.inner_html = "<span>new</span>"
+
+    # Detached, but still describing what they used to hold.
+    assert old_div.html == '<div id="a"><em>x</em></div>'
+    assert old_em.html == "<em>x</em>"
+    assert old_div.text() == "x"
+    assert [node.tag for node in old_div.css("*")] == ["div", "em"]
+    # The replacement did not reach into them.
+    assert tree.html == "<html><head></head><body><span>new</span></body></html>"
+
+
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_set_inner_html_recycled_addresses_do_not_alias(parser):
+    """A retained node keeps its identity even after its address is handed out again."""
+    tree = parser("<html><body><div id='a'><p>orig</p></div></body></html>")
+    old_div = tree.css_first("#a")
+
+    tree.body.inner_html = "<em>replacement</em>"
+    for _ in range(500):
+        tree.create_node("z")
+
+    assert old_div.html == '<div id="a"><p>orig</p></div>'
+    assert tree.body.inner_html == "<em>replacement</em>"
+
+
+@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
+def test_set_inner_html_on_a_detached_node_leaves_the_document_alone(parser):
+    """Writing through a detached node must not corrupt the tree it came from."""
+    tree = parser("<html><body><div id='a'><p>x</p></div></body></html>")
+    old_div = tree.css_first("#a")
+    tree.body.inner_html = "<em>y</em>"
+
+    holder = tree.create_node("section")
+    tree.body.insert_child(holder)
+    for _ in range(200):
+        holder.insert_child(tree.create_node("i"))
+    expected = holder.html
+
+    assert old_div.html == '<div id="a"><p>x</p></div>'
+    old_div.insert_child("boom")
+    # The write landed on the detached node, leaving the document untouched.
+    assert old_div.inner_html == "<p>x</p>boom"
+    assert holder.html == expected
+    assert [node.tag for node in tree.root.traverse()] == [
+        "html",
+        "head",
+        "body",
+        "em",
+        "section",
+    ]

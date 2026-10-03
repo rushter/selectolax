@@ -36,6 +36,38 @@ cdef inline bytes to_bytes(str_or_LexborNode value):
     return bytes_val
 
 
+cdef inline void _replace_children(
+    lxb_dom_node_t *parent, const lxb_char_t *html, size_t html_len
+) except *:
+    # The old children are unlinked, not destroyed, so LexborNode views the
+    # caller already holds stay valid but detached, exactly as they do after
+    # decompose(). lxb_html_element_inner_html_set() destroys them instead,
+    # which frees the nodes and lets the next same-size allocation hand their
+    # addresses out again, so a retained view would read unrelated memory.
+    cdef lxb_dom_node_t *wrapper
+    cdef lxb_dom_node_t *child
+
+    wrapper = lxb_html_document_parse_fragment(
+        <lxb_html_document_t *> parent.owner_document,
+        lxb_dom_interface_element(parent),
+        html,
+        html_len,
+    )
+    if wrapper == NULL:
+        raise SelectolaxError("Can't set inner HTML.")
+
+    while parent.first_child != NULL:
+        lxb_dom_node_remove(parent.first_child)
+
+    while wrapper.first_child != NULL:
+        child = wrapper.first_child
+        lxb_dom_node_remove(child)
+        lxb_dom_node_insert_child(parent, child)
+
+    # The wrapper is built by the parse above and never handed to the caller.
+    lxb_dom_node_destroy(wrapper)
+
+
 @cython.final
 cdef class LexborNode:
     """A class that represents HTML node (element)."""
@@ -1318,6 +1350,9 @@ cdef class LexborNode:
 
         Only available for element nodes.
 
+        Nodes the caller obtained from the replaced subtree stay valid, but are
+        detached from the document, as they are after ``decompose()``.
+
         Parameters
         ----------
         html : str | None
@@ -1336,15 +1371,15 @@ cdef class LexborNode:
             raise TypeError("inner_html is only available for element nodes")
 
         bytes_val = <bytes> html.encode("utf-8")
-        if lxb_html_element_inner_html_set(
-            <lxb_html_element_t *> self.node,
-            <lxb_char_t *> bytes_val, len(bytes_val)
-        ) == NULL:
-            raise SelectolaxError("Can't set inner HTML.")
+        _replace_children(
+            <lxb_dom_node_t *> self.node,
+            <lxb_char_t *> bytes_val,
+            len(bytes_val),
+        )
 
-        # Replacing the children of <html> destroys the old <head>/<body> without
-        # going through the insertion modes that normally keep the document's
-        # cached head/body pointers valid, so they have to be recomputed.
+        # Replacing the children of <html> detaches the old <head>/<body>
+        # without going through the insertion modes that normally keep the
+        # document's cached head/body pointers valid, so recompute them.
         if lxb_dom_node_tag_id_noi(self.node) == LXB_TAG_HTML:
             _refresh_head_body(self.parser.document)
 

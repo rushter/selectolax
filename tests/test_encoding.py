@@ -20,8 +20,12 @@ def test_bytes_are_parsed_as_utf8_by_default():
     assert parser.raw_html == raw
     assert parser.css_first("meta").attributes["charset"] == "windows-1251"
     assert parser.text() != CYRILLIC
-    with pytest.raises(UnicodeDecodeError):
-        parser.html  # noqa: B018
+    # The bytes are not repaired, but reading them substitutes U+FFFD rather
+    # than raising: a declaration in the document still means nothing here.
+    assert parser.html == (
+        '<html><head><meta charset="windows-1251"></head>'
+        f"<body><p>{'�' * len(CYRILLIC)}</p></body></html>"
+    )
 
 
 def test_meta_charset_is_honored():
@@ -226,11 +230,11 @@ def test_transcoded_input_is_size_limited(monkeypatch):
 
 def test_undeclared_input_keeps_its_bytes():
     # Nothing is declared, so the document is read as UTF-8 and bytes that are
-    # not valid UTF-8 are left alone rather than repaired.
+    # not valid UTF-8 are left alone rather than repaired. Reading them
+    # substitutes U+FFFD.
     raw = "<p>café</p>".encode("iso-8859-1")
 
     parser = LexborHTMLParser(raw, encoding=True)
 
     assert parser.raw_html == raw
-    with pytest.raises(UnicodeDecodeError):
-        parser.html  # noqa: B018
+    assert parser.html == "<html><head></head><body><p>caf�</p></body></html>"

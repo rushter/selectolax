@@ -141,7 +141,7 @@ cdef class LexborAttributes:
             # ["href", "href"], and `del attrs["href"]` raised KeyError.
             key = lxb_dom_attr_qualified_name(attr, &str_len)
             if key is not NULL:
-                yield key.decode(_ENCODING)
+                yield _decode_utf8(key, str_len)
             attr = attr.next
 
     def _iter_pairs(self):
@@ -153,16 +153,17 @@ cdef class LexborAttributes:
         """
         cdef lxb_dom_attr_t *attr = self._first_attr()
         cdef size_t str_len = 0
+        cdef size_t value_len = 0
         cdef const lxb_char_t *key
         cdef const lxb_char_t *value
 
         while attr != NULL:
             key = lxb_dom_attr_qualified_name(attr, &str_len)
             if key != NULL:
-                value = lxb_dom_attr_value_noi(attr, &str_len)
+                value = lxb_dom_attr_value_noi(attr, &value_len)
                 yield (
-                    key.decode(_ENCODING),
-                    value.decode(_ENCODING) if value != NULL else None,
+                    _decode_utf8(key, str_len),
+                    _decode_utf8(value, value_len) if value != NULL else None,
                 )
             attr = attr.next
 
@@ -226,7 +227,7 @@ cdef class LexborAttributes:
         cdef size_t str_len = 0
         if attr != NULL:
             value = lxb_dom_attr_value_noi(attr, &str_len)
-            return value.decode(_ENCODING) if value else None
+            return _decode_utf8(value, str_len) if value else None
         raise KeyError(key)
 
     def __len__(self):
@@ -270,5 +271,5 @@ cdef class LexborAttributes:
         cdef const lxb_char_t *c_text
         cdef size_t str_len = 0
         c_text = lxb_dom_element_qualified_name(<lxb_dom_element_t *> self.node, &str_len)
-        tag_name = c_text.decode(_ENCODING, 'ignore') if c_text != NULL else 'unknown'
+        tag_name = _decode_utf8(c_text, str_len) if c_text != NULL else 'unknown'
         return "<%s attributes, %s items>" % (tag_name, len(self))

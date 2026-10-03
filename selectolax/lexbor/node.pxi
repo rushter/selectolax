@@ -166,7 +166,7 @@ cdef class LexborNode:
         else:
             status = lxb_html_serialize_tree_str(self.node, lxb_str)
         if status == 0:
-            html = lxb_str.data.decode(_ENCODING).replace('<-undef>', '')
+            html = _decode_utf8(lxb_str.data, lexbor_str_length_noi(lxb_str)).replace('<-undef>', '')
             lexbor_str_destroy(lxb_str, self.node.owner_document.text, True)
             return html
         lexbor_str_destroy(lxb_str, self.node.owner_document.text, True)
@@ -191,7 +191,7 @@ cdef class LexborNode:
                 status = lxb_html_serialize_tree_str(self.node, lxb_str)
 
         if status == 0:
-            html = lxb_str.data.decode(_ENCODING).replace('<-undef>', '')
+            html = _decode_utf8(lxb_str.data, lexbor_str_length_noi(lxb_str)).replace('<-undef>', '')
             lexbor_str_destroy(lxb_str, self.node.owner_document.text, True)
             return html
         lexbor_str_destroy(lxb_str, self.node.owner_document.text, True)
@@ -210,7 +210,7 @@ cdef class LexborNode:
             status = lxb_html_serialize_deep_str(self.node, lxb_str)
 
         if status == 0 and lxb_str.data:
-            html = lxb_str.data.decode(_ENCODING).replace('<-undef>', '')
+            html = _decode_utf8(lxb_str.data, lexbor_str_length_noi(lxb_str)).replace('<-undef>', '')
             lexbor_str_destroy(lxb_str, self.node.owner_document.text, True)
             return html
         lexbor_str_destroy(lxb_str, self.node.owner_document.text, True)
@@ -338,7 +338,7 @@ cdef class LexborNode:
         try:
             if str_len == 0:
                 return ""
-            unicode_text = text.decode(_ENCODING)
+            unicode_text = _decode_utf8(text, str_len)
         finally:
             # lxb_dom_node_text_content() copies the content into a buffer taken
             # from the document's text memory arena, which is only released
@@ -549,7 +549,7 @@ cdef class LexborNode:
         c_text = lxb_dom_element_qualified_name(<lxb_dom_element_t *> self.node, &str_len)
         text = None
         if c_text:
-            text = c_text.decode(_ENCODING)
+            text = _decode_utf8(c_text, str_len)
         return text
 
     def decompose(self, bool recursive=True):
@@ -633,6 +633,7 @@ cdef class LexborNode:
         """
         cdef lxb_dom_attr_t *attr
         cdef size_t str_len = 0
+        cdef size_t value_len = 0
         attributes = dict()
 
         if not _is_node_type(self.node, LXB_DOM_NODE_TYPE_ELEMENT):
@@ -641,14 +642,14 @@ cdef class LexborNode:
         attr = lxb_dom_element_first_attribute_noi(<lxb_dom_element_t *> self.node)
 
         while attr != NULL:
-            key = lxb_dom_attr_qualified_name(attr, &str_len)
-            value = lxb_dom_attr_value_noi(attr, &str_len)
+            key = _decode_utf8(lxb_dom_attr_qualified_name(attr, &str_len), str_len)
+            value = lxb_dom_attr_value_noi(attr, &value_len)
 
             if value:
-                py_value = value.decode(_ENCODING)
+                py_value = _decode_utf8(value, value_len)
             else:
                 py_value = None
-            attributes[key.decode(_ENCODING)] = py_value
+            attributes[key] = py_value
 
             attr = attr.next
         return attributes
@@ -708,7 +709,7 @@ cdef class LexborNode:
         )
         if attr != NULL:
             value = lxb_dom_attr_value_noi(attr, &str_len)
-            return value.decode(_ENCODING) if value else None
+            return _decode_utf8(value, str_len) if value else None
         return None
 
     def iter(self, bool include_text = False, bool skip_empty = False):
@@ -1298,7 +1299,7 @@ cdef class LexborNode:
         str_data = &(<lxb_dom_character_data_t *> self.node).data
         text = <unsigned char *> lexbor_str_data_noi(str_data)
         if text != NULL:
-            return PyUnicode_DecodeUTF8(<char *> text, lexbor_str_length_noi(str_data), "strict")
+            return _decode_utf8(text, lexbor_str_length_noi(str_data))
         return None
 
     @property

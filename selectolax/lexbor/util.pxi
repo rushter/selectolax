@@ -1,6 +1,15 @@
 include "../utils.pxi"
 
+from cpython.unicode cimport PyUnicode_DecodeUTF8
+
 import re
+
+
+cdef inline str _decode_utf8(const lxb_char_t *data, size_t length):
+    # Lexbor passes bytes it cannot decode through verbatim, so every read of a
+    # name, attribute or text has to substitute U+FFFD instead of raising. This is
+    # the single place that policy is defined; do not decode strictly elsewhere.
+    return PyUnicode_DecodeUTF8(<char *> data, length, "replace")
 
 
 def create_tag(tag: str):

@@ -655,7 +655,10 @@ class LexborNode:
     def scripts_contain(self, query: str) -> bool:
         """Returns True if any of the script tags contain specified text.
 
-        Caches script tags on the first call to improve performance.
+        The script texts are cached per document, keyed both by the node the
+        search was rooted at and by the document's mutation counter, so
+        repeating the call on the same subtree is cheap while a different
+        subtree - or an edited tree - never reuses the previous answer.
 
         Parameters
         ----------
@@ -666,7 +669,11 @@ class LexborNode:
     def script_srcs_contain(self, queries: tuple[str]) -> bool:
         """Returns True if any of the script SRCs attributes contain on of the specified text.
 
-        Caches values on the first call to improve performance.
+        The ``src`` values are cached per document, keyed both by the node the
+        search was rooted at and by the document's mutation counter, so
+        repeating the call on the same subtree is cheap while a different
+        subtree - or an edited tree, including one whose ``src`` was changed
+        through ``attrs`` - never reuses the previous answer.
 
         Parameters
         ----------
@@ -1158,7 +1165,10 @@ class LexborHTMLParser:
     def scripts_contain(self, query: str) -> bool:
         """Return ``True`` if any script tag contains the given text.
 
-        Caches script tags on the first call to improve performance.
+        The script texts are cached per document, keyed both by the node the
+        search was rooted at and by the document's mutation counter, so
+        repeating the call on the same subtree is cheap while a different
+        subtree - or an edited tree - never reuses the previous answer.
 
         Parameters
         ----------
@@ -1174,7 +1184,11 @@ class LexborHTMLParser:
     def script_srcs_contain(self, queries: tuple[str]) -> bool:
         """Return ``True`` if any script ``src`` contains one of the strings.
 
-        Caches values on the first call to improve performance.
+        The ``src`` values are cached per document, keyed both by the node the
+        search was rooted at and by the document's mutation counter, so
+        repeating the call on the same subtree is cheap while a different
+        subtree - or an edited tree, including one whose ``src`` was changed
+        through ``attrs`` - never reuses the previous answer.
 
         Parameters
         ----------

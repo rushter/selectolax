@@ -74,6 +74,8 @@ cdef class LexborAttributes:
         else:
             raise TypeError("Expected str or unicode, got %s" % type(value).__name__)
 
+        self.parser._mark_mutated()
+
     def __delitem__(self, key):
         try:
             self.__getitem__(key)
@@ -84,6 +86,7 @@ cdef class LexborAttributes:
             <lxb_dom_element_t *> self.node,
             <lxb_char_t *> bytes_key, len(bytes_key),
         )
+        self.parser._mark_mutated()
 
     def __getitem__(self, str key):
         bytes_key = key.encode(_ENCODING)

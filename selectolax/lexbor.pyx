@@ -179,6 +179,78 @@ cdef inline void _maybe_refresh_head_body(
         _refresh_head_body(document)
 
 
+cdef inline list _cached_script_values(
+    object cached, size_t scope, unsigned long epoch
+):
+    """Return a cached script lookup result, or ``None`` when it is not usable.
+
+    A cache entry is the ``(scope, epoch, values)`` triple written by
+    ``scripts_contain`` / ``script_srcs_contain``. Both components have to line
+    up before the entry may be reused:
+
+    ``scope``
+        The address of the node the lookup was rooted at. Storing it is what
+        stops a node-scoped lookup from answering with the results of a
+        different node - or of the whole document - since ``LexborNode`` is a
+        view onto a shared tree and both kinds of call land in the same cache.
+    ``epoch``
+        The value of the document's ``_mutation_count`` when the entry was
+        built. Editing the tree bumps that counter, so an entry built before an
+        edit can never be read afterwards.
+
+    A stale entry is never distinguishable from a valid one, so anything that
+    is not an exact match is reported as missing and simply recomputed. Only
+    extra work can result from that, never a wrong answer.
+
+    Parameters
+    ----------
+    cached : object
+        Cache entry, or ``None`` when nothing has been cached yet.
+    scope : size_t
+        Address of the node the current lookup is rooted at.
+    epoch : unsigned long
+        The document's current ``_mutation_count``.
+
+    Returns
+    -------
+    list or None
+        The cached values, or ``None`` when the entry is absent or stale.
+    """
+    if cached is None:
+        return None
+
+    if (<size_t> cached[0]) != scope or (<unsigned long> cached[1]) != epoch:
+        return None
+
+    return <list> cached[2]
+
+
+cdef inline list _collect_script_texts(LexborNode scope):
+    """Collect the text of every ``<script>`` in the subtree of ``scope``."""
+    cdef LexborNode node
+
+    texts = []
+    for node in scope.parser.selector.find('script', scope):
+        node_text = node.text(deep=True)
+        if node_text:
+            texts.append(node_text)
+
+    return texts
+
+
+cdef inline list _collect_script_srcs(LexborNode scope):
+    """Collect the ``src`` of every ``<script>`` in the subtree of ``scope``."""
+    cdef LexborNode node
+
+    srcs = []
+    for node in scope.parser.selector.find('script', scope):
+        node_src = node.attrs.get('src')
+        if node_src:
+            srcs.append(node_src)
+
+    return srcs
+
+
 cdef class LexborHTMLParser:
     """The lexbor HTML parser.
 
@@ -413,6 +485,37 @@ cdef class LexborHTMLParser:
             return NULL
 
         return self._fragment_wrapper.first_child
+
+    cdef inline void _mark_mutated(self) noexcept:
+        """Record that the document was edited, invalidating derived caches.
+
+        ``LexborNode`` is a view onto a mutable tree, so a value read out of
+        that tree - the script text and ``src`` lookups behind
+        ``scripts_contain`` / ``script_srcs_contain`` - only stays true as long
+        as the document has not been edited since. Bumping this counter is the
+        single invalidation mechanism for them: the cached entries record the
+        counter they were built at and are discarded once it moves, so there is
+        no cache to reset and therefore none that a missed call can leave
+        stale.
+
+        Every operation that changes the tree or an attribute must call this:
+        ``decompose``/``remove``, ``unwrap``, ``merge_text_nodes``,
+        ``replace_with``, ``insert_before``/``insert_after``/
+        ``insert_child``, the ``inner_html`` setter, ``strip_tags`` and the
+        ``attrs`` mutators. It is deliberately cheap and unconditional:
+        marking a document that did not really change only costs a recompute,
+        whereas failing to mark one that did silently answers with the previous
+        answer.
+
+        Over-marking does lose the cache when a mutation is applied and then
+        rolled back - ``node.attrs['src'] = node.attrs['src']`` - but the tree
+        is unchanged in that case, so the next lookup just repopulates it.
+
+        Returns
+        -------
+        None
+        """
+        self._mutation_count += 1
 
     def __dealloc__(self):
         """Release the underlying Lexbor HTML document.
@@ -808,6 +911,8 @@ LexborNode or None
                 _maybe_refresh_head_body(self.document, <lxb_dom_node_t *> element)
             lxb_dom_collection_destroy(collection, <bint> True)
 
+        self._mark_mutated()
+
     def select(self, query=None):
         """Select nodes given a CSS selector.
 
@@ -850,7 +955,11 @@ LexborNode or None
     def scripts_contain(self, str query):
         """Return ``True`` if any script tag contains the given text.
 
-        Caches script tags on the first call to improve performance.
+        The script texts are cached per document, so repeating the call is
+        cheap. The cache is keyed by the node the search was rooted at and by
+        the document's mutation counter, so it is dropped as soon as the tree
+        is edited and a node-scoped lookup never reuses the document-wide
+        result, or vice versa.
 
         Parameters
         ----------
@@ -870,7 +979,12 @@ LexborNode or None
     def script_srcs_contain(self, tuple queries):
         """Return ``True`` if any script ``src`` contains one of the strings.
 
-        Caches values on the first call to improve performance.
+        The ``src`` values are cached per document, so repeating the call is
+        cheap. The cache is keyed by the node the search was rooted at and by
+        the document's mutation counter, so it is dropped as soon as the tree
+        is edited - including when a ``src`` is changed through ``attrs`` - and
+        a node-scoped lookup never reuses the document-wide result, or vice
+        versa.
 
         Parameters
         ----------

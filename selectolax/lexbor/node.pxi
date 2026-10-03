@@ -538,6 +538,7 @@ cdef class LexborNode:
             lxb_dom_node_remove(<lxb_dom_node_t *> self.node)
 
         _maybe_refresh_head_body(self.parser.document, <lxb_dom_node_t *> self.node)
+        self.parser._mark_mutated()
 
     def strip_tags(self, list tags, bool recursive = False):
         """Remove specified tags from the HTML tree.
@@ -742,6 +743,7 @@ cdef class LexborNode:
                 _maybe_refresh_head_body(
                     self.parser.document, <lxb_dom_node_t *> self.node
                 )
+                self.parser._mark_mutated()
             return
 
         while current_node != NULL:
@@ -757,6 +759,7 @@ cdef class LexborNode:
 
         lxb_dom_node_remove(<lxb_dom_node_t *> self.node)
         _maybe_refresh_head_body(self.parser.document, <lxb_dom_node_t *> self.node)
+        self.parser._mark_mutated()
 
     def unwrap_tags(self, list tags, bint delete_empty = False):
         """Unwraps specified tags from the HTML tree.
@@ -810,6 +813,7 @@ cdef class LexborNode:
         """
         cdef LexborNode start_node = self._get_node()
         _merge_text_nodes(start_node.node)
+        self.parser._mark_mutated()
 
     def traverse(self, bool include_text = False, bool skip_empty = False):
         """Depth-first traversal starting at the current node.
@@ -907,6 +911,8 @@ cdef class LexborNode:
         else:
             raise SelectolaxError("Expected a string or LexborNode instance, but %s found" % type(value).__name__)
 
+        self.parser._mark_mutated()
+
     def insert_before(self, str_or_LexborNode value):
         """
         Insert a node before the current Node.
@@ -957,6 +963,8 @@ cdef class LexborNode:
             lxb_dom_node_insert_before(self.node, <lxb_dom_node_t *> new_node)
         else:
             raise SelectolaxError("Expected a string or LexborNode instance, but %s found" % type(value).__name__)
+
+        self.parser._mark_mutated()
 
     def insert_after(self, str_or_LexborNode value):
         """
@@ -1009,6 +1017,8 @@ cdef class LexborNode:
         else:
             raise SelectolaxError("Expected a string or LexborNode instance, but %s found" % type(value).__name__)
 
+        self.parser._mark_mutated()
+
     def insert_child(self, str_or_LexborNode value):
         """
         Insert a node inside (at the end of) the current Node.
@@ -1060,6 +1070,8 @@ cdef class LexborNode:
         else:
             raise SelectolaxError("Expected a string or LexborNode instance, but %s found" % type(value).__name__)
 
+        self.parser._mark_mutated()
+
     @property
     def raw_value(self):
         """Return the raw (unparsed, original) value of a node.
@@ -1086,7 +1098,10 @@ cdef class LexborNode:
     def scripts_contain(self, str query):
         """Returns True if any of the script tags contain specified text.
 
-        Caches script tags on the first call to improve performance.
+        The script texts are cached per document, keyed both by the node the
+        search was rooted at and by the document's mutation counter, so
+        repeating the call on the same subtree is cheap while a different
+        subtree - or an edited tree - never reuses the previous answer.
 
         Parameters
         ----------
@@ -1094,17 +1109,20 @@ cdef class LexborNode:
             The query to check.
 
         """
-        cdef LexborNode node
-        if self.parser.cached_script_texts is None:
-            nodes = self.parser.selector.find('script', self)
-            text_nodes = []
-            for node in nodes:
-                node_text = node.text(deep=True)
-                if node_text:
-                    text_nodes.append(node_text)
-            self.parser.cached_script_texts = text_nodes
+        cdef list texts = _cached_script_values(
+            self.parser.cached_script_texts,
+            <size_t> self.node,
+            self.parser._mutation_count,
+        )
+        if texts is None:
+            texts = _collect_script_texts(self)
+            self.parser.cached_script_texts = (
+                <size_t> self.node,
+                self.parser._mutation_count,
+                texts,
+            )
 
-        for text in self.parser.cached_script_texts:
+        for text in texts:
             if query in text:
                 return True
         return False
@@ -1112,26 +1130,33 @@ cdef class LexborNode:
     def script_srcs_contain(self, tuple queries):
         """Returns True if any of the script SRCs attributes contain on of the specified text.
 
-        Caches values on the first call to improve performance.
+        The ``src`` values are cached per document, keyed both by the node the
+        search was rooted at and by the document's mutation counter, so
+        repeating the call on the same subtree is cheap while a different
+        subtree - or an edited tree, including one whose ``src`` was changed
+        through ``attrs`` - never reuses the previous answer.
 
         Parameters
         ----------
         queries : tuple of str
 
         """
-        cdef LexborNode node
-        if self.parser.cached_script_srcs is None:
-            nodes = self.parser.selector.find('script', self)
-            src_nodes = []
-            for node in nodes:
-                node_src = node.attrs.get('src')
-                if node_src:
-                    src_nodes.append(node_src)
-            self.parser.cached_script_srcs = src_nodes
+        cdef list srcs = _cached_script_values(
+            self.parser.cached_script_srcs,
+            <size_t> self.node,
+            self.parser._mutation_count,
+        )
+        if srcs is None:
+            srcs = _collect_script_srcs(self)
+            self.parser.cached_script_srcs = (
+                <size_t> self.node,
+                self.parser._mutation_count,
+                srcs,
+            )
 
-        for text in self.parser.cached_script_srcs:
+        for src in srcs:
             for query in queries:
-                if query in text:
+                if query in src:
                     return True
         return False
 
@@ -1271,6 +1296,8 @@ cdef class LexborNode:
         # cached head/body pointers valid, so they have to be recomputed.
         if lxb_dom_node_tag_id_noi(self.node) == LXB_TAG_HTML:
             _refresh_head_body(self.parser.document)
+
+        self.parser._mark_mutated()
 
     def clone(self) -> LexborNode:
         """Clone the current node.

@@ -322,6 +322,8 @@ cdef class LexborHTMLParser:
     cdef inline lxb_status_t _parse_html_document(self, char *html, size_t html_len) noexcept nogil
     cdef inline lxb_status_t _parse_html_fragment(self, char *html, size_t html_len) noexcept nogil
     cdef int _parse_html(self, char *html, size_t html_len) except -1
+    cdef inline void _mark_mutated(self) noexcept
+    cdef unsigned long _mutation_count
     cdef object cached_script_texts
     cdef object cached_script_srcs
 

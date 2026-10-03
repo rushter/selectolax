@@ -243,7 +243,6 @@ cdef class LexborHTMLParser:
 
         self._is_fragment = is_fragment
         self._fragment_wrapper = NULL
-        self._fragment_root = NULL
         self._fragment_tag_id = LXB_TAG_DIV
         self._fragment_namespace_id = LXB_NS_HTML
         self._selector = None
@@ -383,9 +382,37 @@ cdef class LexborHTMLParser:
             return status
 
         self._fragment_wrapper = fragment_html_node
-        self._fragment_root = fragment_html_node.first_child
         lxb_html_parser_destroy(parser)
         return LXB_STATUS_OK
+
+    cdef inline lxb_dom_node_t* _fragment_root_node(self):
+        """Return the fragment's current top-level root node.
+
+        A fragment's root is simply the first child of the wrapper ``<html>``
+        element that Lexbor builds while parsing, so it is read from the wrapper
+        on every access instead of being cached once at parse time. Caching it
+        went stale as soon as the tree was mutated: ``unwrap()``,
+        ``decompose()``, ``replace_with()`` and ``strip_tags()`` can all unlink
+        that first child, and ``insert_before()`` can push a new node in front
+        of it. A stale pointer is worse than merely wrong here, because freed
+        lexbor blocks go back onto a size-keyed free list, so the very next
+        same-size allocation can hand the same address out again and a stale
+        value can alias an unrelated live node.
+
+        The wrapper itself is a stable anchor for the parser's lifetime: Lexbor
+        allocates it from the document's ``mraw``, and removing a node only
+        unlinks it, never frees it.
+
+        Returns
+        -------
+        lxb_dom_node_t* or NULL
+            The first top-level child of the fragment, or ``NULL`` when the
+            fragment is empty. Also ``NULL`` for non-fragment parsers.
+        """
+        if self._fragment_wrapper == NULL:
+            return NULL
+
+        return self._fragment_wrapper.first_child
 
     def __dealloc__(self):
         """Release the underlying Lexbor HTML document.
@@ -441,6 +468,11 @@ cdef class LexborHTMLParser:
     def root(self):
         """Return the document root node.
 
+        For a fragment, this is the fragment's current top-level root, which
+        tracks the tree as it is mutated: once the previous first child is
+        unwrapped, decomposed or replaced, the next one takes its place, and an
+        emptied fragment reports ``None``.
+
         Returns
         -------
         LexborNode or None
@@ -450,8 +482,8 @@ cdef class LexborHTMLParser:
             return None
         cdef LexborNode  node
         cdef lxb_dom_node_t* dom_root
-        if self._is_fragment and self._fragment_root != NULL:
-            dom_root = self._fragment_root
+        if self._is_fragment:
+            dom_root = self._fragment_root_node()
         else:
             dom_root = lxb_dom_document_root(&self.document.dom_document)
         if dom_root == NULL:
@@ -923,7 +955,6 @@ LexborNode or None
         obj.cached_script_srcs = None
         obj._is_fragment = False
         obj._fragment_wrapper = NULL
-        obj._fragment_root = NULL
         obj._fragment_tag_id = LXB_TAG_DIV
         obj._fragment_namespace_id = LXB_NS_HTML
         obj._selector = None
@@ -965,7 +996,7 @@ LexborNode or None
             cloned_node = NULL
 
             if self._is_fragment:
-                if self._fragment_wrapper != NULL and self._fragment_root != NULL:
+                if self._fragment_root_node() != NULL:
                     cloned_node = _clone_node_into_document(
                         cloned_document, self._fragment_wrapper
                     )
@@ -989,8 +1020,6 @@ LexborNode or None
             cls._fragment_tag_id = self._fragment_tag_id
             cls._fragment_namespace_id = self._fragment_namespace_id
             cls._fragment_wrapper = cloned_node
-            if cloned_node != NULL:
-                cls._fragment_root = cloned_node.first_child
         return cls
 
     def unwrap_tags(self, list tags, delete_empty = False):

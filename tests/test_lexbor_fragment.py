@@ -293,6 +293,90 @@ def test_fragment_decompose():
     assert parser.html == "<div><p>Hello</p></div>"
 
 
+def test_fragment_root_follows_unwrap():
+    parser = LexborHTMLParser("<div><span>a</span></div><p>b</p>", is_fragment=True)
+    parser.root.unwrap()
+
+    # Unwrapping the first top-level node used to leave the parser pointing at
+    # the detached <div>, hiding every sibling behind it.
+    assert parser.html == "<span>a</span><p>b</p>"
+    assert parser.root.tag == "span"
+    assert parser.root.parent is not None
+    assert parser.text() == "ab"
+    assert len(parser.css("span")) == 1
+    assert len(parser.css("p")) == 1
+
+
+def test_fragment_root_follows_decompose():
+    parser = LexborHTMLParser("<div><span>a</span></div><p>b</p>", is_fragment=True)
+    parser.root.decompose()
+
+    assert parser.html == "<p>b</p>"
+    assert parser.root.tag == "p"
+    assert parser.text() == "b"
+
+
+def test_fragment_root_follows_replace_with():
+    parser = LexborHTMLParser("<div><span>a</span></div><p>b</p>", is_fragment=True)
+    parser.root.replace_with("X")
+
+    assert parser.html == "X<p>b</p>"
+    assert parser.root.is_text_node
+
+
+def test_fragment_root_follows_strip_tags():
+    parser = LexborHTMLParser("<div><i>a</i></div><p><i>b</i></p>", is_fragment=True)
+    parser.root.strip_tags(["div"])
+
+    assert parser.html == "<p><i>b</i></p>"
+    assert parser.root.tag == "p"
+
+
+def test_fragment_root_follows_insert_before():
+    parser = LexborHTMLParser("<div>a</div><p>b</p>", is_fragment=True)
+    replacement = LexborHTMLParser("<span>x</span>", is_fragment=True)
+    parser.root.insert_before(replacement.root)
+
+    # A node inserted in front of the root used to be dropped from the
+    # serialization, which starts at the root and walks its siblings.
+    assert parser.html == "<span>x</span><div>a</div><p>b</p>"
+    assert parser.root.tag == "span"
+
+
+def test_fragment_root_tracks_until_fragment_is_empty():
+    parser = LexborHTMLParser("<a>1</a><b>2</b>", is_fragment=True)
+
+    parser.root.unwrap()
+    assert parser.root.is_text_node
+    assert parser.html == "1<b>2</b>"
+
+    # Unwrapping a text node is a no-op, so the root stays where it is.
+    parser.root.unwrap()
+    assert parser.html == "1<b>2</b>"
+
+
+def test_fragment_root_is_none_once_emptied():
+    parser = LexborHTMLParser("<div>a</div>", is_fragment=True)
+    parser.root.decompose()
+
+    assert parser.root is None
+    assert parser.html == ""
+
+
+def test_fragment_root_survives_repeated_unwrap_of_every_top_level_node():
+    parser = LexborHTMLParser("<a>1</a><b>2</b><c>3</c>", is_fragment=True)
+
+    # Unwrapping an element lifts its text out in front of it, so the root
+    # walks the text nodes first and only then the remaining elements.
+    for expected_root in ("-text", "b", "-text", "c", "-text"):
+        parser.root.unwrap(delete_empty=True)
+        assert parser.root.tag == expected_root
+
+    parser.root.unwrap(delete_empty=True)
+    assert parser.root is None
+    assert parser.html == ""
+
+
 @pytest.mark.parametrize(
     "input_html, expected",
     [

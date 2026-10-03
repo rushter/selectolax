@@ -2,7 +2,9 @@ selectolax
 ==========
 
 Selectolax is a fast HTML5 parser with CSS selectors, written in Cython,
-using the [Lexbor](https://github.com/lexbor/lexbor) engine.
+using the `Lexbor <https://github.com/lexbor/lexbor>`_ engine.
+
+Release notes are kept in `CHANGES.md <https://github.com/rushter/selectolax/blob/master/CHANGES.md>`_.
 
 API
 ===

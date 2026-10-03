@@ -1,6 +1,6 @@
 # selectolax Changelog
 
-# Version 1.0.0 (Unreleased)
+# Version 1.0.0
 
 This release contains **breaking changes**.
 

@@ -368,6 +368,7 @@ cdef class LexborNode:
                                 text, lexbor_str_length_noi(&(<lxb_dom_character_data_t *> node).data)
                             )
                 node = node.next
+            container.reraise()
             return container.text
 
         lxb_dom_node_simple_walk(
@@ -375,6 +376,7 @@ cdef class LexborNode:
             <lxb_dom_node_simple_walker_f> text_callback,
             <void *> container
         )
+        container.reraise()
         return container.text
 
     cdef inline LexborNode _get_node(self):
@@ -1408,6 +1410,9 @@ cdef class TextContainer:
     cdef bint strip
     cdef bint skip_empty
     cdef Py_ssize_t _count
+    # The walker callback cannot propagate an error out of lexbor's C code, so
+    # it parks it here for the caller to re-raise rather than losing it.
+    cdef object _error
 
     @staticmethod
     cdef TextContainer create(str separator, bint strip, bint skip_empty=False):
@@ -1419,6 +1424,7 @@ cdef class TextContainer:
         cls.strip = strip
         cls.skip_empty = skip_empty
         cls._count = 0
+        cls._error = None
         return cls
 
     @staticmethod
@@ -1456,6 +1462,15 @@ cdef class TextContainer:
         self._count += 1
         return 0
 
+    cdef inline void fail(self, object error) noexcept:
+        self._error = error
+
+    cdef inline void reraise(self):
+        if self._error is not None:
+            error = self._error
+            self._error = None
+            raise error
+
     @property
     def text(self):
         if self.strip:
@@ -1485,7 +1500,8 @@ cdef lexbor_action_t text_callback(lxb_dom_node_t *node, void *ctx):
 
     try:
         container.add_bytes(text, lexbor_str_length_noi(str_data))
-    except Exception:
+    except BaseException as error:
+        container.fail(error)
         return LEXBOR_ACTION_STOP
 
     return LEXBOR_ACTION_OK

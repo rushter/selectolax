@@ -36,6 +36,7 @@ usually when heavily modifying the tree.
 - **Breaking**: Fix `iter()` skipping the remaining children when a node is removed during iteration
 - **Breaking**: Fix an HTML fragment whose first node is text dropping the rest of the fragment.
   `LexborHTMLParser('a<span>s</span>', is_fragment=True).text()` returned `'a'` instead of `'as'`.
+- Fix `text()` silently returning truncated text instead of raising when a fragment fails to be collected.
 - Fix `scripts_contain` and `script_srcs_contain` sometimes returning wrong results due to HTML mutations.
 - Fix `text_lexbor` sometimes holding temporary memory longer than needed
 - Improve memory consumption, potential stack overflow and slow extraction in `merge_text_nodes()`. It is now up to 10 times faster.

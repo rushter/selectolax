@@ -15,13 +15,45 @@ def create_tag(tag: str):
 
 def parse_fragment(html: str):
     """
-    Given HTML, parse it into a list of Nodes, such that the nodes
-    correspond to the given HTML.
+    Removed. Use ``LexborHTMLParser(html, is_fragment=True)`` instead.
 
-    For contrast, LexborHTMLParser adds `<html>`, `<head>`, and `<body>` tags
-    if they are missing. This function does not add these tags.
+    Parameters
+    ----------
+    html : str
+
+    Raises
+    ------
+    SelectolaxError
+        Always.
+
+    Notes
+    -----
+    This function guessed whether ``html`` was a whole document or a fragment by
+    scanning it for ``<html>``, ``<head>`` and ``<body>``, then stripped the tags
+    it considered synthetic. The guess was wrong for uppercase tags, for tags
+    inside text or comments, and for content that only *looks* like a fragment.
+    ``is_fragment=True`` has the parser decide, per the HTML Standard.
+
+    Examples
+    --------
+    Instead of::
+
+        for node in parse_fragment(html):
+            ...
+
+    use::
+
+        parser = LexborHTMLParser(html, is_fragment=True)
+        for node in parser.root.iter(include_text=True):
+            ...
     """
-    return do_parse_fragment(html, LexborHTMLParser)
+    msg = (
+        "parse_fragment() has been removed. "
+        "Use LexborHTMLParser(html, is_fragment=True) instead: "
+        "`parser.root` is the fragment root and `parser.root.iter(include_text=True)` "
+        "yields its top-level nodes."
+    )
+    raise SelectolaxError(msg)
 
 
 def extract_html_comment(text: str) -> str:

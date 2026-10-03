@@ -9,7 +9,6 @@ from selectolax.lexbor import (
     LexborDocumentOptions,
     LexborHTMLParser,
     SelectolaxError,
-    parse_fragment,
 )
 
 
@@ -135,7 +134,7 @@ def test_node_cloning():
 
 def test_double_unwrap_does_not_segfault():
     html = """<div><div><div></div></div></div>"""
-    outer_div = parse_fragment(html)[0]
+    outer_div = LexborHTMLParser(html, is_fragment=True).root
     some_set = set()
 
     inner_div = outer_div.child

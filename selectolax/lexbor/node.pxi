@@ -44,7 +44,7 @@ cdef class LexborNode:
         raise TypeError(
             "LexborNode cannot be instantiated directly; it is a view onto a "
             "DOM node owned by a parser. Use LexborHTMLParser.create_node(), "
-            "parse_fragment() or LexborNode.clone() instead."
+            "LexborHTMLParser(html, is_fragment=True).root or LexborNode.clone() instead."
         )
 
     cdef void set_as_fragment_root(self):
@@ -1172,9 +1172,9 @@ cdef class LexborNode:
 
         Examples
         --------
-        >>> parse_fragment("<!-- hello -->")[0].comment_content
+        >>> LexborHTMLParser("<!-- hello -->", is_fragment=True).root.comment_content
         'hello'
-        >>> parse_fragment("<div>not a comment</div>")[0].comment_content is None
+        >>> LexborHTMLParser("<div>not a comment</div>", is_fragment=True).root.comment_content is None
         True
         """
         if not self.is_comment_node:

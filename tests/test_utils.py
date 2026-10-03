@@ -5,209 +5,41 @@ Many functionality are already tested in the Lexbor engine, so there is no reaso
 
 from __future__ import annotations
 
-from collections.abc import Sequence
-from typing import Callable, NamedTuple
-
 import pytest
 
 from selectolax.lexbor import (
     LexborHTMLParser,
     LexborNode,
-)
-from selectolax.lexbor import (
-    create_tag as lexbor_create_tag,
-)
-from selectolax.lexbor import (
-    parse_fragment as lexbor_parse_fragment,
+    SelectolaxError,
+    create_tag,
+    parse_fragment,
 )
 
 
-class Impl(NamedTuple):
-    parser: type[LexborHTMLParser]
-    node: type[LexborNode]
-    tag_fn: Callable[[str], LexborNode]
-    parse_fragment_fn: Callable[[str], Sequence[LexborNode]]
+@pytest.mark.parametrize("tag", ["p", "header", "div", "span", "custom-element"])
+def test_create_tag(tag: str):
+    node = create_tag(tag)
+    assert isinstance(node, LexborNode)
+    assert node.tag == tag
+    assert node.html == f"<{tag}></{tag}>"
 
 
-_IMPLS = [
-    Impl(
-        parser=LexborHTMLParser,
-        node=LexborNode,
-        tag_fn=lexbor_create_tag,
-        parse_fragment_fn=lexbor_parse_fragment,
-    ),
-]
-
-_IMPL_PARAMETRIZER = (
-    "impl",
-    _IMPLS,
-)
+def test_create_tag_uses_the_fragment_parser():
+    # create_tag() builds its node through `is_fragment=True`, so it no longer
+    # depends on the removed fragment-type guessing helpers. A fragment parser
+    # does not synthesize <html>/<head>/<body>.
+    node = create_tag("div")
+    assert node.parser.html == "<div></div>"
+    assert node.parser.head is None
+    assert node.parser.body is None
 
 
-@pytest.mark.parametrize(*_IMPL_PARAMETRIZER)
-def test_create_tag(impl: Impl):
-    node = impl.tag_fn("p")
-    assert isinstance(node, impl.node)
-    assert node.html == "<p></p>"
+def test_parse_fragment_is_removed():
+    with pytest.raises(SelectolaxError, match="is_fragment=True"):
+        parse_fragment("<div>x</div>")
 
 
-@pytest.mark.parametrize(*_IMPL_PARAMETRIZER)
-def test_create_header_tag(impl: Impl):
-    node = impl.tag_fn("header")
-    assert isinstance(node, impl.node)
-    assert node.html == "<header></header>"
-
-
-# Cases to test parse_fragment():
-# - <doctyle> + <html> only
-# - HTML with <head>
-# - HTML with <body>
-# - HTML with <doctype>, <head> and <body>
-# - <head> and <body> only without <html>
-# - <head> only
-# - <body> only
-# - <link> and <meta>'s only (as content of <head>)
-# - <div>, <script> (as content of <body>)
-# - <link> and <div> next to each other (as invalid HTML, but valid fragment)
-
-
-@pytest.mark.parametrize(*_IMPL_PARAMETRIZER)
-def test_parse_fragment_doctype_html(impl: Impl):
-    html = "<!DOCTYPE html><html></html>"
-    nodes = impl.parse_fragment_fn(html)
-    assert len(nodes) == 1
-    assert nodes[0].tag == "html"
-    assert nodes[0].html == "<html></html>"
-    assert nodes[0].parser.html == "<!DOCTYPE html><html></html>"
-
-    assert len(nodes[0].parser.css("head")) == 0
-    assert len(nodes[0].parser.css("body")) == 0
-
-
-@pytest.mark.parametrize(*_IMPL_PARAMETRIZER)
-def test_parse_fragment_html_with_head(impl: Impl):
-    html = '<!DOCTYPE html><html><head><link href="http://"></head></html>'
-    nodes = impl.parse_fragment_fn(html)
-    assert len(nodes) == 1
-    assert nodes[0].tag == "html"
-    assert nodes[0].html == '<html><head><link href="http://"></head></html>'
-    assert (
-        nodes[0].parser.html
-        == '<!DOCTYPE html><html><head><link href="http://"></head></html>'
-    )
-
-    assert len(nodes[0].parser.css("head")) == 1
-    assert len(nodes[0].parser.css("body")) == 0
-    # do_parse_fragment() decomposes <body> to return the root alone, so the
-    # parser must no longer report the body it detached.
-    assert nodes[0].parser.head is not None
-    assert nodes[0].parser.body is None
-
-
-@pytest.mark.parametrize(*_IMPL_PARAMETRIZER)
-def test_parse_fragment_html_with_body(impl: Impl):
-    html = '<!DOCTYPE html><html><body><div><script src="http://"></script></div></body></html>'
-    nodes = impl.parse_fragment_fn(html)
-    assert len(nodes) == 1
-    assert nodes[0].tag == "html"
-    assert (
-        nodes[0].html
-        == '<html><body><div><script src="http://"></script></div></body></html>'
-    )
-    assert (
-        nodes[0].parser.html
-        == '<!DOCTYPE html><html><body><div><script src="http://"></script></div></body></html>'
-    )
-
-    assert len(nodes[0].parser.css("head")) == 0
-    assert len(nodes[0].parser.css("body")) == 1
-    # do_parse_fragment() decomposes <head> here, so it must stop being reported.
-    assert nodes[0].parser.head is None
-    assert nodes[0].parser.body is not None
-
-
-@pytest.mark.parametrize(*_IMPL_PARAMETRIZER)
-def test_parse_fragment_html_with_head_and_body(impl: Impl):
-    html = '<!DOCTYPE html><html><head><link href="http://"></head><body><div><script src="http://"></script></div></body></html>'
-    nodes = impl.parse_fragment_fn(html)
-    assert len(nodes) == 1
-    assert nodes[0].tag == "html"
-    assert (
-        nodes[0].html
-        == '<html><head><link href="http://"></head><body><div><script src="http://"></script></div></body></html>'
-    )
-    assert (
-        nodes[0].parser.html
-        == '<!DOCTYPE html><html><head><link href="http://"></head><body><div><script src="http://"></script></div></body></html>'
-    )
-
-    assert len(nodes[0].parser.css("head")) == 1
-    assert len(nodes[0].parser.css("body")) == 1
-
-
-@pytest.mark.parametrize(*_IMPL_PARAMETRIZER)
-def test_parse_fragment_head_and_body_no_html(impl: Impl):
-    html = '<head><link href="http://"></head><body><div><script src="http://"></script></div></body>'
-    nodes = impl.parse_fragment_fn(html)
-    assert len(nodes) == 2
-    assert nodes[0].tag == "head"
-    assert nodes[1].tag == "body"
-    assert nodes[0].html == '<head><link href="http://"></head>'
-    assert nodes[1].html == '<body><div><script src="http://"></script></div></body>'
-    assert (
-        nodes[0].parser.html
-        == '<html><head><link href="http://"></head><body><div><script src="http://"></script></div></body></html>'
-    )
-
-    assert len(nodes[0].parser.css("head")) == 1
-    assert len(nodes[0].parser.css("body")) == 1
-
-
-@pytest.mark.parametrize(*_IMPL_PARAMETRIZER)
-def test_parse_fragment_head_no_html(impl: Impl):
-    html = '<head><link href="http://"></head>'
-    nodes = impl.parse_fragment_fn(html)
-    assert len(nodes) == 1
-    assert nodes[0].tag == "head"
-    assert nodes[0].html == '<head><link href="http://"></head>'
-    assert nodes[0].parser.html == '<html><head><link href="http://"></head></html>'
-
-    assert len(nodes[0].parser.css("head")) == 1
-    assert len(nodes[0].parser.css("body")) == 0
-
-
-@pytest.mark.parametrize(*_IMPL_PARAMETRIZER)
-def test_parse_fragment_body_no_html(impl: Impl):
-    html = '<body><div><script src="http://"></script></div></body>'
-    nodes = impl.parse_fragment_fn(html)
-    assert len(nodes) == 1
-    assert nodes[0].tag == "body"
-    assert nodes[0].html == '<body><div><script src="http://"></script></div></body>'
-    assert (
-        nodes[0].parser.html
-        == '<html><body><div><script src="http://"></script></div></body></html>'
-    )
-
-    assert len(nodes[0].parser.css("head")) == 0
-    assert len(nodes[0].parser.css("body")) == 1
-
-
-@pytest.mark.parametrize(*_IMPL_PARAMETRIZER)
-def test_parse_fragment_fragment(impl: Impl):
-    html = '<link href="http://"><div><script src="http://"></script></div>'
-    nodes = impl.parse_fragment_fn(html)
-    assert len(nodes) == 2
-    assert nodes[0].tag == "link"
-    assert nodes[1].tag == "div"
-    assert nodes[0].html == '<link href="http://">'
-    assert nodes[1].html == '<div><script src="http://"></script></div>'
-
-    # NOTE: Ideally the full HTML would NOT contain `<html>`, `<head>` and `<body>` in this case,
-    # but this is technical limitation of the parser.
-    # But as long as user serializes fragment nodes by as `Node.html`, they should be fine.
-    assert (
-        nodes[0].parser.html
-        == '<html><head><link href="http://"></head><body><div><script src="http://"></script></div></body></html>'
-    )
-    assert len(nodes[0].parser.css("head")) == 1
-    assert len(nodes[0].parser.css("body")) == 1
+def test_fragment_parser_is_the_replacement():
+    parser = LexborHTMLParser("<div>x</div><p>y</p>", is_fragment=True)
+    assert parser.html == "<div>x</div><p>y</p>"
+    assert [n.tag for n in parser.root.iter(include_text=True)] == ["div", "p"]

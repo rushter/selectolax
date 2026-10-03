@@ -7,11 +7,16 @@ This release contains **breaking changes**.
 The main change is that the Modest backend is no longer available.
 It is outdated and unmaintained, contains bugs, and does not follow modern HTML5 standards.
 
+The second is that `parse_fragment()` is gone. It re-implemented fragment parsing by guessing
+whether the input was a document or a fragment; `LexborHTMLParser(html, is_fragment=True)` already
+does this properly, so the guessing layer has been removed.
+
 The rest of the changes fix corner cases where the bugs were happening rarely,
 usually when heavily modifying the tree.
 
 - **Breaking**: Remove the Modest backend. `selectolax.parser` is now a stub that raises `ImportError`
   on import. Use the lexbor backend (`from selectolax.lexbor import LexborHTMLParser`) instead.
+- **Breaking**: Remove `parse_fragment()`.
 - **Breaking**: Fix `css_matches` and `any_css_matches` missing matches outside the first top-level node of an HTML
   fragment. They now search the same scope as `css`.
 - **Breaking**: Fix `attribute_longer_than` and `any_attribute_longer_than` returning inconsistent results
@@ -31,10 +36,44 @@ usually when heavily modifying the tree.
 - Prevent segfaults when instantiating `LexborNode` or `LexborAttributes` directly.
 - Fix `unwrap()` corrupting the tree in some cases.
 - Fix `head` and `body` going stale once `<head>`/`<body>` is removed from the document.
-   This also fixes `parse_fragment()` exposing a detached `head`/`body` on the nodes it returns.
 - Fix `attrs` reading freed memory when it outlives the node it was obtained from.
 - Fix memory leak in `attrs[key] = None`; it leaked the value buffer header on every call.
 - Fix possible memory leak in `clone()`
+
+## Migrating off `parse_fragment()`
+
+`parse_fragment()` guessed whether its input was a whole document or a fragment by scanning the
+markup for `<html>`, `<head>` and `<body>`, then parsed it as a document and stripped the tags it
+decided were synthetic. That guess was wrong in ways that were hard to predict: uppercase tags were
+never recognised (`<HTML>` looked like a fragment), tags appearing inside text or comments were
+counted, and the caller had no way to say which behaviour it wanted. The HTML Standard already
+defines the answer, and Lexbor already implements it, so the guessing layer is gone.
+
+Use `LexborHTMLParser(html, is_fragment=True)` and read the tree off the parser:
+
+| Before                                              | After                                                            |
+| --------------------------------------------------- | ---------------------------------------------------------------- |
+| `parse_fragment(html)[0]`                            | `LexborHTMLParser(html, is_fragment=True).root`                   |
+| `[n for n in parse_fragment(html)]`                  | `list(LexborHTMLParser(html, is_fragment=True).root.iter(include_text=True))` |
+| `node = parse_fragment(html)[0]`                     | `parser = LexborHTMLParser(html, is_fragment=True)`<br>`node = parser.root` |
+| `create_tag("div")`                                  | unchanged, or `LexborHTMLParser("<div></div>", is_fragment=True).root` |
+
+The differences worth knowing:
+
+- When `is_fragment=True`, `parser.html` returns the fragment markup as written, with no
+  `<html>`, `<head>` or `<body>` wrappers. `parser.head` and `parser.body` are `None`.
+- `parser.root` is the first top-level node. To reach the rest, walk the fragment wrapper via
+  `parser.root.iter(include_text=True)` for the top-level nodes, or use `parser.css()` /
+  `parser.text()` / `parser.html_pretty()`, which already search and render the whole fragment.
+- Input that contains `<html>`, `<head>` or `<body>` is parsed as a fragment, so those tags are
+  dropped rather than kept as elements; their content is kept. `parse_fragment()` instead returned
+  the `<html>` element as the single node in that case. Pass `is_fragment=False` and use
+  `parser.root` to get that behaviour:
+
+  ```python
+  # parse_fragment("<html><body><p>x</p></body></html>")[0].tag  ->  'html'
+  LexborHTMLParser("<html><body><p>x</p></body></html>").root.tag  ->  'html'
+  ```
 
 # Version 0.4.13
 

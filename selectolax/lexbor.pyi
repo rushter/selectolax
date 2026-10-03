@@ -716,9 +716,9 @@ class LexborNode:
 
         Examples
         --------
-        >>> parse_fragment("<!-- hello -->")[0].comment_content
+        >>> LexborHTMLParser("<!-- hello -->", is_fragment=True).root.comment_content
         'hello'
-        >>> parse_fragment("<div>not a comment</div>")[0].comment_content is None
+        >>> LexborHTMLParser("<div>not a comment</div>", is_fragment=True).root.comment_content is None
         True
         """
 
@@ -1369,11 +1369,12 @@ def create_tag(tag: str) -> LexborNode:
 
 def parse_fragment(html: str) -> list[LexborNode]:
     """
-    Given HTML, parse it into a list of Nodes, such that the nodes
-    correspond to the given HTML.
+    Removed. Use ``LexborHTMLParser(html, is_fragment=True)`` instead.
 
-    For contrast, ``LexborHTMLParser()`` adds `<html>`, `<head>`, and `<body>` tags
-    if they are missing. This function does not add these tags.
+    Raises
+    ------
+    SelectolaxError
+        Always.
     """
 
 class SelectolaxError(Exception):

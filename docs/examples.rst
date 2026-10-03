@@ -271,8 +271,8 @@ You can also change HTML by setting the `.inner_html` property.
     Old html:
 
     <div id="main">
-      <div>Hi there</div>
-     </div>
+    <div>Hi there</div>
+    </div>
 
     New html:
 

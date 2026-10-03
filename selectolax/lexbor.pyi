@@ -855,11 +855,6 @@ class LexborHTMLParser:
     """The lexbor HTML parser.
 
     Use this class to parse raw HTML.
-
-    Parameters
-    ----------
-
-    html : str (unicode) or bytes
     """
 
     raw_html: bytes

@@ -16,6 +16,14 @@ def clean_doc(text: str) -> str:
     return f"{cleandoc(text)}\n"
 
 
+def _top_level_nodes(parser):
+    """The fragment's top-level nodes, reached the way the library reaches them."""
+    node = parser.root
+    while node is not None:
+        yield node
+        node = node.next
+
+
 def test_reads_inner_html():
     html = """<div id="main"><div>Hi</div><div id="updated">2025-09-27</div></div>"""
     parser = LexborHTMLParser(html)
@@ -201,6 +209,88 @@ def test_text_lexbor_on_empty_strings():
 
     parser = LexborHTMLParser("")
     assert parser.root.text_lexbor() == ""
+
+
+@pytest.mark.parametrize(
+    "html",
+    [
+        "hello",
+        "a<span>s</span>",
+        "lead<span>x</span>tail",
+        "<div>a</div><span>s</span>",
+        "<div><i>x</i>y</div>",
+        "a<b>c</b>d",
+        "<!--k--><b>c</b>",
+        "only text",
+        "<div>one</div><div>two</div>",
+    ],
+)
+def test_text_lexbor_covers_whole_fragment(html):
+    """``text_lexbor()`` must widen like ``text()`` does on a fragment root."""
+    parser = LexborHTMLParser(html, is_fragment=True)
+    root = parser.root
+    assert root.text_lexbor() == parser.text()
+    assert root.text_lexbor() == root.text()
+
+
+def test_text_lexbor_on_a_text_node_reports_only_itself():
+    """Widening must not make a text node report its siblings too."""
+    parser = LexborHTMLParser("<div>hi</div><p>yo</p>")
+    for tag, expected in (("div", "hi"), ("p", "yo")):
+        text_node = parser.css_first(tag).first_child
+        assert text_node.is_text_node
+        assert text_node.text_lexbor() == expected
+
+
+def test_merge_text_nodes_merges_top_level_runs_of_a_fragment():
+    parser = LexborHTMLParser("<div>1</div><p><i>a</i></p>", is_fragment=True)
+
+    # Unwrapping the <p> lifts its <i> to the top level, then two text nodes get
+    # inserted in front of it, forming a run of adjacent text nodes that lives
+    # beside the fragment root rather than inside it.
+    parser.root.next.unwrap()
+    node = parser.root.next
+    node.insert_before("X")
+    node.insert_before("Y")
+
+    top_level = [(n.tag, n.text_content) for n in _top_level_nodes(parser)]
+    assert top_level == [("div", None), ("-text", "X"), ("-text", "Y"), ("i", None)]
+
+    parser.merge_text_nodes()
+    assert [(n.tag, n.text_content) for n in _top_level_nodes(parser)] == [
+        ("div", None),
+        ("-text", "XY"),
+        ("i", None),
+    ]
+
+
+def test_merge_text_nodes_on_a_non_root_node_stays_scoped():
+    parser = LexborHTMLParser("<div>1</div><p><i>a</i></p>", is_fragment=True)
+    parser.root.next.unwrap()
+    node = parser.root.next
+    node.insert_before("X")
+    node.insert_before("Y")
+
+    node.merge_text_nodes()
+
+    assert [(n.tag, n.text_content) for n in _top_level_nodes(parser)] == [
+        ("div", None),
+        ("-text", "X"),
+        ("-text", "Y"),
+        ("i", None),
+    ]
+
+
+def test_merge_text_nodes_on_a_detached_fragment_root_is_a_safe_noop():
+    parser = LexborHTMLParser("<div>a<span>s</span></div><p>b</p>", is_fragment=True)
+    root = parser.root
+    root.decompose()
+
+    root.merge_text_nodes()
+
+    assert root.text() == ""
+    assert root.text_lexbor() == ""
+    assert parser.html == "<p>b</p>"
 
 
 def test_attrs_reject_non_element_nodes():
@@ -523,6 +613,83 @@ def test_text_does_not_duplicate_fragment_root_text_node():
     assert root is not None
     assert root.is_text_node
     assert root.text(deep=True) == "hello"
+
+
+@pytest.mark.parametrize(
+    "html, expected_text, expected_deep_false",
+    [
+        ("hello", "hello", "hello"),
+        ("a<span>s</span>", "as", "a"),
+        ("lead<span>x</span>tail", "leadxtail", "leadtail"),
+        ("a<b>c</b>d", "acd", "ad"),
+        ("a<!--k--><b>c</b>", "ac", "a"),
+    ],
+)
+def test_fragment_root_text_node_covers_whole_fragment(
+    html, expected_text, expected_deep_false
+):
+    """A fragment that starts with text must not lose its siblings.
+
+    The root is widened to the wrapper so the walk covers every top-level node,
+    which means the root's own data is reached by the walk. It must therefore
+    not also be added on the side, or it would be duplicated.
+    """
+    parser = LexborHTMLParser(html, is_fragment=True)
+    root = parser.root
+    assert root.is_text_node
+
+    assert root.text() == expected_text
+    assert root.text(deep=True) == expected_text
+    assert root.text(deep=False) == expected_deep_false
+    assert parser.text() == expected_text
+
+
+@pytest.mark.parametrize(
+    "html, query, expected_count",
+    [
+        ("a<span>s</span><b>b</b>", "span", 1),
+        ("a<span>s</span><b>b</b>", "b", 1),
+        ("a<span>s</span><b>b</b>", "i", 0),
+        ("lead<span>x</span>tail<b>c</b>", "b", 1),
+    ],
+)
+def test_fragment_root_text_node_css_covers_whole_fragment(html, query, expected_count):
+    """Tree walks from a text-node fragment root reach every top-level node."""
+    parser = LexborHTMLParser(html, is_fragment=True)
+    root = parser.root
+    assert root.is_text_node
+
+    assert len(root.css(query)) == expected_count
+    assert len(root.select(query).matches) == expected_count
+    assert root.css_matches(query) is (expected_count > 0)
+    assert root.any_css_matches((query,)) is (expected_count > 0)
+    assert (root.css_first(query) is not None) is (expected_count > 0)
+
+
+def test_fragment_root_text_node_iter_covers_whole_fragment():
+    parser = LexborHTMLParser("a<span>s</span><b>b</b>", is_fragment=True)
+    root = parser.root
+    assert root.is_text_node
+
+    assert [node.tag for node in root.iter()] == ["span", "b"]
+    assert [node.tag for node in root.iter(include_text=True)] == [
+        "-text",
+        "span",
+        "b",
+    ]
+
+
+def test_text_node_fragment_root_text_node_owns_its_own_data():
+    """A text node that is not a fragment root only reports itself."""
+    parser = LexborHTMLParser("<div>hi</div><p>yo</p>")
+    for tag in ("div", "p"):
+        text_node = parser.css_first(tag).first_child
+        assert text_node.is_text_node
+        assert text_node.text() == text_node.text_content
+        assert text_node.text(deep=True) == text_node.text_content
+        assert text_node.text(deep=False) == text_node.text_content
+    assert parser.css_first("div").first_child.text_content == "hi"
+    assert parser.css_first("p").first_child.text_content == "yo"
 
 
 def test_iter_includes_text_nodes_when_requested():

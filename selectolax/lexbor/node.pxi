@@ -291,11 +291,15 @@ cdef class LexborNode:
         """Returns the text of the node including text of all its child nodes.
 
         Uses builtin method from lexbor.
+
+        Covers the whole fragment when called on the root of an HTML fragment,
+        like ``text()`` does.
         """
 
         cdef size_t str_len = 0
         cdef lxb_char_t * text
-        text = lxb_dom_node_text_content(self.node, &str_len)
+        cdef LexborNode start_node = self._get_node()
+        text = lxb_dom_node_text_content(start_node.node, &str_len)
         if text == NULL:
             return ""
 
@@ -341,7 +345,12 @@ cdef class LexborNode:
         cdef lxb_dom_node_t * node = <lxb_dom_node_t *> start_node.node.first_child
         cdef TextContainer container = TextContainer.create(separator, strip, skip_empty)
 
-        if _is_node_type(self.node, LXB_DOM_NODE_TYPE_TEXT):
+        # Both walks below start at the *children* of the node they are given,
+        # never at that node itself, so a text node that is also the walk's root
+        # has to contribute its data here. Widening a fragment root to its
+        # parent means the walk covers it after all, and adding it as well would
+        # duplicate it.
+        if start_node.node == self.node and _is_node_type(self.node, LXB_DOM_NODE_TYPE_TEXT):
             if not skip_empty or not is_empty_text_node(<lxb_dom_node_t *> self.node):
                 text = <unsigned char *> lexbor_str_data_noi(&(<lxb_dom_character_data_t *> self.node).data)
                 if text != NULL:
@@ -373,9 +382,9 @@ cdef class LexborNode:
 
         A fragment's root is a single node, but its siblings are part of the
         fragment too, so operations that walk the tree start from the parent
-        instead and thus cover every top-level node. A text node is the one
-        exception: its own data is added separately by the callers, so walking
-        from the parent would count it twice.
+        instead and thus cover every top-level node. This holds when the root is
+        a text node as well, which happens whenever a fragment does not begin
+        with an element.
 
         Returns ``self`` when this node is not a fragment root, and also when a
         fragment root has been detached from its wrapper, which is what
@@ -391,7 +400,7 @@ cdef class LexborNode:
             segfaults.
         """
         cdef LexborNode node
-        if self._is_fragment_root and not _is_node_type(self.node, LXB_DOM_NODE_TYPE_TEXT):
+        if self._is_fragment_root:
             node = self.parent
             if node is not None:
                 return node
@@ -795,8 +804,12 @@ cdef class LexborNode:
         >>> node.merge_text_nodes()
         >>> tree.text(deep=True, separator=" ", strip=True)
         "John Doe"
+
+        Merges runs of adjacent text nodes, so it covers the whole fragment when
+        called on the root of an HTML fragment.
         """
-        _merge_text_nodes(self.node)
+        cdef LexborNode start_node = self._get_node()
+        _merge_text_nodes(start_node.node)
 
     def traverse(self, bool include_text = False, bool skip_empty = False):
         """Depth-first traversal starting at the current node.

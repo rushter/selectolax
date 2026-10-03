@@ -21,6 +21,8 @@ usually when heavily modifying the tree.
   fragment. They now search the same scope as `css`.
 - **Breaking**: Fix `attribute_longer_than` and `any_attribute_longer_than` returning inconsistent results
 - **Breaking**: Fix `iter()` skipping the remaining children when a node is removed during iteration
+- **Breaking**: Fix an HTML fragment whose first node is text dropping the rest of the fragment.
+  `LexborHTMLParser('a<span>s</span>', is_fragment=True).text()` returned `'a'` instead of `'as'`.
 - Fix `text_lexbor` sometimes holding temporary memory longer than needed
 - Improve memory consumption, potential stack overflow and slow extraction in `merge_text_nodes()`. It is now up to 10 times faster.
 - Improve speed of `__eq__`

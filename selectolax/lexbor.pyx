@@ -541,6 +541,22 @@ cdef class LexborHTMLParser:
 
         return self._fragment_wrapper.first_child
 
+    cdef inline lxb_dom_node_t* _tag_search_root(self):
+        """Return the node that tag lookups start from.
+
+        A tag lookup walks the descendants of the node it is given, so a document
+        is rooted at the document node, whose child is ``<html>``. A fragment
+        cannot be: Lexbor re-attaches its wrapper ``<html>`` element by writing
+        only the wrapper's ``parent`` pointer, never linking it into the
+        document's child list, so a walk from the document node misses the whole
+        fragment. Rooting at the wrapper covers it, and since the walk starts at
+        ``first_child`` the wrapper never matches itself.
+        """
+        if self._fragment_wrapper != NULL:
+            return self._fragment_wrapper
+
+        return <lxb_dom_node_t *> self.document
+
     cdef inline void _mark_mutated(self) noexcept:
         """Record that the document was edited, invalidating derived caches.
 
@@ -731,7 +747,7 @@ cdef class LexborHTMLParser:
         if collection == NULL:
             return result
         status = lxb_dom_elements_by_tag_name(
-            <lxb_dom_element_t *> self.document,
+            <lxb_dom_element_t *> self._tag_search_root(),
             collection,
             <lxb_char_t *> pybyte_name,
             len(pybyte_name)
@@ -948,7 +964,7 @@ cdef class LexborHTMLParser:
                 raise SelectolaxError("Can't initialize DOM collection.")
 
             status = lxb_dom_elements_by_tag_name(
-                <lxb_dom_element_t *> self.document,
+                <lxb_dom_element_t *> self._tag_search_root(),
                 collection,
                 <lxb_char_t *> pybyte_name,
                 len(pybyte_name)

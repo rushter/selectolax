@@ -319,6 +319,7 @@ cdef class LexborHTMLParser:
     cdef LexborCSSSelector _selector
     cdef inline void _new_html_document(self)
     cdef inline lxb_dom_node_t* _fragment_root_node(self)
+    cdef inline lxb_dom_node_t* _tag_search_root(self)
     cdef inline lxb_status_t _parse_html_document(self, char *html, size_t html_len) noexcept nogil
     cdef inline lxb_status_t _parse_html_fragment(self, char *html, size_t html_len) noexcept nogil
     cdef int _parse_html(self, char *html, size_t html_len) except -1

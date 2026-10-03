@@ -893,19 +893,40 @@ class LexborHTMLParser:
             Accepts Lexbor namespace names such as ``"html"``, ``"svg"``, and ``"math"``,
             or a namespace URI recognized by Lexbor. Only used when ``is_fragment`` is ``True``.
         options : int, optional
-            Lexbor document options passed to ``lxb_html_document_dom_opt_set``.
-            Use the flags from :class:`LexborDocumentOptions`, e.g.
-            ``LexborDocumentOptions.WO_EVENTS`` to disable mutation events.
+            Lexbor document options, a combination of :class:`LexborDocumentOptions` flags.
+            Defaults to ``0``, which enables DOM mutation events.
+            Pass ``options`` only when you need a non-default behaviour.
 
-            Several options can be combined with the bitwise OR operator::
+            Mutation events are the side effects Lexbor applies to the tree after parsing.
+            For example, the HTML Standard has `<selectedcontent>` mirror the selected
+            `<option>`'s content, so by default the parser clones it into place::
+
+                >>> html = (
+                ...     "<select><selectedcontent></selectedcontent>"
+                ...     "<option>this gets cloned</option></select>"
+                ... )
+                >>> LexborHTMLParser(html).css_first("selectedcontent").html
+                '<selectedcontent>this gets cloned</selectedcontent>'
+
+            ``WO_EVENTS`` ("without events") turns that off, so the element keeps
+            whatever the source actually contained::
+
+                >>> LexborHTMLParser(
+                ...     html, options=LexborDocumentOptions.WO_EVENTS
+                ... ).css_first("selectedcontent").html
+                '<selectedcontent></selectedcontent>'
+
+            Reach for it when you want the raw source rather than the browser-normalised
+            tree, for example to round-trip HTML or diff markup between two documents.
+            Leave it at ``0`` when you want a tree that matches what a browser would build.
+
+            Several flags can be combined with the bitwise OR operator::
 
                 LexborDocumentOptions.WO_EVENTS | LexborDocumentOptions.UNDEF
 
             or by passing the equivalent plain integer::
 
                 LexborDocumentOptions.WO_EVENTS.value | LexborDocumentOptions.UNDEF.value
-
-            Defaults to ``0``.
 
         """
 

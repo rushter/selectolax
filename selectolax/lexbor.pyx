@@ -1,5 +1,5 @@
 from cpython.bool cimport bool
-from cpython.bytes cimport PyBytes_AS_STRING
+from cpython.bytes cimport PyBytes_AS_STRING, PyBytes_FromStringAndSize
 from cpython.exc cimport PyErr_SetObject
 from cpython.mem cimport (
     PyMem_RawCalloc,
@@ -256,6 +256,10 @@ cdef class LexborHTMLParser:
     """The lexbor HTML parser.
 
     Use this class to parse raw HTML.
+
+    ``raw_html`` holds the bytes that were parsed. That is the UTF-8 form of the
+    input, so for non-UTF-8 input read with ``encoding=True`` it is the
+    transcoded document rather than the bytes that were passed in.
     """
     def __init__(
         self,
@@ -264,6 +268,7 @@ cdef class LexborHTMLParser:
         fragment_tag: str = "div",
         fragment_namespace: str = "html",
         options: int = 0,
+        encoding: bool = False,
     ):
         """Create a parser and load HTML.
 
@@ -271,6 +276,8 @@ cdef class LexborHTMLParser:
         ----------
         html : str or bytes
             HTML content to parse.
+            Bytes are parsed as UTF-8; see ``encoding`` to have the encoding
+            detected instead.
         is_fragment : bool, optional
             When ``False`` (default), the input is parsed as a full HTML document.
             If the input is only a fragment, the parser still accepts it and inserts any missing required elements,
@@ -326,6 +333,37 @@ cdef class LexborHTMLParser:
 
                 LexborDocumentOptions.WO_EVENTS.value | LexborDocumentOptions.UNDEF.value
 
+        encoding : bool, optional
+            Detect the encoding of ``bytes`` input and transcode it to UTF-8
+            before parsing. Defaults to ``False``, which parses bytes as UTF-8.
+
+            Text input is never affected: a ``str`` is already decoded, so there
+            is nothing to detect.
+
+            Detection follows the HTML Standard. A byte-order mark wins over any
+            declaration, and a ``<meta charset>`` or
+            ``<meta http-equiv="content-type" content="...charset=...">``
+            declaration is honoured within the first 1024 bytes, which is where
+            the Standard stops looking. Bytes that are invalid in the detected
+            encoding become U+FFFD rather than being kept as they are::
+
+                >>> raw = '<meta charset="windows-1251"><p>Привет</p>'.encode('windows-1251')
+                >>> LexborHTMLParser(raw).text()
+                '������'
+                >>> LexborHTMLParser(raw, encoding=True).text()
+                'Привет'
+
+            Input that declares nothing is decoded as UTF-8, not as the
+            windows-1252 a browser would fall back to, so that turning this on
+            cannot reinterpret a document that already parsed correctly. A
+            declaration naming something that cannot read text is ignored the
+            same way - an unknown label, or one of the codec module's binary
+            and text-transform pseudo-encodings such as ``base64`` or ``rot13`` -
+            so no page can fail its own parse by choosing one.
+
+            The encoding is resolved before parsing, so this costs one extra pass
+            over non-UTF-8 input and nothing at all for UTF-8.
+
         """
         cdef size_t html_len
         cdef object bytes_html
@@ -341,7 +379,7 @@ cdef class LexborHTMLParser:
         if self._is_fragment:
             self._fragment_tag_id = _fragment_tag_id_from_string(self.document, fragment_tag)
             self._fragment_namespace_id = _fragment_namespace_id_from_string(self.document, fragment_namespace)
-        bytes_html, html_len = preprocess_input(html)
+        bytes_html, html_len = preprocess_input(html, encoding=encoding)
         self._parse_html(bytes_html, html_len)
         self.raw_html = bytes_html
 

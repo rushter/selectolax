@@ -47,6 +47,8 @@ usually when heavily modifying the tree.
 - Fix `attrs` reading freed memory when it outlives the node it was obtained from.
 - Fix memory leak in `attrs[key] = None`; it leaked the value buffer header on every call.
 - Fix possible memory leak in `clone()`
+- Add `encoding=True` to `LexborHTMLParser`, which detects the encoding of `bytes` input and
+  transcodes it to UTF-8 before parsing.
 
 ## Migrating off `parse_fragment()`
 

@@ -330,6 +330,19 @@ cdef class LexborHTMLParser:
     @staticmethod
     cdef LexborHTMLParser from_document(lxb_html_document_t * document, bytes raw_html)
 
+cdef extern from "lexbor/html/encoding.h" nogil:
+    ctypedef struct lxb_html_encoding_t:
+        pass
+
+    lxb_html_encoding_t *lxb_html_encoding_create()
+    lxb_html_encoding_t *lxb_html_encoding_destroy(lxb_html_encoding_t *em, bint self_destroy)
+    const lxb_char_t *lxb_html_encoding_prescan(
+        lxb_html_encoding_t *em,
+        const lxb_char_t *data,
+        const lxb_char_t *end,
+        size_t *out_length
+    )
+
 cdef extern from "lexbor/dom/dom.h" nogil:
     ctypedef enum lexbor_action_t:
         LEXBOR_ACTION_OK    = 0x00

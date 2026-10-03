@@ -632,6 +632,7 @@ cdef class LexborNode:
         {'data': None, 'id': 'my_id'}
         """
         cdef lxb_dom_attr_t *attr
+        cdef const lxb_char_t *name
         cdef size_t str_len = 0
         cdef size_t value_len = 0
         attributes = dict()
@@ -642,7 +643,12 @@ cdef class LexborNode:
         attr = lxb_dom_element_first_attribute_noi(<lxb_dom_element_t *> self.node)
 
         while attr != NULL:
-            key = _decode_utf8(lxb_dom_attr_qualified_name(attr, &str_len), str_len)
+            # N.B. `str_len` is read in the same expression that fills it in via
+            # `&str_len`. C leaves the order in which call arguments are evaluated
+            # unspecified, so GCC evaluates `str_len` first and every name came out
+            # truncated to the previous attribute's length. Sequence the two.
+            name = lxb_dom_attr_qualified_name(attr, &str_len)
+            key = _decode_utf8(name, str_len)
             value = lxb_dom_attr_value_noi(attr, &value_len)
 
             if value:

@@ -50,41 +50,6 @@ usually when heavily modifying the tree.
 - Add `encoding=True` to `LexborHTMLParser`, which detects the encoding of `bytes` input and
   transcodes it to UTF-8 before parsing.
 
-## Migrating off `parse_fragment()`
-
-`parse_fragment()` guessed whether its input was a whole document or a fragment by scanning the
-markup for `<html>`, `<head>` and `<body>`, then parsed it as a document and stripped the tags it
-decided were synthetic. That guess was wrong in ways that were hard to predict: uppercase tags were
-never recognised (`<HTML>` looked like a fragment), tags appearing inside text or comments were
-counted, and the caller had no way to say which behaviour it wanted. The HTML Standard already
-defines the answer, and Lexbor already implements it, so the guessing layer is gone.
-
-Use `LexborHTMLParser(html, is_fragment=True)` and read the tree off the parser:
-
-| Before                                              | After                                                            |
-| --------------------------------------------------- | ---------------------------------------------------------------- |
-| `parse_fragment(html)[0]`                            | `LexborHTMLParser(html, is_fragment=True).root`                   |
-| `[n for n in parse_fragment(html)]`                  | `list(LexborHTMLParser(html, is_fragment=True).root.iter(include_text=True))` |
-| `node = parse_fragment(html)[0]`                     | `parser = LexborHTMLParser(html, is_fragment=True)`<br>`node = parser.root` |
-| `create_tag("div")`                                  | unchanged, or `LexborHTMLParser("<div></div>", is_fragment=True).root` |
-
-The differences worth knowing:
-
-- When `is_fragment=True`, `parser.html` returns the fragment markup as written, with no
-  `<html>`, `<head>` or `<body>` wrappers. `parser.head` and `parser.body` are `None`.
-- `parser.root` is the first top-level node. To reach the rest, walk the fragment wrapper via
-  `parser.root.iter(include_text=True)` for the top-level nodes, or use `parser.css()` /
-  `parser.text()` / `parser.html_pretty()`, which already search and render the whole fragment.
-- Input that contains `<html>`, `<head>` or `<body>` is parsed as a fragment, so those tags are
-  dropped rather than kept as elements; their content is kept. `parse_fragment()` instead returned
-  the `<html>` element as the single node in that case. Pass `is_fragment=False` and use
-  `parser.root` to get that behaviour:
-
-  ```python
-  # parse_fragment("<html><body><p>x</p></body></html>")[0].tag  ->  'html'
-  LexborHTMLParser("<html><body><p>x</p></body></html>").root.tag  ->  'html'
-  ```
-
 # Version 0.4.13
 
 - Support lexbor-only builds with `--disable-modest`

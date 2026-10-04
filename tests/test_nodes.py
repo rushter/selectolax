@@ -12,25 +12,18 @@ We'are testing only our own code.
 Many functionality are already tested in the Lexbor engine, so there is no reason to test every case.
 """
 
-_PARSERS = (LexborHTMLParser,)
-
-_PARSERS_PARAMETRIZER = (
-    "parser",
-    _PARSERS,
-)
 
 _NODE_ID_CASES = [
-    ("<div id='my_node'></div>", "my_node", LexborHTMLParser),
-    ("<div></div>", None, LexborHTMLParser),
+    ("<div id='my_node'></div>", "my_node"),
+    ("<div></div>", None),
 ]
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_selector(parser):
+def test_selector():
     html = "<span></span><div><p id='p3'>text</p></div><p></p>"
     selector = "p#p3"
 
-    for node in parser(html).css(selector):
+    for node in LexborHTMLParser(html).css(selector):
         assert node.text() == "text"
         assert node.tag == "p"
         assert node.parent.tag == "div"
@@ -39,126 +32,114 @@ def test_selector(parser):
         assert node.parent.last_child.attributes["id"] == "p3"
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_css_multiple_matches(parser):
+def test_css_multiple_matches():
     html = "<div></div><div></div><div></div>"
-    assert len(parser(html).css("div")) == 3
+    assert len(LexborHTMLParser(html).css("div")) == 3
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_css_matches(parser):
+def test_css_matches():
     html = "<div></div><div></div><div></div>"
-    assert parser(html).css_matches("div")
+    assert LexborHTMLParser(html).css_matches("div")
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_any_css_matches(parser):
+def test_any_css_matches():
     html = "<div></div><span></span><div></div>"
-    assert parser(html).any_css_matches(("h1", "span"))
+    assert LexborHTMLParser(html).any_css_matches(("h1", "span"))
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_css_one(parser):
+def test_css_one():
     html = "<span></span><div><p class='p3'>text</p><p class='p3'>sd</p></div><p></p>"
 
     selector = ".s3"
-    assert parser(html).css_first(selector) is None
+    assert LexborHTMLParser(html).css_first(selector) is None
 
     selector = "p.p3"
-    assert parser(html).css_first(selector).text() == "text"
+    assert LexborHTMLParser(html).css_first(selector).text() == "text"
 
     with pytest.raises(ValueError):
-        parser(html).css_first(selector, strict=True)
+        LexborHTMLParser(html).css_first(selector, strict=True)
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_text_when_html_is_empty(parser):
-    html_parser = parser("")
+def test_text_when_html_is_empty():
+    html_parser = LexborHTMLParser("")
 
     assert html_parser.text() == ""
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_css_first_default(parser):
+def test_css_first_default():
     html = "<span></span><div><p class='p3'>text</p><p class='p3'>sd</p></div><p></p>"
     selector = ".s3"
-    assert parser(html).css_first(selector, default="lorem ipsum") == "lorem ipsum"
+    assert (
+        LexborHTMLParser(html).css_first(selector, default="lorem ipsum")
+        == "lorem ipsum"
+    )
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_id_property(parser):
+def test_id_property():
     html = "<p id='main_text'>text</p>"
-    assert parser(html).css_first("p").id == "main_text"
+    assert LexborHTMLParser(html).css_first("p").id == "main_text"
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_tag_property(parser):
+def test_tag_property():
     html = "<h1>text</h1>"
-    assert parser(html).css_first("h1").tag == "h1"
+    assert LexborHTMLParser(html).css_first("h1").tag == "h1"
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_attributes(parser):
+def test_attributes():
     html = "<div><p id='p3'>text</p></div>"
     selector = "p#p3"
-    for node in parser(html).css(selector):
+    for node in LexborHTMLParser(html).css(selector):
         assert "id" in node.attributes
         assert node.attributes["id"] == "p3"
 
     html = "<div><p attr>text</p></div>"
     selector = "p#p3"
-    for node in parser(html).css(selector):
+    for node in LexborHTMLParser(html).css(selector):
         assert "attr" in node.attributes
         assert node.attributes["attr"] is None
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_decompose(parser):
+def test_decompose():
     html = "<body><div><p id='p3'>text</p></div></body>"
-    html_parser = parser(html)
+    html_parser = LexborHTMLParser(html)
 
     for node in html_parser.tags("p"):
         node.decompose()
     assert html_parser.body.child.html == "<div></div>"
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_html_property(parser):
+def test_html_property():
     html = "<body>Hi there</body>"
-    html_parser = parser(html)
+    html_parser = LexborHTMLParser(html)
     assert html_parser.body.child.html == "Hi there"
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_root_property(parser):
+def test_root_property():
     html = "<body>Hi there</body>"
-    html_parser = parser(html)
+    html_parser = LexborHTMLParser(html)
     assert html_parser.root.html == "<html><head></head><body>Hi there</body></html>"
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_head_property(parser):
+def test_head_property():
     html = """
     <html lang="en">
         <head><title>rushter.com</title></head>
         <body></body>
     </html>
     """
-    html_parser = parser(html)
+    html_parser = LexborHTMLParser(html)
     assert html_parser.head.html == "<head><title>rushter.com</title></head>"
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_body_property(parser):
+def test_body_property():
     html = "<body>Hi there</body>"
-    html_parser = parser(html)
+    html_parser = LexborHTMLParser(html)
     assert html_parser.body.html == "<body>Hi there</body>"
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_strip_tags(parser):
+def test_strip_tags():
     html = "<body><div></div><script></script></body>"
-    html_parser = parser(html)
+    html_parser = LexborHTMLParser(html)
     html_parser.root.strip_tags(["div", "script"])
     assert html_parser.html == "<html><head></head><body></body></html>"
 
@@ -166,17 +147,15 @@ def test_strip_tags(parser):
         html_parser.strip_tags(1)
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_malformed_attributes(parser):
+def test_malformed_attributes():
     html = '<div> <meta name="description" content="ÐÐ°Ñ"Ð " /></div>'
-    html_parser = parser(html)
+    html_parser = LexborHTMLParser(html)
 
     for tag in html_parser.tags("meta"):
         assert tag
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_iter_with_text(parser):
+def test_iter_with_text():
     html = """
     <div id="description">
         <h1>Title</h1>
@@ -185,7 +164,7 @@ def test_iter_with_text(parser):
         <img scr="image.jpg">
     </div>
     """
-    html_parser = parser(html)
+    html_parser = LexborHTMLParser(html)
     expected_tags = ["-text", "h1", "-text", "div", "-text", "img", "-text"]
     actual_tags = [
         node.tag
@@ -194,11 +173,10 @@ def test_iter_with_text(parser):
     assert expected_tags == actual_tags
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_text_deep_gh61(parser):
+def test_text_deep_gh61():
     html = """<div>this is a test <h1>Heading</h1></div>"""
     output = []
-    tree = parser(html)
+    tree = LexborHTMLParser(html)
     for node in tree.root.traverse(include_text=True):
         if node.tag == "-text":
             text = node.text(deep=True)
@@ -207,8 +185,7 @@ def test_text_deep_gh61(parser):
     assert output == ["this is a test ", "Heading"]
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_iter_no_text(parser):
+def test_iter_no_text():
     html = """
     <div id="description">
         <h1>Title</h1>
@@ -217,7 +194,7 @@ def test_iter_no_text(parser):
         <img scr="image.jpg">
     </div>
     """
-    html_parser = parser(html)
+    html_parser = LexborHTMLParser(html)
     expected_tags = ["h1", "div", "img"]
     actual_tags = [
         node.tag
@@ -226,16 +203,15 @@ def test_iter_no_text(parser):
     assert expected_tags == actual_tags
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
 @pytest.mark.parametrize("remover", ["decompose", "remove", "unwrap"])
-def test_iter_visits_every_child_when_removed_mid_iteration(parser, remover):
+def test_iter_visits_every_child_when_removed_mid_iteration(remover):
     """Removing the yielded node must not end the iteration early.
 
     ``lxb_dom_node_remove`` clears the ``next`` pointer of the node it unlinks,
     so reading ``node.next`` after resuming from the ``yield`` used to truncate
     the walk to the first child and silently skip the rest.
     """
-    tree = parser("<div><p>1</p><p>2</p><p>3</p><p>4</p></div>")
+    tree = LexborHTMLParser("<div><p>1</p><p>2</p><p>3</p><p>4</p></div>")
     div = tree.css_first("div")
 
     seen = []
@@ -247,10 +223,9 @@ def test_iter_visits_every_child_when_removed_mid_iteration(parser, remover):
     assert tree.css("p") == []
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_iter_reports_all_children_when_some_are_removed_mid_iteration(parser):
+def test_iter_reports_all_children_when_some_are_removed_mid_iteration():
     """Skipping nodes must not disturb the traversal of their siblings."""
-    tree = parser("<div><p>1</p><p>2</p><p>3</p><p>4</p></div>")
+    tree = LexborHTMLParser("<div><p>1</p><p>2</p><p>3</p><p>4</p></div>")
     div = tree.css_first("div")
 
     seen = []
@@ -263,13 +238,12 @@ def test_iter_reports_all_children_when_some_are_removed_mid_iteration(parser):
     assert [node.text() for node in tree.css("p")] == ["2", "4"]
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_node_navigation(parser):
+def test_node_navigation():
     html = (
         '<div id="parent"><div id="prev"></div><div id="test_node"><h1 id="child">Title</h1>'
         '<div>foo</div><img scr="image.jpg"></div><div id="next"></div></div>'
     )
-    html_parser = parser(html)
+    html_parser = LexborHTMLParser(html)
     main_node = html_parser.css_first("#test_node")
     assert main_node.prev.id == "prev"
     assert main_node.next.id == "next"
@@ -278,43 +252,39 @@ def test_node_navigation(parser):
 
 
 @pytest.mark.parametrize(
-    "html,expected, parser",
+    "html, expected",
     _NODE_ID_CASES,
 )
-def test_get_node_id(html, expected, parser):
-    html_parser = parser(html)
+def test_get_node_id(html, expected):
+    html_parser = LexborHTMLParser(html)
     node = html_parser.css_first("div")
     assert node.id == expected
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_html_attribute_works_for_text(parser):
+def test_html_attribute_works_for_text():
     html = "<div>foo bar</div>"
-    html_parser = parser(html)
+    html_parser = LexborHTMLParser(html)
     node = html_parser.css_first("div").child
     assert node.html == "foo bar"
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_text_node_returns_text(parser):
+def test_text_node_returns_text():
     html = "<div>foo bar</div>"
-    html_parser = parser(html)
+    html_parser = LexborHTMLParser(html)
     node = html_parser.css_first("div").child
     assert node.text(deep=False) == "foo bar"
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_text_node_returns_text_parent(parser):
+def test_text_node_returns_text_parent():
     html = "<div>foo bar</div>"
-    html_parser = parser(html)
+    html_parser = LexborHTMLParser(html)
     node = html_parser.css_first("div")
     assert node.text(deep=False) == "foo bar"
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_unwrap(parser):
+def test_unwrap():
     html = '<a id="url" href="https://rushter.com/">I linked to <i>rushter.com</i></a>'
-    html_parser = parser(html)
+    html_parser = LexborHTMLParser(html)
     node = html_parser.css_first("i")
     node.unwrap()
     assert (
@@ -323,8 +293,7 @@ def test_unwrap(parser):
     )
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_unwrap_detaches_node_from_its_children(parser):
+def test_unwrap_detaches_node_from_its_children():
     """An unwrapped node must stop referring to the children it just moved.
 
     ``lxb_dom_node_insert_before()`` re-parents without unlinking from the old
@@ -333,7 +302,7 @@ def test_unwrap_detaches_node_from_its_children(parser):
     own parent. Those nodes then belonged to two child lists at once, and
     reading or serializing the unwrapped node walked a cycle and segfaulted.
     """
-    html_parser = parser("<html><body><p>1</p><p>2</p></body></html>")
+    html_parser = LexborHTMLParser("<html><body><p>1</p><p>2</p></body></html>")
     body = html_parser.body
     body.unwrap()
 
@@ -349,16 +318,14 @@ def test_unwrap_detaches_node_from_its_children(parser):
     assert [child.tag for child in html_node.iter()] == ["head", "p", "p"]
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_unwrap_preserves_child_order(parser):
-    html_parser = parser("<div>a<b>1</b><i>2</i><u>3</u>z</div>")
+def test_unwrap_preserves_child_order():
+    html_parser = LexborHTMLParser("<div>a<b>1</b><i>2</i><u>3</u>z</div>")
     html_parser.css_first("div").unwrap()
     assert html_parser.body.inner_html == "a<b>1</b><i>2</i><u>3</u>z"
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_unwrap_moved_children_are_not_duplicated(parser):
-    html_parser = parser("<div><p><b>1</b></p><p><b>2</b></p></div>")
+def test_unwrap_moved_children_are_not_duplicated():
+    html_parser = LexborHTMLParser("<div><p><b>1</b></p><p><b>2</b></p></div>")
     html_parser.css_first("div").unwrap()
 
     assert html_parser.body.inner_html == "<p><b>1</b></p><p><b>2</b></p>"
@@ -370,10 +337,9 @@ def test_unwrap_moved_children_are_not_duplicated(parser):
         )
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_unwrap_empty_tag(parser):
+def test_unwrap_empty_tag():
     html = '<a id="url" href="https://rushter.com/">I linked to rushter.com<i></i></a>'
-    html_parser = parser(html)
+    html_parser = LexborHTMLParser(html)
     node = html_parser.css_first("i")
     node.unwrap(delete_empty=True)
     assert (
@@ -382,28 +348,27 @@ def test_unwrap_empty_tag(parser):
     )
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_unwrap_tags(parser):
-    html_parser = parser("<div><a href=>Hello</a> <i>world</i>!</div>")
+def test_unwrap_tags():
+    html_parser = LexborHTMLParser("<div><a href=>Hello</a> <i>world</i>!</div>")
     html_parser.body.unwrap_tags(["i", "a"])
     assert html_parser.body.html == "<body><div>Hello world!</div></body>"
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_unwrap_empty_tags(parser):
-    html_parser = parser("<div><a href=>Hello</a> <i>world</i>!<i></i><a></a></div>")
+def test_unwrap_empty_tags():
+    html_parser = LexborHTMLParser(
+        "<div><a href=>Hello</a> <i>world</i>!<i></i><a></a></div>"
+    )
     html_parser.body.unwrap_tags(["i", "a"], delete_empty=True)
     assert html_parser.body.html == "<body><div>Hello world!</div></body>"
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_unwraps_multiple_child_nodes(parser):
+def test_unwraps_multiple_child_nodes():
     html = """
     <div id="test">
         foo <span>bar <i>Lor<span>ems</span></i> I <span class='p3'>dummy <div>text</div></span></span>
     </div>
     """
-    html_parser = parser(html)
+    html_parser = LexborHTMLParser(html)
     html_parser.body.unwrap_tags(["span", "i"])
     assert (
         html_parser.body.child.html
@@ -411,14 +376,13 @@ def test_unwraps_multiple_child_nodes(parser):
     )
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_unwraps_multiple_child_nodes_with_empty(parser):
+def test_unwraps_multiple_child_nodes_with_empty():
     html = """
     <div id="test">
         foo <span>bar <i>Lor<span>ems</span></i> I <span class='p3'>dummy<span><i></i></span> <div>text</div></span></span>
     </div>
     """
-    html_parser = parser(html)
+    html_parser = LexborHTMLParser(html)
     html_parser.body.unwrap_tags(["span", "i"], delete_empty=True)
     assert (
         html_parser.body.child.html
@@ -426,17 +390,15 @@ def test_unwraps_multiple_child_nodes_with_empty(parser):
     )
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_replace_with(parser):
-    html_parser = parser('<div>Get <img src="" alt="Laptop"></div>')
+def test_replace_with():
+    html_parser = LexborHTMLParser('<div>Get <img src="" alt="Laptop"></div>')
     img = html_parser.css_first("img")
     img.replace_with(img.attributes.get("alt", ""))
     assert html_parser.body.child.html == "<div>Get Laptop</div>"
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_replace_with_multiple_nodes(parser):
-    html_parser = parser(
+def test_replace_with_multiple_nodes():
+    html_parser = LexborHTMLParser(
         '<div>Get <span alt="Laptop"><img src="/jpg"> <div>/div></span></div>'
     )
     img = html_parser.css_first("span")
@@ -444,12 +406,11 @@ def test_replace_with_multiple_nodes(parser):
     assert html_parser.body.child.html == "<div>Get Laptop</div>"
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_node_replace_with(parser):
-    html_parser = parser(
+def test_node_replace_with():
+    html_parser = LexborHTMLParser(
         '<div>Get <span alt="Laptop"><img src="/jpg"> <div></div></span></div>'
     )
-    html_parser2 = parser("<div>Test</div>")
+    html_parser2 = LexborHTMLParser("<div>Test</div>")
     img_node = html_parser.css_first("img")
     img_node.replace_with(html_parser2.body.child)
     assert (
@@ -458,26 +419,23 @@ def test_node_replace_with(parser):
     )
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_replace_with_empty_string(parser):
-    html_parser = parser('<div>Get <img src="" alt="Laptop"></div>')
+def test_replace_with_empty_string():
+    html_parser = LexborHTMLParser('<div>Get <img src="" alt="Laptop"></div>')
     img = html_parser.css_first("img")
     img.replace_with("")
     assert html_parser.body.child.html == "<div>Get </div>"
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_replace_with_invalid_value_passed_exception(parser):
+def test_replace_with_invalid_value_passed_exception():
     with pytest.raises(TypeError) as excinfo:
-        html_parser = parser('<div>Get <img src="" alt="Laptop"></div>')
+        html_parser = LexborHTMLParser('<div>Get <img src="" alt="Laptop"></div>')
         img = html_parser.css_first("img")
         img.replace_with(None)
     assert "No matching signature found" in str(excinfo.value)
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_insert_before(parser):
-    html_parser = parser('<div>Get <img src="" alt="Laptop"></div>')
+def test_insert_before():
+    html_parser = LexborHTMLParser('<div>Get <img src="" alt="Laptop"></div>')
     img = html_parser.css_first("img")
     img.insert_before(img.attributes.get("alt", ""))
     assert (
@@ -485,12 +443,11 @@ def test_insert_before(parser):
     )
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_node_insert_before(parser):
-    html_parser = parser(
+def test_node_insert_before():
+    html_parser = LexborHTMLParser(
         '<div>Get <span alt="Laptop"><img src="/jpg"> <div></div></span></div>'
     )
-    html_parser2 = parser("<div>Test</div>")
+    html_parser2 = LexborHTMLParser("<div>Test</div>")
     img_node = html_parser.css_first("img")
     img_node.insert_before(html_parser2.body.child)
     assert (
@@ -499,9 +456,8 @@ def test_node_insert_before(parser):
     )
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_insert_after(parser):
-    html_parser = parser('<div>Get <img src="" alt="Laptop"></div>')
+def test_insert_after():
+    html_parser = LexborHTMLParser('<div>Get <img src="" alt="Laptop"></div>')
     img = html_parser.css_first("img")
     img.insert_after(img.attributes.get("alt", ""))
     assert (
@@ -509,12 +465,11 @@ def test_insert_after(parser):
     )
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_node_insert_after(parser):
-    html_parser = parser(
+def test_node_insert_after():
+    html_parser = LexborHTMLParser(
         '<div>Get <span alt="Laptop"><img src="/jpg"> <div></div></span></div>'
     )
-    html_parser2 = parser("<div>Test</div>")
+    html_parser2 = LexborHTMLParser("<div>Test</div>")
     img_node = html_parser.css_first("img")
     img_node.insert_after(html_parser2.body.child)
     assert (
@@ -523,18 +478,18 @@ def test_node_insert_after(parser):
     )
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_insert_child(parser):
-    html_parser = parser('<div>Get <img src=""></div>')
+def test_insert_child():
+    html_parser = LexborHTMLParser('<div>Get <img src=""></div>')
     div = html_parser.css_first("div")
     div.insert_child("Laptop")
     assert html_parser.body.child.html == '<div>Get <img src="">Laptop</div>'
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_node_insert_child(parser):
-    html_parser = parser('<div>Get <span alt="Laptop"> <div>Laptop</div> </span></div>')
-    html_parser2 = parser("<div>Test</div>")
+def test_node_insert_child():
+    html_parser = LexborHTMLParser(
+        '<div>Get <span alt="Laptop"> <div>Laptop</div> </span></div>'
+    )
+    html_parser2 = LexborHTMLParser("<div>Test</div>")
     span_node = html_parser.css_first("span")
     span_node.insert_child(html_parser2.body.child)
     assert (
@@ -543,33 +498,29 @@ def test_node_insert_child(parser):
     )
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_attrs_adds_attribute(parser):
-    html_parser = parser('<div id="id"></div>')
+def test_attrs_adds_attribute():
+    html_parser = LexborHTMLParser('<div id="id"></div>')
     node = html_parser.css_first("div")
     node.attrs["new_att"] = "new"
     assert node.attributes == {"id": "id", "new_att": "new"}
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_attrs_sets_attribute(parser):
-    html_parser = parser('<div id="id"></div>')
+def test_attrs_sets_attribute():
+    html_parser = LexborHTMLParser('<div id="id"></div>')
     node = html_parser.css_first("div")
     node.attrs["id"] = "new_id"
     assert node.attributes == {"id": "new_id"}
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_attrs_removes_attribute(parser):
-    html_parser = parser('<div id="id"></div>')
+def test_attrs_removes_attribute():
+    html_parser = LexborHTMLParser('<div id="id"></div>')
     node = html_parser.css_first("div")
     del node.attrs["id"]
     assert node.attributes == {}
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_attrs_test_dict_features(parser):
-    html_parser = parser('<div id="id" v data-id="foo"></div>')
+def test_attrs_test_dict_features():
+    html_parser = LexborHTMLParser('<div id="id" v data-id="foo"></div>')
     node = html_parser.css_first("div")
     node.attrs["new_att"] = "new"
     assert list(node.attrs.keys()) == ["id", "v", "data-id", "new_att"]
@@ -580,12 +531,13 @@ def test_attrs_test_dict_features(parser):
     assert "vid" not in node.attrs
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_attrs_keep_document_alive(parser):
+def test_attrs_keep_document_alive():
     # LexborAttributes holds a borrowed pointer into the owning document, so it
     # has to keep the parser alive by itself. Here the parser is a temporary and
     # is freed by reference counting as soon as `.attrs` is evaluated.
-    attrs = parser('<div id="id" data-x="1">text</div>').css_first("div").attrs
+    attrs = (
+        LexborHTMLParser('<div id="id" data-x="1">text</div>').css_first("div").attrs
+    )
 
     assert list(attrs) == ["id", "data-x"]
     assert attrs["id"] == "id"
@@ -603,29 +555,26 @@ _SHARED_LOCAL_NAME = [
 ]
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_attributes_keeps_both_names_of_a_shared_local_name(parser):
+def test_attributes_keeps_both_names_of_a_shared_local_name():
     for html, selector in _SHARED_LOCAL_NAME:
-        node = parser(html).css_first(selector)
+        node = LexborHTMLParser(html).css_first(selector)
         assert node.attributes == {"href": "/plain", "xlink:href": "/xlinked"}, html
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_attrs_iteration_yields_each_attribute_once(parser):
+def test_attrs_iteration_yields_each_attribute_once():
     for html, selector in _SHARED_LOCAL_NAME:
-        node = parser(html).css_first(selector)
+        node = LexborHTMLParser(html).css_first(selector)
         assert sorted(node.attrs) == ["href", "xlink:href"], html
         assert len(node.attrs) == 2, html
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_attrs_keys_round_trip_through_lookup(parser):
+def test_attrs_keys_round_trip_through_lookup():
     # Whatever iteration yields has to address the attribute it names, whichever
     # order the two attributes appear in. lxb_dom_element_attr_by_name() accepts
     # a match on either the local or the qualified name, so it could answer a
     # lookup of "href" with the value of "xlink:href".
     for html, selector in _SHARED_LOCAL_NAME:
-        node = parser(html).css_first(selector)
+        node = LexborHTMLParser(html).css_first(selector)
         attributes = node.attributes
 
         for key in node.attrs:
@@ -635,36 +584,33 @@ def test_attrs_keys_round_trip_through_lookup(parser):
         assert dict(node.attrs.items()) == attributes, html
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_attrs_items_and_values_agree_with_lookup(parser):
+def test_attrs_items_and_values_agree_with_lookup():
     # items() and values() read each value off the attribute it belongs to instead
     # of resolving every name again, so they still have to answer as __getitem__
     # does: valueless is None, empty is an empty string.
-    node = parser('<div id="a" bare empty=""></div>').css_first("div")
+    node = LexborHTMLParser('<div id="a" bare empty=""></div>').css_first("div")
 
     assert list(node.attrs.items()) == [("id", "a"), ("bare", None), ("empty", "")]
     assert list(node.attrs.values()) == ["a", None, ""]
     assert dict(node.attrs.items()) == node.attributes
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_attrs_removes_the_attribute_it_looked_up(parser):
+def test_attrs_removes_the_attribute_it_looked_up():
     # __delitem__ used to re-resolve the name through lexbor, which could drop
     # the attribute sharing a local name instead of the requested one.
     for html, selector in _SHARED_LOCAL_NAME:
-        node = parser(html).css_first(selector)
+        node = LexborHTMLParser(html).css_first(selector)
         del node.attrs["href"]
 
         assert node.attributes == {"xlink:href": "/xlinked"}, html
         assert "href" not in node.attrs, html
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_attrs_prefixed_name_is_not_reachable_by_its_local_name(parser):
+def test_attrs_prefixed_name_is_not_reachable_by_its_local_name():
     # Only `xlink:href` is set, so there is no `href` attribute to find. As with
     # Element.getAttribute() in the DOM standard, a lookup matches the qualified
     # name and must not fall back to the local name.
-    node = parser('<div xlink:href="/xlinked"></div>').css_first("div")
+    node = LexborHTMLParser('<div xlink:href="/xlinked"></div>').css_first("div")
 
     assert node.attributes == {"xlink:href": "/xlinked"}
     assert node.attrs.get("xlink:href") == "/xlinked"
@@ -674,9 +620,8 @@ def test_attrs_prefixed_name_is_not_reachable_by_its_local_name(parser):
         del node.attrs["href"]
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_attrs_lookup_stays_case_insensitive(parser):
-    node = parser('<div DATA-X="1" data-y="2"></div>').css_first("div")
+def test_attrs_lookup_stays_case_insensitive():
+    node = LexborHTMLParser('<div DATA-X="1" data-y="2"></div>').css_first("div")
 
     assert node.attributes == {"data-x": "1", "data-y": "2"}
     assert node.attrs["DATA-X"] == "1"
@@ -684,9 +629,8 @@ def test_attrs_lookup_stays_case_insensitive(parser):
     assert "DATA-X" in node.attrs
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_attrs_del_removes_missing_attribute(parser):
-    node = parser('<div id="id"></div>').css_first("div")
+def test_attrs_del_removes_missing_attribute():
+    node = LexborHTMLParser('<div id="id"></div>').css_first("div")
 
     del node.attrs["id"]
     with pytest.raises(KeyError):
@@ -695,11 +639,10 @@ def test_attrs_del_removes_missing_attribute(parser):
         del node.attrs["unknown"]
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_attrs_del_of_id_and_class_updates_the_tree(parser):
+def test_attrs_del_of_id_and_class_updates_the_tree():
     # lxb_dom_element_attr_remove() clears the element's cached id/class
     # pointers, so a removed id or class must stop matching selectors.
-    html_parser = parser('<div id="id" class="cls"></div>')
+    html_parser = LexborHTMLParser('<div id="id" class="cls"></div>')
     node = html_parser.css_first("div")
 
     del node.attrs["id"]
@@ -711,25 +654,23 @@ def test_attrs_del_of_id_and_class_updates_the_tree(parser):
     assert html_parser.css_first("div").attributes == {}
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_traverse(parser):
+def test_traverse():
     html = (
         '<div id="parent"><div id="prev"></div><div id="test_node"><h1 id="child">Title</h1>'
         '<div>foo</div><img scr="image.jpg"></div><div id="next"></div></div>'
     )
-    html_parser = parser(html)
+    html_parser = LexborHTMLParser(html)
     actual = [node.tag for node in html_parser.root.traverse()]
     expected = ["html", "head", "body", "div", "div", "div", "h1", "div", "img", "div"]
     assert actual == expected
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_traverse_with_text(parser):
+def test_traverse_with_text():
     html = (
         '<div id="parent"><div id="prev"></div><div id="test_node"><h1 id="child">Title</h1>'
         '<div>foo</div><img scr="image.jpg"></div><div id="next"></div></div>'
     )
-    html_parser = parser(html)
+    html_parser = LexborHTMLParser(html)
     actual = [node.tag for node in html_parser.root.traverse(include_text=True)]
     expected = [
         "html",
@@ -748,12 +689,11 @@ def test_traverse_with_text(parser):
     assert actual == expected
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_node_comparison(parser):
+def test_node_comparison():
     html = """
         <div>H3ll0</div><div id='tt'><p id='stext'>Lorem ipsum dolor sit amet, ea quo modus meliore platonem.</p></div>
     """
-    html_parser = parser(html)
+    html_parser = LexborHTMLParser(html)
     nodes = [node for node in html_parser.root.traverse(include_text=False)]
     same_node_path_one = nodes[-1].parent
     same_node_path_two = nodes[-2]
@@ -761,27 +701,24 @@ def test_node_comparison(parser):
     assert same_node_path_one == same_node_path_two == same_node_path_three
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_node_comprassion_with_strings(parser):
+def test_node_comprassion_with_strings():
     html = """<div id="test"></div>"""
-    html_parser = parser(html)
+    html_parser = LexborHTMLParser(html)
     node = html_parser.css_first("#test")
     assert node == '<div id="test"></div>'
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_node_comparison_fails(parser):
+def test_node_comparison_fails():
     html = """<div id="test"></div>"""
-    html_parser = parser(html)
+    html_parser = LexborHTMLParser(html)
     node = html_parser.css_first("#test")
 
     assert node is not None
     assert node != 123
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_adavanced_selector(parser):
-    html_parser = parser("""
+def test_adavanced_selector():
+    html_parser = LexborHTMLParser("""
     <script>
      var super_value = 100;
     </script>
@@ -790,9 +727,8 @@ def test_adavanced_selector(parser):
     assert selector.any_matches
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_script_contain(parser):
-    html_parser = parser("""
+def test_script_contain():
+    html_parser = LexborHTMLParser("""
     <script>
      var super_value = 100;
     </script>
@@ -800,35 +736,33 @@ def test_script_contain(parser):
     assert html_parser.scripts_contain("super_value")
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_hash_nodes(parser):
-    tree = parser("""<div><p><strong>J</strong>ohn</p><p>Doe</p></div>""")
+def test_hash_nodes():
+    tree = LexborHTMLParser("""<div><p><strong>J</strong>ohn</p><p>Doe</p></div>""")
     node = tree.css_first("div")
     assert node.mem_id == hash(node)
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_srcs_contain(parser):
-    html_parser = parser("""<script src="http://google.com/analytics.js"></script>""")
+def test_srcs_contain():
+    html_parser = LexborHTMLParser(
+        """<script src="http://google.com/analytics.js"></script>"""
+    )
     assert html_parser.script_srcs_contain(("analytics.js",))
 
 
-@pytest.mark.parametrize("parser", _PARSERS)
-def test_content_method(parser):
+def test_content_method():
     html = """
     <div>
         <div id="main">SuperTest</div>
     </div>
     """
-    tree = parser(html)
+    tree = LexborHTMLParser(html)
     assert tree.css_first("#main").child.text_content == "SuperTest"
     assert tree.css_first("#main").text_content is None
 
 
-@pytest.mark.parametrize("parser", _PARSERS)
-def test_merge_text_nodes(parser):
+def test_merge_text_nodes():
     html = """<div><p><strong>J</strong>ohn</p><p>Doe</p></div>"""
-    tree = parser(html)
+    tree = LexborHTMLParser(html)
     tree.unwrap_tags(["strong"])
     node = tree.css_first("div", strict=True)
     node.merge_text_nodes()
@@ -837,8 +771,7 @@ def test_merge_text_nodes(parser):
     assert text == "John Doe"
 
 
-@pytest.mark.parametrize("parser", _PARSERS)
-def test_merge_text_nodes_complex(parser):
+def test_merge_text_nodes_complex():
     from textwrap import dedent
 
     html = dedent("""
@@ -853,7 +786,7 @@ def test_merge_text_nodes_complex(parser):
             </div>
         </article>
     """).strip()
-    tree = parser(html)
+    tree = LexborHTMLParser(html)
     tree.unwrap_tags(["em", "strong", "span", "b", "i"])
     root = tree.css_first("article", strict=True)
     root.merge_text_nodes()
@@ -863,10 +796,9 @@ def test_merge_text_nodes_complex(parser):
     assert root.css_first("section > div").text() == "with more nesting here"
 
 
-@pytest.mark.parametrize("parser", _PARSERS)
-def test_merge_text_nodes_three_plus(parser):
+def test_merge_text_nodes_three_plus():
     html = """<div><em>O</em><strong>n</strong><b>e</b> <i>T</i><span>w</span><u>o</u> <small>T</small><big>h</big><mark>r</mark><sub>e</sub><sup>e</sup></div>"""
-    tree = parser(html)
+    tree = LexborHTMLParser(html)
     tree.unwrap_tags(
         ["em", "strong", "b", "i", "span", "u", "small", "big", "mark", "sub", "sup"]
     )
@@ -875,8 +807,7 @@ def test_merge_text_nodes_three_plus(parser):
     assert div.text() == "One Two Three"
 
 
-@pytest.mark.parametrize("parser", _PARSERS)
-def test_merge_text_nodes_visits_every_sibling_subtree(parser):
+def test_merge_text_nodes_visits_every_sibling_subtree():
     """Each element sibling must be descended into, not just the first one.
 
     Guards the iterative traversal: descending into the first child and then
@@ -892,7 +823,7 @@ def test_merge_text_nodes_visits_every_sibling_subtree(parser):
         )
         + "</div>"
     )
-    tree = parser(html)
+    tree = LexborHTMLParser(html)
     tree.unwrap_tags(["b", "i"])
     root = tree.css_first("div", strict=True)
     root.merge_text_nodes()
@@ -908,27 +839,24 @@ def test_merge_text_nodes_visits_every_sibling_subtree(parser):
     assert root.css("article")[-1].text() == "p49mid49q49tail49"
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_css_first_first(parser):
+def test_css_first_first():
     html = '<h2 class="list-details__item__partial" id="js-partial">(1:1, 0:0, 0:0, 5:3)</h2>'
     selector = "h2.list-details__item__partial"
-    find_first = parser(html).css_first(selector)
+    find_first = LexborHTMLParser(html).css_first(selector)
     assert find_first.css_first(selector) is not None
 
 
-@pytest.mark.parametrize("parser", (LexborHTMLParser,))
-def test_any_css_matches_fails(parser):
+def test_any_css_matches_fails():
     html = """<h1>Test</h1>"""
-    tree = parser(html)
+    tree = LexborHTMLParser(html)
     with pytest.raises(SelectolaxError):
         tree.any_css_matches(("##",))
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_text_separator_correctness(parser):
+def test_text_separator_correctness():
     inner = "".join(f"<span>word{i}</span>" for i in range(50))
     html = f"<div>{inner}</div>"
-    tree = parser(html)
+    tree = LexborHTMLParser(html)
     node = tree.css_first("div")
 
     result = node.text(deep=True, separator=" ")
@@ -940,18 +868,16 @@ def test_text_separator_correctness(parser):
         assert part == f"word{i}"
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_text_strip_and_separator(parser):
+def test_text_strip_and_separator():
     html = "<div><p>  hello  </p><p>  world  </p></div>"
-    tree = parser(html)
+    tree = LexborHTMLParser(html)
     node = tree.css_first("div")
 
     result = node.text(deep=True, separator="|", strip=True)
     assert result == "hello|world"
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_any_attribute_longer_than_missing_attribute(parser):
+def test_any_attribute_longer_than_missing_attribute():
     html = """
     <div>
         <a href="http://very-long-url.example.com/path/to/page">with href</a>
@@ -959,16 +885,15 @@ def test_any_attribute_longer_than_missing_attribute(parser):
         <a href="short">short href</a>
     </div>
     """
-    tree = parser(html)
+    tree = LexborHTMLParser(html)
     # Must not raise TypeError despite the middle <a> having no href
     assert tree.root.select("a").any_attribute_longer_than("href", 10) is True
     assert tree.root.select("a").any_attribute_longer_than("href", 200) is False
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_any_attribute_longer_than_all_missing(parser):
+def test_any_attribute_longer_than_all_missing():
     html = "<div><a>one</a><a>two</a></div>"
-    tree = parser(html)
+    tree = LexborHTMLParser(html)
     assert tree.root.select("a").any_attribute_longer_than("href", 0) is False
 
 
@@ -1290,16 +1215,15 @@ _TEXT_EXPECTED_CASES = [
 ]
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
 @pytest.mark.parametrize(
     "html,selector,is_fragment,deep,separator,strip,skip_empty,expected",
     _TEXT_EXPECTED_CASES,
 )
 def test_text_expected_value(
-    parser, html, selector, is_fragment, deep, separator, strip, skip_empty, expected
+    html, selector, is_fragment, deep, separator, strip, skip_empty, expected
 ):
     """Pin text() to literal expected strings."""
-    node = parser(html, is_fragment=is_fragment).root
+    node = LexborHTMLParser(html, is_fragment=is_fragment).root
     assert node is not None
     if selector is not None:
         node = node.css_first(selector)
@@ -1310,7 +1234,6 @@ def test_text_expected_value(
     )
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
 @pytest.mark.parametrize("html", _TEXT_ASSEMBLY_CASES)
 @pytest.mark.parametrize("is_fragment", [False, True])
 @pytest.mark.parametrize("deep", [True, False])
@@ -1318,10 +1241,10 @@ def test_text_expected_value(
 @pytest.mark.parametrize("strip", [True, False])
 @pytest.mark.parametrize("skip_empty", [True, False])
 def test_text_matches_join_of_parts(
-    parser, html, is_fragment, deep, separator, strip, skip_empty
+    html, is_fragment, deep, separator, strip, skip_empty
 ):
     """Every combination of text() options must equal ``separator.join(parts)``."""
-    tree = parser(html, is_fragment=is_fragment)
+    tree = LexborHTMLParser(html, is_fragment=is_fragment)
     node = tree.root
     if node is None:
         pytest.skip("empty fragment has no root")
@@ -1332,10 +1255,9 @@ def test_text_matches_join_of_parts(
     )
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_text_replaces_undecodable_bytes_instead_of_raising(parser):
+def test_text_replaces_undecodable_bytes_instead_of_raising():
     """text() substitutes U+FFFD rather than raising, on both paths."""
-    node = parser(b"<div>\xff\xfe bad \x80bytes</div>").css_first("div")
+    node = LexborHTMLParser(b"<div>\xff\xfe bad \x80bytes</div>").css_first("div")
     for kwargs in ({}, {"deep": False}, {"strip": True}, {"separator": "|"}):
         result = node.text(**kwargs)
         assert isinstance(result, str)
@@ -1343,10 +1265,9 @@ def test_text_replaces_undecodable_bytes_instead_of_raising(parser):
         assert "\ufffd" in result
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_text_content_exact_for_text_nodes(parser):
+def test_text_content_exact_for_text_nodes():
     """text_content returns this node's own characters verbatim."""
-    tree = parser("<div>Super<b>Test</b></div>")
+    tree = LexborHTMLParser("<div>Super<b>Test</b></div>")
     child = tree.css_first("div").child
     assert child.is_text_node
     assert child.text_content == "Super"
@@ -1354,34 +1275,31 @@ def test_text_content_exact_for_text_nodes(parser):
     assert tree.css_first("div").text_content is None
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_text_and_text_lexbor_agree(parser):
-    tree = parser("<div>a<span>b</span>c</div>")
+def test_text_and_text_lexbor_agree():
+    tree = LexborHTMLParser("<div>a<span>b</span>c</div>")
     node = tree.css_first("div")
     assert node.text() == node.text_lexbor()
     assert tree.root.text() == tree.root.text_lexbor()
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_node_is_not_publicly_constructible(parser):
+def test_node_is_not_publicly_constructible():
     with pytest.raises(TypeError, match="cannot be instantiated directly"):
         LexborNode()
 
     with pytest.raises(TypeError, match="cannot be instantiated directly"):
         LexborNode(1)
 
-    node = parser("<div id='x'></div>").css_first("div")
+    node = LexborHTMLParser("<div id='x'></div>").css_first("div")
     assert isinstance(node, LexborNode)
     assert node.id == "x"
     assert node.clone().id == "x"
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_attributes_is_not_publicly_constructible(parser):
+def test_attributes_is_not_publicly_constructible():
     with pytest.raises(TypeError, match="cannot be instantiated directly"):
         LexborAttributes()
 
-    node = parser("<div id='x' class='y'></div>").css_first("div")
+    node = LexborHTMLParser("<div id='x' class='y'></div>").css_first("div")
     assert list(node.attrs) == ["id", "class"]
 
 
@@ -1391,14 +1309,13 @@ _SCRIPT_LOOKUP_HTML = (
 )
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_scripts_contain_is_scoped_to_the_node_it_is_called_on(parser):
+def test_scripts_contain_is_scoped_to_the_node_it_is_called_on():
     """Regression test: the cache lived on the parser but the search is per node.
 
     Both nodes live in one document and therefore shared one cache, so the
     second node answered with the first node's result.
     """
-    tree = parser(_SCRIPT_LOOKUP_HTML)
+    tree = LexborHTMLParser(_SCRIPT_LOOKUP_HTML)
     a, b = tree.css_first("#a"), tree.css_first("#b")
 
     assert a.scripts_contain("alpha") is True
@@ -1407,9 +1324,8 @@ def test_scripts_contain_is_scoped_to_the_node_it_is_called_on(parser):
     assert a.scripts_contain("beta") is False
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_script_srcs_contain_is_scoped_to_the_node_it_is_called_on(parser):
-    tree = parser(_SCRIPT_LOOKUP_HTML)
+def test_script_srcs_contain_is_scoped_to_the_node_it_is_called_on():
+    tree = LexborHTMLParser(_SCRIPT_LOOKUP_HTML)
     a, b = tree.css_first("#a"), tree.css_first("#b")
 
     assert a.script_srcs_contain(("alpha.js",)) is True
@@ -1418,10 +1334,9 @@ def test_script_srcs_contain_is_scoped_to_the_node_it_is_called_on(parser):
     assert a.script_srcs_contain(("beta.js",)) is False
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_script_lookup_does_not_depend_on_which_node_was_asked_first(parser):
+def test_script_lookup_does_not_depend_on_which_node_was_asked_first():
     """The wrong answer must not depend on the order the scopes were queried."""
-    tree = parser(_SCRIPT_LOOKUP_HTML)
+    tree = LexborHTMLParser(_SCRIPT_LOOKUP_HTML)
     b, a = tree.css_first("#b"), tree.css_first("#a")
 
     assert b.scripts_contain("alpha") is False
@@ -1430,49 +1345,46 @@ def test_script_lookup_does_not_depend_on_which_node_was_asked_first(parser):
     assert a.script_srcs_contain(("alpha.js",)) is True
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_script_contain_sees_inserted_content(parser):
+def test_script_contain_sees_inserted_content():
     """Regression test: the cache was never invalidated after a mutation."""
-    tree = parser("<div><script>a()</script></div>")
+    tree = LexborHTMLParser("<div><script>a()</script></div>")
     assert tree.scripts_contain("evil") is False
 
     tree.css_first("script").insert_child("evil")
     assert tree.scripts_contain("evil") is True
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_script_contain_stops_seeing_removed_content(parser):
-    tree = parser("<div><script>evil()</script></div>")
+def test_script_contain_stops_seeing_removed_content():
+    tree = LexborHTMLParser("<div><script>evil()</script></div>")
     assert tree.scripts_contain("evil") is True
 
     tree.css_first("script").decompose()
     assert tree.scripts_contain("evil") is False
 
-    tree = parser("<div><script>evil()</script></div>")
+    tree = LexborHTMLParser("<div><script>evil()</script></div>")
     assert tree.scripts_contain("evil") is True
     tree.css_first("script").unwrap()
     assert tree.scripts_contain("evil") is False
 
-    tree = parser("<div><script>evil()</script></div>")
+    tree = LexborHTMLParser("<div><script>evil()</script></div>")
     assert tree.scripts_contain("evil") is True
     tree.css_first("script").replace_with("nothing to see")
     assert tree.scripts_contain("evil") is False
 
-    tree = parser("<div><script>evil()</script></div>")
+    tree = LexborHTMLParser("<div><script>evil()</script></div>")
     assert tree.scripts_contain("evil") is True
     tree.strip_tags(["div"], recursive=True)
     assert tree.scripts_contain("evil") is False
 
-    tree = parser("<div><script>evil()</script></div>")
+    tree = LexborHTMLParser("<div><script>evil()</script></div>")
     assert tree.scripts_contain("evil") is True
     tree.css_first("div").inner_html = "<span>clean</span>"
     assert tree.scripts_contain("evil") is False
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_script_srcs_contain_sees_attribute_changes(parser):
+def test_script_srcs_contain_sees_attribute_changes():
     """A changed ``src`` invalidates the lookup even though the node survives."""
-    tree = parser("<script src='keep.js'></script>")
+    tree = LexborHTMLParser("<script src='keep.js'></script>")
     assert tree.script_srcs_contain(("gone.js",)) is False
 
     tree.css_first("script").attrs["src"] = "gone.js"
@@ -1481,16 +1393,15 @@ def test_script_srcs_contain_sees_attribute_changes(parser):
     del tree.css_first("script").attrs["src"]
     assert tree.script_srcs_contain(("gone.js",)) is False
 
-    tree = parser("<script src='gone.js'></script>")
+    tree = LexborHTMLParser("<script src='gone.js'></script>")
     assert tree.script_srcs_contain(("gone.js",)) is True
     tree.css_first("script").attrs["src"] = None
     assert tree.script_srcs_contain(("gone.js",)) is False
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_script_contain_still_caches_for_the_whole_document(parser):
+def test_script_contain_still_caches_for_the_whole_document():
     """The cache is a performance feature, so it must survive repeated calls."""
-    tree = parser(
+    tree = LexborHTMLParser(
         "<div id='a'><script>alpha</script></div>"
         "<div id='b'><script>beta</script></div>"
     )
@@ -1503,10 +1414,9 @@ def test_script_contain_still_caches_for_the_whole_document(parser):
         assert tree.css_first("#b").scripts_contain("alpha") is False
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_set_inner_html_leaves_replaced_nodes_readable(parser):
+def test_set_inner_html_leaves_replaced_nodes_readable():
     """Nodes from the replaced subtree stay intact instead of reading freed memory."""
-    tree = parser("<html><body><div id='a'><em>x</em></div></body></html>")
+    tree = LexborHTMLParser("<html><body><div id='a'><em>x</em></div></body></html>")
     old_div = tree.css_first("#a")
     old_em = tree.css_first("em")
 
@@ -1521,10 +1431,9 @@ def test_set_inner_html_leaves_replaced_nodes_readable(parser):
     assert tree.html == "<html><head></head><body><span>new</span></body></html>"
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_set_inner_html_recycled_addresses_do_not_alias(parser):
+def test_set_inner_html_recycled_addresses_do_not_alias():
     """A retained node keeps its identity even after its address is handed out again."""
-    tree = parser("<html><body><div id='a'><p>orig</p></div></body></html>")
+    tree = LexborHTMLParser("<html><body><div id='a'><p>orig</p></div></body></html>")
     old_div = tree.css_first("#a")
 
     tree.body.inner_html = "<em>replacement</em>"
@@ -1535,10 +1444,9 @@ def test_set_inner_html_recycled_addresses_do_not_alias(parser):
     assert tree.body.inner_html == "<em>replacement</em>"
 
 
-@pytest.mark.parametrize(*_PARSERS_PARAMETRIZER)
-def test_set_inner_html_on_a_detached_node_leaves_the_document_alone(parser):
+def test_set_inner_html_on_a_detached_node_leaves_the_document_alone():
     """Writing through a detached node must not corrupt the tree it came from."""
-    tree = parser("<html><body><div id='a'><p>x</p></div></body></html>")
+    tree = LexborHTMLParser("<html><body><div id='a'><p>x</p></div></body></html>")
     old_div = tree.css_first("#a")
     tree.body.inner_html = "<em>y</em>"
 

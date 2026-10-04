@@ -121,6 +121,7 @@ assert results[0].text() == "lexbor is AwesOme"
 
 ## Links
 
+* [Changelog](CHANGES.md)
 * [selectolax API reference and examples](https://selectolax.readthedocs.io/en/latest/index.html)
 * [Video introduction to web scraping using selectolax](https://youtu.be/HpRsfpPuUzE)
 * [How to Scrape 7k Products with Python using selectolax and httpx](https://www.youtube.com/watch?v=XpGvq755J2U)

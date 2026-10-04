@@ -2,14 +2,16 @@ include "../utils.pxi"
 
 from cpython.unicode cimport PyUnicode_DecodeUTF8
 
-import re
-
-
 cdef inline str _decode_utf8(const lxb_char_t *data, size_t length):
     # Lexbor passes bytes it cannot decode through verbatim, so every read of a
     # name, attribute or text has to substitute U+FFFD instead of raising. This is
     # the single place that policy is defined; do not decode strictly elsewhere.
     return PyUnicode_DecodeUTF8(<char *> data, length, "replace")
+
+
+# The markers lexbor wraps comment data in when it serializing a comment node.
+_COMMENT_OPEN = "<!--"
+_COMMENT_CLOSE = "-->"
 
 
 def create_tag(tag: str):
@@ -100,6 +102,11 @@ def parse_fragment(html: str):
 def extract_html_comment(text: str) -> str:
     """Extract the inner content of an HTML comment string.
 
+    Slicing between the markers keeps this linear in the length of ``text``.
+    Matching a pattern instead means trying every split point and rescanning the
+    whitespace around each one, which is quadratic for an unterminated comment
+    made of whitespace.
+
     Args:
         text: Raw HTML comment, including the ``<!--`` and ``-->`` markers.
 
@@ -113,10 +120,16 @@ def extract_html_comment(text: str) -> str:
         >>> extract_html_comment("<!-- hello -->")
         'hello'
     """
-    if match := re.fullmatch(r"\s*<!--\s*(.*?)\s*-->\s*", text, flags=re.DOTALL):
-        return match.group(1).strip()
-    msg = "Input is not a valid HTML comment"
-    raise ValueError(msg)
+    # Whitespace outside the markers is dropped, inside it is kept.
+    stripped = text.strip()
+    length = len(stripped)
+
+    if (length < len(_COMMENT_OPEN) + len(_COMMENT_CLOSE)
+            or not stripped.startswith(_COMMENT_OPEN)
+            or not stripped.endswith(_COMMENT_CLOSE)):
+        raise ValueError("Input is not a valid HTML comment")
+
+    return stripped[len(_COMMENT_OPEN):length - len(_COMMENT_CLOSE)].strip()
 
 
 cdef inline bint is_empty_text_node(lxb_dom_node_t *text_node) noexcept:

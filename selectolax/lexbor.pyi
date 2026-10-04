@@ -728,12 +728,16 @@ class LexborNode:
     def comment_content(self) -> str | None:
         """Extract the textual content of an HTML comment node.
 
+        The text comes from the comment's character data, which is what
+        serializing the node would wrap in the markers anyway. Reading it also
+        keeps the answer about this node: a top-level comment of a fragment
+        serializes with all its siblings.
+
         Returns
         -------
         str or None
             Comment text with surrounding whitespace removed, or ``None`` if
-            the current node is not a comment or the comment markup cannot be
-            parsed.
+            the current node is not a comment.
 
         Examples
         --------
@@ -1460,6 +1464,28 @@ def parse_fragment(html: str) -> list[LexborNode]:
     ------
     SelectolaxError
         Always.
+    """
+
+def extract_html_comment(text: str) -> str:
+    """Extract the inner content of an HTML comment string.
+
+    Slicing between the markers keeps this linear in the length of ``text``.
+    Matching a pattern instead means trying every split point and rescanning the
+    whitespace around each one, which is quadratic for an unterminated comment
+    made of whitespace.
+
+    Args:
+        text: Raw HTML comment, including the ``<!--`` and ``-->`` markers.
+
+    Returns:
+        The comment body with surrounding whitespace stripped.
+
+    Raises:
+        ValueError: If the input is not a well-formed HTML comment.
+
+    Examples:
+        >>> extract_html_comment("<!-- hello -->")
+        'hello'
     """
 
 class SelectolaxError(Exception):

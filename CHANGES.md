@@ -9,6 +9,7 @@
   (`html`, `head`, `body`, `caption`, `col`, `colgroup`, `frame`, `frameset`, `tbody`, `td`,
   `tfoot`, `th`, `thead`, `tr`).
 - Fix `inner_html` covering only the first top-level node of an HTML fragment.
+- Improve the speed of comment extraction
 
 # Version 1.0.0
 

@@ -1320,12 +1320,16 @@ cdef class LexborNode:
     def comment_content(self) -> str | None:
         """Extract the textual content of an HTML comment node.
 
+        The text comes from the comment's character data, which is what
+        serializing the node would wrap in the markers anyway. Reading it also
+        keeps the answer about this node: a top-level comment of a fragment
+        serializes with all its siblings.
+
         Returns
         -------
         str or None
             Comment text with surrounding whitespace removed, or ``None`` if
-            the current node is not a comment or the comment markup cannot be
-            parsed.
+            the current node is not a comment.
 
         Examples
         --------
@@ -1334,12 +1338,18 @@ cdef class LexborNode:
         >>> LexborHTMLParser("<div>not a comment</div>", is_fragment=True).root.comment_content is None
         True
         """
+        cdef lexbor_str_t *str_data
+        cdef lxb_char_t *text
+
         if not self.is_comment_node:
             return None
-        try:
-            return extract_html_comment(self.html)
-        except (ValueError, AttributeError, IndexError):
-            return None
+
+        str_data = &(<lxb_dom_character_data_t *> self.node).data
+        text = lexbor_str_data_noi(str_data)
+        if text == NULL:
+            return ""
+
+        return _decode_utf8(text, lexbor_str_length_noi(str_data)).strip()
 
     @property
     def inner_html(self) -> str | None:

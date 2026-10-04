@@ -5,6 +5,8 @@ Many functionality are already tested in the Lexbor engine, so there is no reaso
 
 from __future__ import annotations
 
+import time
+
 import pytest
 
 from selectolax.lexbor import (
@@ -12,6 +14,7 @@ from selectolax.lexbor import (
     LexborNode,
     SelectolaxError,
     create_tag,
+    extract_html_comment,
     parse_fragment,
 )
 
@@ -82,3 +85,38 @@ def test_fragment_parser_is_the_replacement():
     parser = LexborHTMLParser("<div>x</div><p>y</p>", is_fragment=True)
     assert parser.html == "<div>x</div><p>y</p>"
     assert [n.tag for n in parser.root.iter(include_text=True)] == ["div", "p"]
+
+
+@pytest.mark.parametrize(
+    "text,expected",
+    [
+        ("<!--a-->", "a"),
+        ("  <!--a-->  ", "a"),
+        ("<!-- a -->", "a"),
+        ("<!--\n a \n-->", "a"),
+        ("<!--  -->", ""),
+        ("<!---->", ""),
+        ("<!----->", "-"),
+        ("<!--a-->b-->", "a-->b"),
+    ],
+)
+def test_extract_html_comment(text: str, expected: str):
+    assert extract_html_comment(text) == expected
+
+
+@pytest.mark.parametrize(
+    "text",
+    ["", " ", "<!----", "<!--", "-->", "a<!--b-->", "<!-->", "<!--->"],
+)
+def test_extract_html_comment_rejects_non_comments(text: str):
+    with pytest.raises(ValueError, match="not a valid HTML comment"):
+        extract_html_comment(text)
+
+
+@pytest.mark.parametrize("size", [1000, 5000, 20000])
+def test_extract_html_comment_is_linear(size: int):
+    text = "<!--" + " " * size + "x"
+    started = time.perf_counter()
+    with pytest.raises(ValueError):
+        extract_html_comment(text)
+    assert time.perf_counter() - started < 1.0

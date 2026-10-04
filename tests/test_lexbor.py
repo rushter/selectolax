@@ -813,6 +813,32 @@ def test_comment_content_property() -> None:
     assert text_node.comment_content == "hello"
 
 
+@pytest.mark.parametrize(
+    "source,expected",
+    [
+        ("<!--a-->", "a"),
+        ("<!--  a  -->", "a"),
+        ("<!--\n\ta\n-->", "a"),
+        ("<!---->", ""),
+        ("<!-->", ""),
+    ],
+)
+def test_comment_content_of_variants(source: str, expected: str) -> None:
+    node = LexborHTMLParser(source, is_fragment=True).root
+    assert node.comment_content == expected
+
+
+def test_comment_content_is_scoped_to_its_own_node() -> None:
+    parser = LexborHTMLParser("<!--a--><!--b-->", is_fragment=True)
+    assert parser.root.comment_content == "a"
+    assert parser.root.next.comment_content == "b"
+
+
+def test_comment_content_handles_an_unterminated_comment() -> None:
+    node = LexborHTMLParser("<!--a--", is_fragment=True).root
+    assert node.comment_content == "a"
+
+
 def test_selector_text_contains():
     html = """
     <div>

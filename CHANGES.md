@@ -180,26 +180,26 @@ usually when heavily modifying the tree.
 - Fix sefgaults when doing double `.unwrap`. Resolves #169.
 - Fix typo for tag names. Clarify available tag names.
 
-## Version 0.3.34
+# Version 0.3.34
 
 Released
 
 - Lexbor backend now supports `:lexbor-contains("abc" i)` CSS pseudo-class to match text nodes.
 
-## Version 0.3.33
+# Version 0.3.33
 
 Released
 
 - Add `merge_text_nodes` to lexbor backend. Fixes #170. @amirshukayev
 - Performance improvements in Cython code. @Vizonex
 
-## Version 0.3.32
+# Version 0.3.32
 
 Released
 
 - Update lexbor. New version of lexbor fixes bugs with CSS selectors.
 
-## Version 0.3.31
+# Version 0.3.31
 
 Released
 
@@ -208,20 +208,20 @@ Released
 - Unpin Cython version and make it Optional
 - Allow empty attribute values. Fixes #165.
 
-## Version 0.3.30
+# Version 0.3.30
 
 Released
 
 - Update lexbor
 - Expose `SelectolaxError` exception in lexbor.pyi
 
-## Version 0.3.29
+# Version 0.3.29
 
 Released
 
 - Feat: Add unwrap empty tags functionality. Fixes #159.
 
-## Version 0.3.28
+# Version 0.3.28
 
 Released
 
@@ -229,19 +229,19 @@ Released
 - Fix: typo in type annotations. Fixes #147.
 - Fix: Fix incorrect type annotations for `LexborHTMLParser.__init__`. Fixes #144.
 
-## Version 0.3.27
+# Version 0.3.27
 
 Released
 
 - Fix: Header detected as head
 
-## Version 0.3.26
+# Version 0.3.26
 
 Released
 
 - Improve type hints
 
-## Version 0.3.25
+# Version 0.3.25
 
 Released
 
@@ -249,162 +249,162 @@ Released
 - Add missing typing for `Node.insert_child()`
 - Add `Node.parser` to access the `HTMLParser` to which the node belongs
 
-## Version 0.3.24
+# Version 0.3.24
 
 Released
 
 - Add `Node.insert_child` method to lexbor and modest backends
 
-## Version 0.3.23
+# Version 0.3.23
 
 Released
 
 - Add Python 3.13 wheels
 - Update lexbor
 
-## Version 0.3.21
+# Version 0.3.21
 
 Released
 
 - ***Breaking change***: `lexbor` backend now includes the root node when querying CSS selectors. Same as `Modest` backend.
 - Fix `css_matches` and `any_css_matches` methods for `Modest` backend on some compilers
 
-## Version 0.3.20
+# Version 0.3.20
 
 Released
 
 - Fixup for 0.3.19 release
 - Fix tag order for `lexbor` backend
 
-## Version 0.3.19
+# Version 0.3.19
 
 Released
 
 - Increase maximum HTML size to 2.4GB
 
-## Version 0.3.18
+# Version 0.3.18
 
 Released
 
 - Fix memory leak when using CSS selectors, `lexbor` backend
 
-## Version 0.3.17
+# Version 0.3.17
 
 Released
 
 - Update lexbor
 - Add Python 3.12 wheels
 
-## Version 0.3.16
+# Version 0.3.16
 
 Released
 
 - Make HTML nodes hashable
 - Pin Cython version
 
-## Version 0.3.15
+# Version 0.3.15
 
 Released
 
 - Improve typing. Thanks to @nesb1
 
-## Version 0.3.14
+# Version 0.3.14
 
 Released
 
 - Fix memory leak for `lexbor` backend
 
-## Version 0.3.13
+# Version 0.3.13
 
 Released
 
 - Update `lexbor`
 
-## Version 0.3.12
+# Version 0.3.12
 
 Released
 
 - Update `lexbor`
 - Add Python 3.11 wheels
 
-## Version 0.3.11
+# Version 0.3.11
 
 Released
 
 - Fix out-of-bounds bug for `merge_text_nodes` method.
 
-## Version 0.3.10
+# Version 0.3.10
 
 Released
 
 This release does not contain any changes.
 Due to a typo in the version number ([#70](https://github.com/rushter/selectolax/issues/70)), we need to make a new release.
 
-## Version 0.3.9
+# Version 0.3.9
 
 Released
 
 - Remove trailing separator when using `text(deep=True, separator='x')`.
 - Add a new `merge_text_nodes` method for Modest backend.
 
-## Version 0.3.8
+# Version 0.3.8
 
 Released
 
 - Fix incorrect text handling when using `text(deep=True)` on a text node.
 
-## Version 0.3.7
+# Version 0.3.7
 
 Released
 
 - Fix return type of HTMLParser.tags
 
-## Version 0.3.6
+# Version 0.3.6
 
 Released
 
 - Improve text handling
 - Add binary builds for Python 3.10 and ARM on MacOS and Linux
 
-## Version 0.3.5
+# Version 0.3.5
 
 Released
 
 - Add type annotations
 
-## Version 0.3.4
+# Version 0.3.4
 
 Released
 
 - Fix `HTMLParser.html`
 
-## Version 0.3.3
+# Version 0.3.3
 
 Released
 
 - Use `document` for the `HTMLParser.html`, `LexborHTMLParser.html` root properties
 
-## Version 0.3.2
+# Version 0.3.2
 
 Released
 
 - Fix `selector` method for lexbor
 - Improve text extraction for lexbor
 
-## Version 0.3.1
+# Version 0.3.1
 
 Released
 
 - Fix `setup.py` for Windows
 
-## Version 0.3.0
+# Version 0.3.0
 
 Released
 
 - Added `lexbor` backend
 - Fix cloning for `Modest` backend
 
-## Version 0.2.14
+# Version 0.2.14
 
 Released
 
@@ -414,90 +414,90 @@ Released
 - Exposed `detect_encoding`, `decode_errors`, `use_meta_tags`, `raw_html` attributes for `HtmlParser`
 - Added `sget` method to the `attrs` property
 
-## Version 0.2.13
+# Version 0.2.13
 
 Released
 
 - Don't throw exception when encoding text as UTF-8 bytes fails ([#40](https://github.com/rushter/selectolax/issues/40)).
 - Fix Node.attrs.items() causes ([#39](https://github.com/rushter/selectolax/issues/39)).
 
-## Version 0.2.12
+# Version 0.2.12
 
 Released
 
 - Build wheels Apple Silicon
 
-## Version 0.2.11
+# Version 0.2.11
 
 Released
 
 - Fix strip argument is ignored for the root node ([#35](https://github.com/rushter/selectolax/issues/35)).
 - Fix CSS parser hangs on a bad CSS selector ([#36](https://github.com/rushter/selectolax/issues/36)).
 
-## Version 0.2.10
+# Version 0.2.10
 
 Released
 
 - Fix root node property ([#32](https://github.com/rushter/selectolax/issues/32)). The `root` property now points to the html tag.
 
-## Version 0.2.9
+# Version 0.2.9
 
 Released
 
 - Fix README for PyPI
 
-## Version 0.2.8
+# Version 0.2.8
 
 Released
 
 - Add wheels for Python 3.9
 
-## Version 0.2.7
+# Version 0.2.7
 
 Released
 
 - Add `raw_value` attribute for `Node` objects ([#22](https://github.com/rushter/selectolax/issues/22))
 - Improve node modification operations
 
-## Version 0.2.6
+# Version 0.2.6
 
 Released
 
 - Fix dependency on the source `Node` when inserting to or modifying destination `Node`
 
-## Version 0.2.5
+# Version 0.2.5
 
 Released
 
 - Allow to pass Node instances to `replace_with`, `insert_before` and `insert_after` methods
 - Added `insert_before` and `insert_after` methods
 
-## Version 0.2.4
+# Version 0.2.4
 
 Released
 
 - Set maximum input size to 80MB
 - Update modest
 
-## Version 0.2.3
+# Version 0.2.3
 
 Released
 
 - Rebuild PyPi wheels to support Python 3.8 and manylinux2010
 
-## Version 0.2.2
+# Version 0.2.2
 
 Released
 
 - Fix node comparison
 
-## Version 0.2.1
+# Version 0.2.1
 
 Released
 
 - Add optional `include_text` parameter for the `iter` and `traverse` methods
 
-## Version 0.2.0
+# Version 0.2.0
 
 Released
 

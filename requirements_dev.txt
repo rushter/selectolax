@@ -5,6 +5,7 @@ watchdog>=0.8.3
 tox>=2.3.1
 coverage>=4.1
 Sphinx==9.1.0
+myst-parser==5.1.0
 numpydoc==1.11.0
 pytest>=3.7.2
 pytest-runner>=4.2

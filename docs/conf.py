@@ -48,6 +48,7 @@ import selectolax
 extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.viewcode",
+    "myst_parser",
     "numpydoc",
     "sphinxext.opengraph",
     "sphinx_copybutton",
@@ -64,7 +65,10 @@ os.environ["SPHINX_AUTODOC_IGNORE_NATIVE_MODULE_TYPE_STUBS"] = "1"
 templates_path = ["_templates"]
 
 # The suffix of source filenames.
-source_suffix = ".rst"
+source_suffix = {
+    ".rst": "restructuredtext",
+    ".md": "markdown",
+}
 
 # The encoding of source files.
 # source_encoding = 'utf-8-sig'
@@ -98,6 +102,11 @@ release = selectolax.__version__
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 exclude_patterns = ["_build"]
+
+# `changes.md` is linked from `index.rst` but kept out of the toctree on purpose:
+# furo renders the whole toctree in the sidebar of every page, so listing it there
+# would inline every release section into each page.
+suppress_warnings = ["toc.not_included"]
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.

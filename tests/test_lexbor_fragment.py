@@ -342,7 +342,8 @@ def test_fragment_root_follows_unwrap():
     # the detached <div>, hiding every sibling behind it.
     assert parser.html == "<span>a</span><p>b</p>"
     assert parser.root.tag == "span"
-    assert parser.root.parent is not None
+    assert parser.root.parent is None
+    assert [node.tag for node in parser.root.iter()] == ["span", "p"]
     assert parser.text() == "ab"
     assert len(parser.css("span")) == 1
     assert len(parser.css("p")) == 1
@@ -995,6 +996,32 @@ def test_fragment_wrapper_cannot_be_reached_and_destroyed():
     assert tree.root is not None
     assert tree.root.html == "<p>kept</p>"
     assert tree.html == "<p>kept</p>"
+
+
+def test_fragment_wrapper_is_not_reported_by_parent():
+    """A fragment's internal wrapper is not a parent a caller can act on."""
+    tree = LexborHTMLParser("<div><span>a</span></div><p>b</p>", is_fragment=True)
+
+    assert tree.root.parent is None
+    assert tree.css_first("p").parent is None
+    assert tree.css_first("span").parent.tag == "div"
+    assert tree.css_first("span").parent.parent is None
+
+    text_root = LexborHTMLParser("a<span>s</span>", is_fragment=True).root
+    assert text_root.is_text_node
+    assert text_root.parent is None
+
+    assert tree.html == "<div><span>a</span></div><p>b</p>"
+
+
+def test_unqueried_select_answers_with_the_node_itself():
+    """An unqueried selector answers with the node, not the fragment wrapper."""
+    tree = LexborHTMLParser("<div>a</div><p>b</p>", is_fragment=True)
+
+    assert [node.tag for node in tree.root.select().matches] == ["div"]
+    assert [node.tag for node in tree.css_first("p").select().matches] == ["p"]
+    assert [node.tag for node in tree.select().matches] == ["div"]
+    assert [node.tag for node in tree.root.select("*").matches] == ["div", "p"]
 
 
 def test_full_document_still_reports_its_html_element():

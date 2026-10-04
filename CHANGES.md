@@ -3,6 +3,8 @@
 # Unreleased
 
 - Do not replace `<-undef>` it not longer possible to get it.
+- The internal `<html>` wrapper of an HTML fragment is no longer reported as the `parent` of
+  the fragment's top-level nodes.
 
 # Version 1.0.0
 

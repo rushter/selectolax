@@ -113,12 +113,19 @@ cdef class LexborNode:
 
     @property
     def parent(self):
-        """Return the parent node."""
+        """Return the parent node, or ``None`` when there is none.
+
+        A top-level node of an HTML fragment has no parent: the internal
+        ``<html>`` wrapper its parent pointer leads to is not part of the
+        document, so it is not reported here either.
+        """
         cdef LexborNode node
-        if self.node.parent != NULL:
-            node = LexborNode.new(<lxb_dom_node_t *> self.node.parent, self.parser)
-            return node
-        return None
+        if self.node.parent == NULL:
+            return None
+        node = LexborNode.new(<lxb_dom_node_t *> self.node.parent, self.parser)
+        if _is_fragment_wrapper(node):
+            return None
+        return node
 
     @property
     def next(self):
@@ -415,15 +422,14 @@ cdef class LexborNode:
         """Return the node that tree-walking operations should start from.
 
         A fragment's root is a single node, but its siblings are part of the
-        fragment too, so operations that walk the tree start from the parent
+        fragment too, so operations that walk the tree start from the wrapper
         instead and thus cover every top-level node. This holds when the root is
         a text node as well, which happens whenever a fragment does not begin
         with an element.
 
-        The parent is Lexbor's internal ``<html>`` wrapper rather than something
-        the caller put in the document, so it is not a legitimate result of a
-        search rooted here. The selector keeps it out of every match; see
-        ``_wrapper_to_skip_for``.
+        The wrapper is Lexbor's internal ``<html>`` element, kept out of search
+        results (see ``_wrapper_to_skip_for``) and out of ``parent``. It is read
+        off the parent pointer here because walks have to go through it.
 
         Returns ``self`` when this node is not a fragment root, and also when a
         fragment root has been detached from its wrapper, which is what
@@ -439,10 +445,9 @@ cdef class LexborNode:
             segfaults.
         """
         cdef LexborNode node
-        if self._is_fragment_root:
-            node = self.parent
-            if node is not None:
-                return node
+        if self._is_fragment_root and self.node.parent != NULL:
+            node = LexborNode.new(<lxb_dom_node_t *> self.node.parent, self.parser)
+            return node
         return self
 
     def css(self, str query):
@@ -1262,13 +1267,16 @@ cdef class LexborNode:
         Parameters
         ----------
         query : str or None
-            The CSS selector to use when searching for nodes.
+            The CSS selector to use when searching for nodes. Without one, the
+            node itself is the only match.
 
         Returns
         -------
         selector : The `Selector` class.
         """
-        return LexborSelector(self._get_node(), query)
+        # The node itself, not ``_get_node()``: an unqueried selector answers
+        # with the node it was given, which for a fragment is not the wrapper.
+        return LexborSelector(self, query)
 
     def __eq__(self, other):
         """Compare by serialized HTML.

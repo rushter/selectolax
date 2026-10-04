@@ -1,3 +1,16 @@
+cdef inline bint _is_fragment_wrapper(LexborNode node):
+    """Return whether ``node`` is the internal ``<html>`` wrapper of a fragment.
+
+    Lexbor wraps a fragment's top-level nodes in an element of its own to give
+    them a container. Searches skip it, since it is not part of the caller's
+    markup and owns the whole fragment, so ``parent`` stops here as well.
+    """
+    if node is None or node.parser is None:
+        return False
+
+    return <bint>(node.node == <lxb_dom_node_t *> node.parser._fragment_wrapper)
+
+
 cdef inline lxb_tag_id_t _fragment_tag_id_from_string(
     lxb_html_document_t *document,
     str fragment_tag,

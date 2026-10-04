@@ -93,8 +93,10 @@ def test_attributes():
         assert node.attributes["id"] == "p3"
 
     html = "<div><p attr>text</p></div>"
-    selector = "p#p3"
-    for node in LexborHTMLParser(html).css(selector):
+    selector = "p"
+    nodes = LexborHTMLParser(html).css(selector)
+    assert len(nodes) == 1
+    for node in nodes:
         assert "attr" in node.attributes
         assert node.attributes["attr"] is None
 

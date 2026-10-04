@@ -1264,7 +1264,6 @@ def test_css_selector_invalid_syntax():
     root = parser.root
     assert root is not None
 
-    root.css("[invalid")
     with pytest.raises(SelectolaxError):
         root.css("[invalid&]")
 

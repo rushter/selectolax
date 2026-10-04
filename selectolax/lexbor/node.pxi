@@ -166,7 +166,7 @@ cdef class LexborNode:
         else:
             status = lxb_html_serialize_tree_str(self.node, lxb_str)
         if status == 0:
-            html = _decode_utf8(lxb_str.data, lexbor_str_length_noi(lxb_str)).replace('<-undef>', '')
+            html = _decode_utf8(lxb_str.data, lexbor_str_length_noi(lxb_str))
             lexbor_str_destroy(lxb_str, self.node.owner_document.text, True)
             return html
         lexbor_str_destroy(lxb_str, self.node.owner_document.text, True)
@@ -191,7 +191,7 @@ cdef class LexborNode:
                 status = lxb_html_serialize_tree_str(self.node, lxb_str)
 
         if status == 0:
-            html = _decode_utf8(lxb_str.data, lexbor_str_length_noi(lxb_str)).replace('<-undef>', '')
+            html = _decode_utf8(lxb_str.data, lexbor_str_length_noi(lxb_str))
             lexbor_str_destroy(lxb_str, self.node.owner_document.text, True)
             return html
         lexbor_str_destroy(lxb_str, self.node.owner_document.text, True)
@@ -210,7 +210,7 @@ cdef class LexborNode:
             status = lxb_html_serialize_deep_str(self.node, lxb_str)
 
         if status == 0 and lxb_str.data:
-            html = _decode_utf8(lxb_str.data, lexbor_str_length_noi(lxb_str)).replace('<-undef>', '')
+            html = _decode_utf8(lxb_str.data, lexbor_str_length_noi(lxb_str))
             lexbor_str_destroy(lxb_str, self.node.owner_document.text, True)
             return html
         lexbor_str_destroy(lxb_str, self.node.owner_document.text, True)

@@ -1,5 +1,9 @@
 # selectolax Changelog
 
+# Unreleased
+
+- Do not replace `<-undef>` it not longer possible to get it.
+
 # Version 1.0.0
 
 This release contains **breaking changes**.

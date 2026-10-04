@@ -168,6 +168,8 @@ cdef class LexborAttributes:
             attr = attr.next
 
     def __setitem__(self, str key, object value):
+        if not key:
+            raise ValueError("Attribute name cannot be empty")
         bytes_key = key.encode(_ENCODING)
         cdef bytes bytes_value
         cdef lxb_dom_attr_t *attr

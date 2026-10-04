@@ -17,9 +17,41 @@ def create_tag(tag: str):
     Given an HTML tag name, e.g. `"div"`, create a single empty node for that tag,
     e.g. `"<div></div>"`.
 
-    Use `LexborHTMLParser().create_node(..)` if you need to create a node tied to a specific parser instance.
+    Use `LexborHTMLParser(html).create_node(..)` if you need to create a node tied to
+    a specific parser instance.
+
+    Parameters
+    ----------
+    tag : str
+        Name of the tag to create.
+
+    Returns
+    -------
+    LexborNode
+        Newly created element node.
+
+    Raises
+    ------
+    SelectolaxError
+        If the element cannot be created.
+
+    Notes
+    -----
+    The element is created directly rather than parsed out of ``<tag></tag>``.
+    Parsing cannot build all of them: an HTML fragment parses in the "in body"
+    insertion mode, and that mode is told by the HTML Standard to drop the start
+    tags of ``html``, ``head``, ``body``, ``caption``, ``col``, ``colgroup``,
+    ``frame``, ``frameset``, ``tbody``, ``td``, ``tfoot``, ``th``, ``thead`` and
+    ``tr``, so parsing them yields an empty tree and therefore no node at all.
+    Aliasing is avoided too, so ``create_tag("image")`` is an ``image`` element
+    rather than the ``img`` a parser would produce.
+
+    Examples
+    --------
+    >>> create_tag("div").html
+    '<div></div>'
     """
-    return LexborHTMLParser(f"<{tag}></{tag}>", is_fragment=True).root
+    return LexborHTMLParser("").create_node(tag)
 
 
 def parse_fragment(html: str):

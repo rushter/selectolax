@@ -5,6 +5,9 @@
 - Do not replace `<-undef>` it not longer possible to get it.
 - The internal `<html>` wrapper of an HTML fragment is no longer reported as the `parent` of
   the fragment's top-level nodes.
+- `create_tag()` no longer returns `None` for the tags whose start tag the HTML parser drops
+  (`html`, `head`, `body`, `caption`, `col`, `colgroup`, `frame`, `frameset`, `tbody`, `td`,
+  `tfoot`, `th`, `thead`, `tr`).
 
 # Version 1.0.0
 

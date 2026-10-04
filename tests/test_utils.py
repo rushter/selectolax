@@ -24,14 +24,53 @@ def test_create_tag(tag: str):
     assert node.html == f"<{tag}></{tag}>"
 
 
-def test_create_tag_uses_the_fragment_parser():
-    # create_tag() builds its node through `is_fragment=True`, so it no longer
-    # depends on the removed fragment-type guessing helpers. A fragment parser
-    # does not synthesize <html>/<head>/<body>.
-    node = create_tag("div")
-    assert node.parser.html == "<div></div>"
-    assert node.parser.head is None
-    assert node.parser.body is None
+# Tags whose start tag the "in body" insertion mode drops, so parsing
+# `<tag></tag>` as an HTML fragment used to produce an empty tree and make
+# create_tag() return None. They have to be creatable, like any other tag.
+DROPPED_BY_PARSER_TAGS = [
+    "html",
+    "head",
+    "body",
+    "caption",
+    "col",
+    "colgroup",
+    "frame",
+    "frameset",
+    "tbody",
+    "td",
+    "tfoot",
+    "th",
+    "thead",
+    "tr",
+]
+
+# Void elements have no end tag, so the serializer omits it.
+VOID_TAGS = {"col", "frame"}
+
+
+@pytest.mark.parametrize("tag", DROPPED_BY_PARSER_TAGS)
+def test_create_tag_works_for_tags_dropped_by_the_parser(tag: str):
+    node = create_tag(tag)
+    assert node is not None
+    assert isinstance(node, LexborNode)
+    assert node.tag == tag
+    assert node.attributes == {}
+    expected = f"<{tag}>" if tag in VOID_TAGS else f"<{tag}></{tag}>"
+    assert node.html == expected
+
+
+def test_create_tag_does_not_parse_the_tag_name():
+    # Building the node by parsing would apply the parser's aliasing and
+    # end-tag handling; creating the element applies neither.
+    assert create_tag("image").tag == "image"
+    # `plaintext` swallows the rest of the document when parsed, so its closing
+    # tag ended up as text.
+    assert create_tag("plaintext").html == "<plaintext></plaintext>"
+
+
+def test_create_tag_rejects_an_empty_tag_name():
+    with pytest.raises(SelectolaxError):
+        create_tag("")
 
 
 def test_parse_fragment_is_removed():

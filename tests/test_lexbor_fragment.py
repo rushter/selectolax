@@ -826,12 +826,12 @@ def test_empty_fragment_inner_html_getter_returns_empty_string():
     assert tree.inner_html == ""
 
 
-def test_empty_fragment_inner_html_setter_is_noop():
+def test_empty_fragment_inner_html_setter_fills_the_fragment():
     tree = LexborHTMLParser("", is_fragment=True)
-    tree.inner_html = "<p>ignored</p>"
-    assert tree.inner_html == ""
-    assert tree.html == ""
-    assert tree.root is None
+    tree.inner_html = "<p>filled</p>"
+    assert tree.inner_html == "<p>filled</p>"
+    assert tree.html == "<p>filled</p>"
+    assert tree.root is not None
 
 
 def test_empty_fragment_methods_agree_with_empty_document():
@@ -851,6 +851,84 @@ def test_empty_fragment_methods_agree_with_empty_document():
     assert empty_fragment.select() is None
 
 
+@pytest.mark.parametrize(
+    "html",
+    [
+        "<div><b>x</b></div><p>z</p>",
+        "<div><b>x</b></div>",
+        "text<span>s</span>",
+        "<!--c--><p>z</p>",
+        "<style>a{}</style><p>z</p>",
+    ],
+)
+def test_fragment_inner_html_covers_every_top_level_node(html):
+    tree = LexborHTMLParser(html, is_fragment=True)
+    assert tree.inner_html == tree.html
+
+
+def test_fragment_inner_html_setter_replaces_every_top_level_node():
+    tree = LexborHTMLParser("<div><b>x</b></div><p>z</p>", is_fragment=True)
+    tree.inner_html = "<i>new</i>"
+    assert tree.html == "<i>new</i>"
+    assert tree.css("b") == []
+    assert tree.css("p") == []
+
+
+@pytest.mark.parametrize("html", ["text<span>s</span>", "<!--c--><p>z</p>"])
+def test_fragment_inner_html_setter_accepts_non_element_first_node(html):
+    tree = LexborHTMLParser(html, is_fragment=True)
+    tree.inner_html = "<p>new</p>"
+    assert tree.html == "<p>new</p>"
+
+
+def test_fragment_inner_html_setter_uses_the_fragment_context():
+    tree = LexborHTMLParser("<style>a{}</style><p>z</p>", is_fragment=True)
+    tree.inner_html = "<td>cell</td>"
+    assert tree.html == "cell"
+    assert tree.css("style") == []
+
+    table = LexborHTMLParser("<td>a</td><td>b</td>", is_fragment=True, fragment_tag="td")
+    table.inner_html = "<td>new</td>"
+    assert table.html == LexborHTMLParser(
+        "<td>new</td>", is_fragment=True, fragment_tag="td"
+    ).html
+
+
+def test_fragment_inner_html_setter_is_idempotent():
+    tree = LexborHTMLParser("<div><b>x</b></div><p>z</p>", is_fragment=True)
+    tree.inner_html = "<td>cell</td>"
+    once = tree.html
+    tree.inner_html = "<td>cell</td>"
+    assert tree.html == once
+
+
+def test_fragment_inner_html_setter_leaves_replaced_nodes_readable():
+    tree = LexborHTMLParser("<div><b>old</b></div><p>z</p>", is_fragment=True)
+    old = tree.css_first("b")
+    tree.inner_html = "<p>new</p>"
+    assert old.html == "<b>old</b>"
+    assert tree.html == "<p>new</p>"
+
+
+def test_fragment_inner_html_setter_invalidates_derived_caches():
+    tree = LexborHTMLParser('<div><script src="a.js">old</script></div>', is_fragment=True)
+    assert tree.script_srcs_contain(("a.js",)) is True
+    tree.inner_html = '<div><script src="b.js">new</script></div>'
+    assert tree.script_srcs_contain(("a.js",)) is False
+    assert tree.script_srcs_contain(("b.js",)) is True
+    assert tree.scripts_contain("new") is True
+    assert tree.scripts_contain("old") is False
+
+
+def test_document_inner_html_is_unaffected_by_fragment_semantics():
+    tree = LexborHTMLParser("<!DOCTYPE html><div>a</div><p>b</p>")
+    assert tree.inner_html == "<head></head><body><div>a</div><p>b</p></body>"
+    tree.inner_html = "<span>c</span>"
+    assert tree.html == (
+        "<!DOCTYPE html><html><head></head><body><span>c</span></body></html>"
+    )
+
+
 def test_non_empty_fragment_queries_still_work():
     """The root guard must not shadow normal results."""
     tree = LexborHTMLParser(
@@ -864,7 +942,7 @@ def test_non_empty_fragment_queries_still_work():
     assert tree.any_css_matches(("table", "p")) is True
     assert tree.scripts_contain("y") is True
     assert tree.script_srcs_contain(("x.js",)) is True
-    assert tree.inner_html == '<p>a</p><script src="x.js">y</script>'
+    assert tree.inner_html == tree.html
 
 
 def test_full_document_queries_still_work():

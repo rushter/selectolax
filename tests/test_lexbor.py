@@ -103,9 +103,11 @@ def test_inner_html_pretty_parser():
     parser = LexborHTMLParser("<div><span>Hello</span></div>", is_fragment=True)
     assert parser.inner_html_pretty(skip_ws_nodes=True) == clean_doc(
         """
-        <span>
-          "Hello"
-        </span>
+        <div>
+          <span>
+            "Hello"
+          </span>
+        </div>
         """
     )
 

@@ -8,6 +8,7 @@
 - `create_tag()` no longer returns `None` for the tags whose start tag the HTML parser drops
   (`html`, `head`, `body`, `caption`, `col`, `colgroup`, `frame`, `frameset`, `tbody`, `td`,
   `tfoot`, `th`, `thead`, `tr`).
+- Fix `inner_html` covering only the first top-level node of an HTML fragment.
 
 # Version 1.0.0
 

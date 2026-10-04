@@ -322,8 +322,12 @@ cdef class LexborHTMLParser:
     cdef inline lxb_dom_node_t* _fragment_root_node(self)
     cdef inline lxb_dom_node_t* _tag_search_root(self)
     cdef inline lxb_status_t _parse_html_document(self, char *html, size_t html_len) noexcept nogil
+    cdef lxb_dom_node_t* _parse_fragment_wrapper_noi(self, char *html, size_t html_len,
+                                                     lxb_status_t *out_status) noexcept nogil
     cdef inline lxb_status_t _parse_html_fragment(self, char *html, size_t html_len) noexcept nogil
     cdef int _parse_html(self, char *html, size_t html_len) except -1
+    cdef inline LexborNode _fragment_content_node(self)
+    cdef void _replace_fragment_children(self, const lxb_char_t *html, size_t html_len) except *
     cdef inline void _mark_mutated(self) noexcept
     cdef unsigned long _mutation_count
     cdef object cached_script_texts

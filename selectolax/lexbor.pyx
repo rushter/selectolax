@@ -480,21 +480,17 @@ cdef class LexborHTMLParser:
         """
         return lxb_html_document_parse(self.document, <lxb_char_t *> html, html_len)
 
-    cdef inline lxb_status_t _parse_html_fragment(self, char *html, size_t html_len) noexcept nogil:
-        """Parse HTML as an HTML fragment.
-        The parser does not insert any missing required HTML elements.
+    cdef lxb_dom_node_t* _parse_fragment_wrapper_noi(
+        self, char *html, size_t html_len, lxb_status_t *out_status
+    ) noexcept nogil:
+        """Parse a fragment with this parser's context and return its wrapper.
 
-        Parameters
-        ----------
-        html : char *
-            Pointer to UTF-8 encoded HTML bytes.
-        html_len : size_t
-            Length of the HTML buffer.
-
-        Returns
-        -------
-        lxb_status_t
-            Lexbor status code; ``LXB_STATUS_OK`` when parsing the fragment succeeded.
+        The wrapper is the internal ``<html>`` element holding the fragment's
+        top-level nodes. It and its contents are owned by this parser's document:
+        fragment parsing borrows a transient child document that shares the
+        parent's pools, so destroying the parser here is safe. ``out_status`` is
+        always set. A parse that yields no nodes still returns a wrapper - an
+        empty fragment has one too.
         """
         cdef lxb_html_parser_t *parser = NULL
         cdef lxb_dom_node_t *fragment_html_node = NULL
@@ -502,12 +498,14 @@ cdef class LexborHTMLParser:
 
         parser = lxb_html_parser_create()
         if parser == NULL:
-            return LXB_STATUS_ERROR_MEMORY_ALLOCATION
+            out_status[0] = LXB_STATUS_ERROR_MEMORY_ALLOCATION
+            return NULL
 
         status = lxb_html_parser_init(parser)
         if status != LXB_STATUS_OK:
             lxb_html_parser_destroy(parser)
-            return status
+            out_status[0] = status
+            return NULL
 
         fragment_html_node = lxb_html_parse_fragment_by_tag_id(
             parser,
@@ -518,15 +516,32 @@ cdef class LexborHTMLParser:
             html_len
         )
         if fragment_html_node == NULL:
+            # Read the status before destroying the parser that owns it.
             status = parser.status
             lxb_html_parser_destroy(parser)
             if status == LXB_STATUS_OK:
-                return LXB_STATUS_ERROR
-            return status
+                status = LXB_STATUS_ERROR
+            out_status[0] = status
+            return NULL
 
-        self._fragment_wrapper = fragment_html_node
         lxb_html_parser_destroy(parser)
-        return LXB_STATUS_OK
+        out_status[0] = LXB_STATUS_OK
+        return fragment_html_node
+
+    cdef inline lxb_status_t _parse_html_fragment(self, char *html, size_t html_len) noexcept nogil:
+        """Parse HTML as an HTML fragment, keeping the wrapper it is built under.
+
+        No missing required elements are inserted.
+        """
+        cdef lxb_status_t status = LXB_STATUS_OK
+        cdef lxb_dom_node_t *fragment_html_node
+
+        fragment_html_node = self._parse_fragment_wrapper_noi(
+            html, html_len, &status
+        )
+        if fragment_html_node != NULL:
+            self._fragment_wrapper = fragment_html_node
+        return status
 
     cdef inline lxb_dom_node_t* _fragment_root_node(self):
         """Return the fragment's current top-level root node.
@@ -572,6 +587,56 @@ cdef class LexborHTMLParser:
             return self._fragment_wrapper
 
         return <lxb_dom_node_t *> self.document
+
+    cdef inline LexborNode _fragment_content_node(self):
+        """Return a view of the wrapper that holds the fragment's top-level nodes.
+
+        A fragment has no element of its own, so the wrapper is what an operation
+        on "the fragment's children" has to be applied to. The view is not flagged
+        as a fragment root: callers want the wrapper's children, not its subtree.
+        """
+        if self._fragment_wrapper == NULL:
+            return None
+        return LexborNode.new(self._fragment_wrapper, self)
+
+    cdef void _replace_fragment_children(
+        self, const lxb_char_t *html, size_t html_len
+    ) except *:
+        """Replace every top-level node of a fragment with freshly parsed content.
+
+        The content is parsed with this parser's own fragment context, so setting
+        it twice is idempotent and content nests the way that context dictates,
+        rather than being swallowed as raw text when the first node was a
+        ``<script>`` or ``<style>``.
+        """
+        cdef lxb_status_t status = LXB_STATUS_OK
+        cdef lxb_dom_node_t *wrapper
+        cdef lxb_dom_node_t *child
+
+        if self._fragment_wrapper == NULL:
+            raise SelectolaxError("Can't set inner HTML.")
+
+        wrapper = self._parse_fragment_wrapper_noi(
+            <char *> html, html_len, &status
+        )
+        if wrapper == NULL:
+            raise SelectolaxError("Can't set inner HTML.")
+
+        # Unlinked rather than destroyed, like _replace_children() does with an
+        # element's old children: views the caller holds stay valid but detached.
+        while self._fragment_wrapper.first_child != NULL:
+            lxb_dom_node_remove(self._fragment_wrapper.first_child)
+
+        while wrapper.first_child != NULL:
+            child = wrapper.first_child
+            lxb_dom_node_remove(child)
+            lxb_dom_node_insert_child(self._fragment_wrapper, child)
+
+        # Built by the parse above and never handed to the caller.
+        lxb_dom_node_destroy(wrapper)
+
+        _refresh_head_body(self.document)
+        self._mark_mutated()
 
     cdef inline void _mark_mutated(self) noexcept:
         """Record that the document was edited, invalidating derived caches.
@@ -1262,11 +1327,22 @@ cdef class LexborHTMLParser:
         Unlike the `.html` property, does not include the current node.
         Can be used to set HTML as well. See the setter docstring.
 
+        For a fragment this is the whole fragment, the same way
+        ``DocumentFragment.innerHTML`` is: it is built from the fragment's top-level
+        nodes rather than from the first one, so a fragment of several nodes no
+        longer reports only the first one's children.
+
         Returns
         -------
         text : str | None
         """
-        cdef LexborNode node = self.root
+        cdef LexborNode node
+        if self._is_fragment:
+            node = self._fragment_content_node()
+            if node is None or node.node.first_child == NULL:
+                return ""
+            return node.inner_html
+        node = self.root
         if node is None:
             return ""
         return node.inner_html
@@ -1278,6 +1354,13 @@ cdef class LexborHTMLParser:
         Replaces existing data inside the node.
         Works similar to innerHTML in JavaScript.
 
+        For a fragment this replaces every top-level node with content parsed in
+        the fragment's own context - its ``fragment_tag`` and
+        ``fragment_namespace`` - rather than in the context of whichever node
+        happened to come first. A fragment that starts with a text or comment
+        node is therefore settable, and content is not swallowed by a leading
+        ``<script>`` or ``<style>``.
+
         Parameters
         ----------
         html : str
@@ -1286,7 +1369,17 @@ cdef class LexborHTMLParser:
         -------
         None
         """
-        cdef LexborNode node = self.root
+        cdef bytes bytes_val
+        cdef LexborNode node
+        if self._is_fragment:
+            if self._fragment_wrapper == NULL:
+                return
+            bytes_val = <bytes> html.encode("utf-8")
+            self._replace_fragment_children(
+                <lxb_char_t *> bytes_val, len(bytes_val)
+            )
+            return
+        node = self.root
         if node is None:
             return
         node.inner_html = html
@@ -1326,9 +1419,16 @@ cdef class LexborHTMLParser:
         html5test : bool, optional
             Serialize using Lexbor's HTML5 test formatting mode.
         """
+        cdef LexborNode node
         if self.root is None:
             return None
-        return self.root.inner_html_pretty(
+        if self._is_fragment:
+            node = self._fragment_content_node()
+        else:
+            node = self.root
+        if node is None:
+            return None
+        return node.inner_html_pretty(
             indent=indent,
             skip_ws_nodes=skip_ws_nodes,
             skip_comment=skip_comment,

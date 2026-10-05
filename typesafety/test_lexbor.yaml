@@ -76,3 +76,20 @@
     if node is not None:
       res = node.css_first(query="",default="", strict ={{strict}})
       reveal_type(res) # N: Revealed type is "selectolax.lexbor.{{ revealed }}"
+
+- case: html_parser_template_fragments
+  main: |
+    from selectolax.lexbor import LexborHTMLParser
+    parser = LexborHTMLParser("")
+    fragments = parser.template_fragments()
+    reveal_type(fragments) # N: Revealed type is "list[selectolax.lexbor.LexborNode]"
+    reveal_type(fragments[0]) # N: Revealed type is "selectolax.lexbor.LexborNode"
+
+- case: lexbor_node_template_fragments
+  main: |
+    from selectolax.lexbor import LexborHTMLParser
+    parser = LexborHTMLParser("")
+    node = parser.root
+    if node is not None:
+      fragments = node.template_fragments()
+      reveal_type(fragments) # N: Revealed type is "list[selectolax.lexbor.LexborNode]"

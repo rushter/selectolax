@@ -2,6 +2,8 @@
 
 # Unreleased
 
+- Add `template_fragments()` for reaching the content of `<template>` elements
+  which are ignored by HTML5 compliant parsers.
 - Do not replace `<-undef>` it not longer possible to get it.
 - The internal `<html>` wrapper of an HTML fragment is no longer reported as the `parent` of
   the fragment's top-level nodes.

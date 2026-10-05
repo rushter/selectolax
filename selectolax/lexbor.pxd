@@ -284,6 +284,7 @@ cdef class LexborNode:
         lxb_dom_node_t *node
         public LexborHTMLParser parser
         cdef bint _is_fragment_root
+        cdef bint _is_template_content
 
     @staticmethod
     cdef LexborNode new(lxb_dom_node_t *node, LexborHTMLParser parser)
@@ -295,6 +296,7 @@ cdef class LexborNode:
 
 cdef bint is_empty_text_node(lxb_dom_node_t *node) noexcept
 cdef bint _is_whitespace_only(const lxb_char_t *buffer, size_t buffer_length) noexcept nogil
+cdef LexborNode _template_content_node(LexborNode template_node)
 
 
 cdef class LexborCSSSelector:
@@ -427,6 +429,44 @@ cdef extern from "lexbor/dom/dom.h" nogil:
 cdef extern from "lexbor/dom/dom.h":
     ctypedef lexbor_action_t (*lxb_dom_node_simple_walker_f)(lxb_dom_node_t *node, void *ctx)
     void lxb_dom_node_simple_walk(lxb_dom_node_t *root, lxb_dom_node_simple_walker_f walker_cb, void *ctx)
+
+
+# The content of a <template> is parsed into a document fragment the element
+# owns, not into its child list, so it is not part of the document tree and
+# Lexbor's selector engine never walks into it. The fragment is reachable only
+# through the element's private interface, which has no accessor, so it is read
+# here where the real headers and struct layout are available.
+cdef extern from *:
+    """
+    #include "lexbor/html/interfaces/template_element.h"
+
+    static inline lxb_dom_node_t *
+    selectolax_template_content(lxb_dom_node_t *node)
+    {
+        lxb_dom_document_fragment_t *content;
+
+        /* Only the HTML namespace gets the template interface; in SVG and
+         * MathML a <template> is an ordinary element. */
+        if (node->type != LXB_DOM_NODE_TYPE_ELEMENT
+            || node->local_name != LXB_TAG_TEMPLATE
+            || node->ns != LXB_NS_HTML) {
+            return NULL;
+        }
+
+        content = lxb_html_interface_template(node)->content;
+
+        return content == NULL ? NULL : lxb_dom_interface_node(content);
+    }
+
+    static inline lxb_dom_node_t *
+    selectolax_template_content_host(lxb_dom_node_t *content)
+    {
+        return lxb_dom_interface_node(
+                   ((lxb_dom_document_fragment_t *) content)->host);
+    }
+    """
+    lxb_dom_node_t *selectolax_template_content(lxb_dom_node_t *node) nogil
+    lxb_dom_node_t *selectolax_template_content_host(lxb_dom_node_t *content) nogil
 
 
 cdef extern from "lexbor/dom/interfaces/element.h" nogil:

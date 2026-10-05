@@ -1171,6 +1171,35 @@ cdef class LexborHTMLParser:
             return False
         return node.css_matches(selector)
 
+    def template_fragments(self):
+        """Return the content of every ``<template>`` in the document, as fragments.
+
+        The content of a ``<template>`` is not part of the document tree, so
+        ``css()`` never reaches it. This is how to get at it. See
+        :meth:`LexborNode.template_fragments`.
+
+        Returns
+        -------
+        list of `LexborNode`
+            One fragment per ``<template>``, in document order. Empty when the
+            document holds no templates.
+
+        Examples
+        --------
+        >>> tree = LexborHTMLParser("<template id='row'><b>x</b></template>")
+        >>> tree.css('b')
+        []
+        >>> fragment = tree.template_fragments()[0]
+        >>> fragment.css('b')
+        [<LexborNode b>]
+        >>> fragment.parent.attributes['id']
+        'row'
+        """
+        cdef LexborNode node = self.root
+        if node is None:
+            return []
+        return node.template_fragments()
+
     def merge_text_nodes(self):
         """Iterates over all text nodes and merges all text nodes that are close to each other.
 

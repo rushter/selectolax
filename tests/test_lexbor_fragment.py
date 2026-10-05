@@ -887,11 +887,14 @@ def test_fragment_inner_html_setter_uses_the_fragment_context():
     assert tree.html == "cell"
     assert tree.css("style") == []
 
-    table = LexborHTMLParser("<td>a</td><td>b</td>", is_fragment=True, fragment_tag="td")
+    table = LexborHTMLParser(
+        "<td>a</td><td>b</td>", is_fragment=True, fragment_tag="td"
+    )
     table.inner_html = "<td>new</td>"
-    assert table.html == LexborHTMLParser(
-        "<td>new</td>", is_fragment=True, fragment_tag="td"
-    ).html
+    assert (
+        table.html
+        == LexborHTMLParser("<td>new</td>", is_fragment=True, fragment_tag="td").html
+    )
 
 
 def test_fragment_inner_html_setter_is_idempotent():
@@ -911,7 +914,9 @@ def test_fragment_inner_html_setter_leaves_replaced_nodes_readable():
 
 
 def test_fragment_inner_html_setter_invalidates_derived_caches():
-    tree = LexborHTMLParser('<div><script src="a.js">old</script></div>', is_fragment=True)
+    tree = LexborHTMLParser(
+        '<div><script src="a.js">old</script></div>', is_fragment=True
+    )
     assert tree.script_srcs_contain(("a.js",)) is True
     tree.inner_html = '<div><script src="b.js">new</script></div>'
     assert tree.script_srcs_contain(("a.js",)) is False

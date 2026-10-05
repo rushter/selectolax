@@ -731,6 +731,65 @@ Use lexbor-specific pseudo-classes for case-sensitive and case-insensitive text 
     Case-sensitive results: 1
     Matching text: lexbor is AwesOme
 
+Template Content
+----------------
+
+Reach the content of ``<template>`` elements, which ``css()`` never finds.
+
+The HTML Standard does not make ``<template>`` a container: markup written inside
+it is parsed into a separate document fragment the element owns, so it is not
+part of the document tree and ordinary searches skip it. Use
+``template_fragments()`` to get that content as fragments.
+
+.. code-block:: python
+
+    from selectolax.lexbor import LexborHTMLParser
+
+    html = """
+    <div id="app">
+        <template id="row-template">
+            <tr class="row">
+                <td class="name"></td>
+                <td class="age"></td>
+            </tr>
+        </template>
+        <template id="header-template">
+            <tr><th>Name</th><th>Age</th></tr>
+        </template>
+    </div>
+    """
+
+    parser = LexborHTMLParser(html)
+
+    # css() skips template content entirely.
+    print(len(parser.css('.row')))
+
+    # One fragment per <template>, in document order. fragment.parent is the
+    # <template> the content came from, so its attributes stay reachable.
+    for fragment in parser.template_fragments():
+        cells = [cell.tag for cell in fragment.css('td, th')]
+        print(f"{fragment.parent.attrs['id']}: {cells}")
+
+    # Fragments are views onto the tree, not copies, so edits are not lost.
+    row = parser.css_first('#row-template').template_fragments()[0]
+    row.css_first('.name').attrs['data-role'] = 'name'
+    print('data-role="name"' in parser.html)
+
+**Output:**
+
+.. code-block:: text
+
+    0
+    row-template: ['td', 'td']
+    header-template: ['th', 'th']
+    True
+
+A ``<template>`` in the SVG or MathML namespace is an ordinary element, so its
+content is already part of the tree and is not reported here. A template nested
+inside another template's content is not in the document tree either; call
+``template_fragments()`` on the outer fragment to reach it.
+
+
 Sibling Navigation
 ------------------
 

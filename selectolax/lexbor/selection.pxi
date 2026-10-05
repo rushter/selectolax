@@ -38,6 +38,13 @@ cdef inline size_t _wrapper_to_skip_for(LexborNode node):
     return <size_t> node.parser._fragment_wrapper
 
 
+cdef inline lxb_selectors_opt_t _root_match_opt_for(LexborNode node):
+    if node is not None and node._is_template_content:
+        return LXB_SELECTORS_OPT_DEFAULT
+
+    return LXB_SELECTORS_OPT_MATCH_ROOT
+
+
 @cython.final
 cdef class LexborCSSSelector:
 
@@ -113,6 +120,7 @@ cdef class LexborCSSSelector:
         cdef lxb_css_selector_list_t* selectors
         cdef lxb_char_t* c_selector
         cdef lxb_css_selector_list_t * selectors_list
+        cdef lxb_selectors_opt_t root_opt
 
         if not isinstance(query, str):
             raise TypeError("Query must be a string.")
@@ -126,12 +134,15 @@ cdef class LexborCSSSelector:
         self.current_node = node
         self._wrapper_to_skip = _wrapper_to_skip_for(node)
         self.results = []
+        root_opt = _root_match_opt_for(node)
+        lxb_selectors_opt_set(self.selectors, root_opt)
         if only_first:
             status = lxb_selectors_find(self.selectors, node.node, selectors_list,
                                         <lxb_selectors_cb_f>css_finder_callback_first, <void*>self)
         else:
             status = lxb_selectors_find(self.selectors, node.node, selectors_list,
                                         <lxb_selectors_cb_f>css_finder_callback, <void*>self)
+        lxb_selectors_opt_set(self.selectors, LXB_SELECTORS_OPT_MATCH_ROOT)
         results = list(self.results)
         self.results = []
         self.current_node = None
@@ -144,6 +155,7 @@ cdef class LexborCSSSelector:
         cdef lxb_css_selector_list_t * selectors
         cdef lxb_char_t * c_selector
         cdef lxb_css_selector_list_t * selectors_list
+        cdef lxb_selectors_opt_t root_opt
         cdef int result
 
         if not isinstance(query, str):
@@ -158,8 +170,11 @@ cdef class LexborCSSSelector:
 
         self.results = []
         self._wrapper_to_skip = _wrapper_to_skip_for(node)
+        root_opt = _root_match_opt_for(node)
+        lxb_selectors_opt_set(self.selectors, root_opt)
         status = lxb_selectors_find(self.selectors, node.node, selectors_list,
                                     <lxb_selectors_cb_f> css_matcher_callback, <void *> self)
+        lxb_selectors_opt_set(self.selectors, LXB_SELECTORS_OPT_MATCH_ROOT)
         self._wrapper_to_skip = 0
         if status != LXB_STATUS_OK:
             lxb_css_selector_list_destroy_memory(selectors_list)

@@ -36,6 +36,21 @@ cdef inline bytes to_bytes(str_or_LexborNode value):
     return bytes_val
 
 
+cdef LexborNode _template_content_node(LexborNode template_node):
+    cdef lxb_dom_node_t *content
+
+    if template_node is None or template_node.node == NULL:
+        return None
+
+    content = selectolax_template_content(template_node.node)
+    if content == NULL:
+        return None
+
+    fragment = LexborNode.new(content, template_node.parser)
+    fragment._is_template_content = 1
+    return fragment
+
+
 cdef inline void _replace_children(
     lxb_dom_node_t *parent, const lxb_char_t *html, size_t html_len
 ) except *:
@@ -88,6 +103,7 @@ cdef class LexborNode:
         lxbnode.node = node
         lxbnode.parser = parser
         lxbnode._is_fragment_root = 0
+        lxbnode._is_template_content = 0
         return lxbnode
 
     @property
@@ -120,9 +136,16 @@ cdef class LexborNode:
         document, so it is not reported here either.
         """
         cdef LexborNode node
-        if self.node.parent == NULL:
+        cdef lxb_dom_node_t *parent
+
+        if self._is_template_content:
+            parent = selectolax_template_content_host(self.node)
+        else:
+            parent = self.node.parent
+
+        if parent == NULL:
             return None
-        node = LexborNode.new(<lxb_dom_node_t *> self.node.parent, self.parser)
+        node = LexborNode.new(<lxb_dom_node_t *> parent, self.parser)
         if _is_fragment_wrapper(node):
             return None
         return node
@@ -167,7 +190,9 @@ cdef class LexborNode:
         lxb_str = lexbor_str_create()
         if lxb_str == NULL:
             raise MemoryError("Can't allocate memory for the output string.")
-        if self._is_fragment_root:
+        if self._is_template_content:
+            status = serialize_fragment(<lxb_dom_node_t *> self.node.first_child, lxb_str)
+        elif self._is_fragment_root:
             status = serialize_fragment(self.node, lxb_str)
             # status = lxb_html_serialize_tree_str(self.node, lxb_str)
         else:
@@ -186,7 +211,12 @@ cdef class LexborNode:
         lxb_str = lexbor_str_create()
         if lxb_str == NULL:
             raise MemoryError("Can't allocate memory for the output string.")
-        if self._is_fragment_root:
+        if self._is_template_content:
+            if pretty:
+                status = serialize_fragment_pretty(<lxb_dom_node_t *> self.node.first_child, lxb_str, options, indent)
+            else:
+                status = serialize_fragment(<lxb_dom_node_t *> self.node.first_child, lxb_str)
+        elif self._is_fragment_root:
             if pretty:
                 status = serialize_fragment_pretty(self.node, lxb_str, options, indent)
             else:
@@ -905,9 +935,11 @@ cdef class LexborNode:
         cdef lxb_dom_node_t * next_top_level
         cdef LexborNode lxb_node
 
-        # A fragment root is searched through its wrapper, so the top-level nodes
-        # are walked one after another rather than as a single subtree.
-        cdef bint per_top_level = self._is_fragment_root and start_node is not self
+        # A fragment root is searched through its wrapper, and template content through
+        # the fragment holding it, so in both cases the top-level nodes are walked
+        # one after another rather than as a single subtree.
+        cdef bint per_top_level = self._is_template_content \
+            or (self._is_fragment_root and start_node is not self)
 
         if per_top_level:
             root = start_node.node.first_child
@@ -1258,6 +1290,38 @@ cdef class LexborNode:
     def remove(self, bool recursive=True):
         """An alias for the decompose method."""
         self.decompose(recursive)
+
+    def template_fragments(self):
+        """Return the content of every ``<template>`` in this subtree, as fragments.
+
+        The content of a ``<template>`` is not part of the document tree, so
+        ``css()`` never reaches it. This is how to get at it.
+
+        Returns
+        -------
+        list of `LexborNode`
+            One fragment per ``<template>``, in document order. Empty when the
+            subtree holds no templates.
+
+        Examples
+        --------
+        >>> tree = LexborHTMLParser("<div><template id='row'><b>x</b></template></div>")
+        >>> fragment = tree.css_first('div').template_fragments()[0]
+        >>> fragment.css('b')
+        [<LexborNode b>]
+        >>> fragment.parent.attributes['id']
+        'row'
+        """
+        cdef LexborNode root = self._get_node()
+        cdef LexborNode template_node
+        cdef list fragments = []
+
+        for template_node in self.parser.selector.find('template', root):
+            fragment = _template_content_node(template_node)
+            if fragment is not None:
+                fragments.append(fragment)
+
+        return fragments
 
     def select(self, query=None):
         """Select nodes given a CSS selector.

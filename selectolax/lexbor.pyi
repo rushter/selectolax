@@ -697,6 +697,28 @@ class LexborNode:
     def remove(self, recursive: bool = True) -> None:
         """An alias for the decompose method."""
 
+    def template_fragments(self) -> list[LexborNode]:
+        """Return the content of every ``<template>`` in this subtree, as fragments.
+
+        The content of a ``<template>`` is not part of the document tree, so
+        ``css()`` never reaches it. This is how to get at it.
+
+        Returns
+        -------
+        list of LexborNode
+            One fragment per ``<template>``, in document order. Empty when the
+            subtree holds no templates.
+
+        Examples
+        --------
+        >>> tree = LexborHTMLParser("<div><template id='row'><b>x</b></template></div>")
+        >>> fragment = tree.css_first('div').template_fragments()[0]
+        >>> fragment.css('b')
+        [<LexborNode b>]
+        >>> fragment.parent.attributes['id']
+        'row'
+        """
+
     def select(self, query: str | None = None) -> LexborSelector:
         """Select nodes given a CSS selector.
 
@@ -1287,6 +1309,31 @@ class LexborHTMLParser:
         -------
         bool
             ``True`` when a match exists.
+        """
+
+    def template_fragments(self) -> list[LexborNode]:
+        """Return the content of every ``<template>`` in the document, as fragments.
+
+        The content of a ``<template>`` is not part of the document tree, so
+        ``css()`` never reaches it. This is how to get at it. See
+        :meth:`LexborNode.template_fragments`.
+
+        Returns
+        -------
+        list of LexborNode
+            One fragment per ``<template>``, in document order. Empty when the
+            document holds no templates.
+
+        Examples
+        --------
+        >>> tree = LexborHTMLParser("<template id='row'><b>x</b></template>")
+        >>> tree.css('b')
+        []
+        >>> fragment = tree.template_fragments()[0]
+        >>> fragment.css('b')
+        [<LexborNode b>]
+        >>> fragment.parent.attributes['id']
+        'row'
         """
 
     def merge_text_nodes(self) -> None:

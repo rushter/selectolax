@@ -39,6 +39,8 @@ jobs:
         python --version --version
         python -c "import sysconfig; assert sysconfig.get_config_var('Py_GIL_DISABLED') == 1, 'not a free-threaded build'"
     - name: Install dependencies
+      env:
+        BUILD_JOBS: "auto"
       run: |
         python -m pip install --upgrade pip setuptools
         pip install -r requirements_dev.txt

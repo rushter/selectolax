@@ -28,6 +28,8 @@ jobs:
         python-version: ${{ matrix.python-version }}
         allow-prereleases: true
     - name: Install dependencies
+      env:
+        BUILD_JOBS: "auto"
       run: |
         python -m pip install --upgrade pip setuptools
         pip install -r requirements_dev.txt
@@ -55,6 +57,8 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
+        env:
+          BUILD_JOBS: "auto"
         run: |
           python -m pip install --upgrade pip setuptools
           pip install -r requirements_dev.txt

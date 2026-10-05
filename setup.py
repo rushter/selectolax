@@ -6,7 +6,10 @@ import platform
 import logging
 
 import sys
+from concurrent.futures import ThreadPoolExecutor
+
 from setuptools import setup, find_packages, Extension
+from setuptools.command.build_ext import build_ext as _build_ext
 
 
 logging.basicConfig(level=logging.INFO)
@@ -135,6 +138,49 @@ def make_extensions():
     return extensions
 
 
+class build_ext_parallel(_build_ext):
+    """Compile the sources of an extension concurrently.
+
+    distutils walks its sources in a serial loop, and ``build_ext --parallel``
+    only parallelises the outer per-extension loop, so a single extension built
+    from 200+ files still gets one worker. ``_compile()`` is the documented
+    per-file hook and just spawns a subprocess, so it is safe to dispatch
+    through a thread pool.
+
+    Set BUILD_JOBS to a worker count, or to "auto" for os.cpu_count().
+    Unset means serial.
+    """
+
+    def build_extensions(self):
+        workers = os.environ.get("BUILD_JOBS", "1")
+        workers = (os.cpu_count() or 1) if workers == "auto" else int(workers)
+        compiler = self.compiler
+        if workers <= 1:
+            super().build_extensions()
+            return
+
+        original_compile, original_inner = compiler.compile, compiler._compile
+        futures = []
+        pool = ThreadPoolExecutor(max_workers=workers)
+
+        def inner(*args):
+            futures.append(pool.submit(original_inner, *args))
+
+        def compile(*args, **kwargs):
+            try:
+                return original_compile(*args, **kwargs)
+            finally:
+                for future in futures:
+                    future.result()
+
+        compiler._compile, compiler.compile = inner, compile
+        try:
+            super().build_extensions()
+        finally:
+            compiler.compile, compiler._compile = original_compile, original_inner
+            pool.shutdown()
+
+
 setup(
     name="selectolax",
     version="1.0.0",
@@ -148,4 +194,5 @@ setup(
     include_package_data=True,
     zip_safe=False,
     ext_modules=make_extensions(),
+    cmdclass={"build_ext": build_ext_parallel},
 )

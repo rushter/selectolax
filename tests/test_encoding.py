@@ -1,5 +1,3 @@
-"""Tests for the encoding detection behind ``LexborHTMLParser(..., encoding=True)``."""
-
 import pytest
 
 import selectolax.lexbor as lexbor_module

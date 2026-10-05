@@ -1,11 +1,3 @@
-"""Undecodable bytes must never raise out of a read.
-
-Lexbor passes bytes it cannot decode through verbatim, so a single stray byte
-anywhere in an untrusted document used to make ``html``, ``attributes`` and
-``attrs`` raise ``UnicodeDecodeError`` while ``text()`` quietly substituted
-U+FFFD. Every accessor now substitutes U+FFFD, and agrees with the others.
-"""
-
 from selectolax.lexbor import LexborHTMLParser
 
 # Stands in for whatever the document happened to contain.

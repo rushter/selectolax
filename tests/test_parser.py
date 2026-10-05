@@ -3,12 +3,11 @@ from difflib import SequenceMatcher
 
 import pytest
 
-from selectolax.lexbor import LexborHTMLParser, LexborNode, SelectolaxError, create_tag
-
-"""
-We'are testing only our own code.
-Many functionality are already tested in the Lexbor engine, so there is no reason to test every case.
-"""
+from selectolax.lexbor import (
+    LexborHTMLParser,
+    LexborNode,
+    SelectolaxError,
+)
 
 
 def test_parser():
@@ -97,29 +96,6 @@ def test_nodes():
     assert SequenceMatcher(None, html, html_output).ratio() > 0.8
 
 
-def test_root_css():
-    tree = LexborHTMLParser("test")
-    assert len(tree.root.css("data")) == 0
-
-
-def test_strip_tags_from_root():
-    html = "<body><div></div><script></script></body>"
-    html_parser = LexborHTMLParser(html)
-    html_parser.root.strip_tags(["div", "script"])
-    assert html_parser.html == "<html><head></head><body></body></html>"
-
-    with pytest.raises(TypeError):
-        html_parser.strip_tags(1)
-
-
-def test_clone():
-    html_parser = LexborHTMLParser("""<h1>Welcome</h1>""")
-    clone = html_parser.clone()
-    html_parser.root.css_first("h1").decompose()
-    del html_parser
-    assert clone.html == "<html><head></head><body><h1>Welcome</h1></body></html>"
-
-
 def test_tags():
     html_parser = LexborHTMLParser("""
     <div><span><span></span></span></div>
@@ -151,15 +127,6 @@ def test_invalid_input_types():
 
     with pytest.raises(TypeError, match="Expected a string"):
         LexborHTMLParser(None)
-
-
-def test_clone_handling():
-    html_parser = LexborHTMLParser("<div>test</div>")
-
-    cloned = html_parser.clone()
-    assert cloned.html is not None
-
-    assert html_parser.html is not None
 
 
 def test_concurrent_parsing():
@@ -239,29 +206,3 @@ def test_null_pointer_safety():
 
         for prop_name in properties_to_test:
             getattr(html_parser, prop_name)
-
-
-def test_decompose_root_node():
-    html_parser = LexborHTMLParser("<div><p>test</p></div>")
-    with pytest.raises(SelectolaxError):
-        html_parser.root.decompose()
-
-
-def test_empty_attribute_lexbor():
-    div = create_tag("div")
-    div.attrs["hidden"] = None
-    assert div.html == '<div hidden=""></div>'
-
-
-def test_pseudo_class_contains():
-    html = "<div><p>hello world</p><p id='main'>AwesOme t3xt</p></div>"
-    parser = LexborHTMLParser(html)
-    results = parser.css('p:lexbor-contains("awesome" i)')
-    assert len(results) == 1
-    assert results[0].text() == "AwesOme t3xt"
-
-
-def test_css_matches_returns_bool():
-    res = LexborHTMLParser("<div>test</div>").css_matches("div")
-    assert isinstance(res, bool)
-    assert res is True

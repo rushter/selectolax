@@ -56,10 +56,120 @@ There are 3 ways to create or parse objects in Selectolax:
     parser = LexborHTMLParser(html)
 
     # Parse HTML as a fragment
-    frag_parser = LexborHTMLParser(html, is_fragment=True)
+    frag_parser = LexborHTMLParser(fragment, is_fragment=True)
 
     # Create a new node for  `parser`.
     node = parser.create_node("div")
+
+    # A document has the wrappers the Standard requires...
+    print(parser.head is not None, parser.body is not None)
+
+    # ...a fragment has neither, yet searches still reach every top-level node.
+    print(frag_parser.head, frag_parser.body)
+    print([n.tag for n in frag_parser.css('p, script')])
+
+**Output:**
+
+.. code-block:: text
+
+    True True
+    None None
+    ['p', 'script']
+
+Serializing each parser shows the difference in what the wrappers do:
+
+.. code-block:: text
+
+    >>> parser.html
+    '<html><head></head><body>...</body></html>'
+
+    >>> frag_parser.html
+    '<div>\n    <p class="p3">\n        Hello there!\n    </p>\n</div>\n<script>\n    ...\n</script>\n'
+
+Because a fragment is not a document it has no ``<body>``, so read it through
+``parser.html``, ``parser.text()`` or a search such as ``parser.css()`` rather
+than through ``parser.body``.
+
+Parsing Bytes
+-------------
+
+Pass ``encoding=True`` when your input is ``bytes`` that may not be UTF-8.
+Without it, bytes are parsed as UTF-8 and any encoding declaration in the
+document is ignored.
+
+.. code-block:: python
+
+    from selectolax.lexbor import LexborHTMLParser
+
+    raw = '<meta charset="windows-1251"><p>Привет</p>'.encode("windows-1251")
+
+    # Without encoding=True the declaration means nothing.
+    print(LexborHTMLParser(raw).text())
+
+    # With it, the declared encoding is detected and transcoded to UTF-8 first.
+    print(LexborHTMLParser(raw, encoding=True).text())
+
+**Output:**
+
+.. code-block:: text
+
+
+    Привет
+
+Detection follows the HTML Standard. A byte-order mark wins over any
+declaration, and both ``<meta charset>`` and
+``<meta http-equiv="content-type" content="...charset=...">`` are honoured, but
+only within the first 1024 bytes of the stream, which is where the Standard
+stops looking. Bytes that are invalid in the detected encoding become U+FFFD.
+
+Input that declares nothing is decoded as UTF-8, not as the windows-1252 a
+browser would fall back to, so turning this on cannot reinterpret a document
+that already parsed correctly.
+
+``str`` input is never affected: a ``str`` is already decoded, so there is
+nothing to detect.
+
+Document Options
+----------------
+
+By default the parser applies the mutation events that the HTML Standard
+defines, so the tree it builds is the one a browser would build.
+``LexborDocumentOptions.WO_EVENTS`` turns those side effects off and leaves the
+tree as close to the source as possible, which is what you want when
+round-tripping HTML or diffing markup between two documents.
+
+.. code-block:: python
+
+    from selectolax.lexbor import LexborHTMLParser, LexborDocumentOptions
+
+    html = "<select><selectedcontent></selectedcontent><option>this gets cloned</option></select>"
+
+    # The Standard has <selectedcontent> mirror the selected <option>'s content,
+    # so the parser clones it into place.
+    print(LexborHTMLParser(html).css_first("selectedcontent").html)
+
+    # Without events, the element keeps whatever the source actually contained.
+    options = LexborDocumentOptions.WO_EVENTS
+    parser = LexborHTMLParser(html, options=options)
+    print(parser.css_first("selectedcontent").html)
+
+    # The options in effect are readable back from the parser.
+    print(parser.options == options)
+
+**Output:**
+
+.. code-block:: text
+
+    <selectedcontent>this gets cloned</selectedcontent>
+    <selectedcontent></selectedcontent>
+    True
+
+Several flags can be combined with the bitwise OR operator, or by passing the
+equivalent plain integer:
+
+.. code-block:: python
+
+    options = LexborDocumentOptions.WO_EVENTS | LexborDocumentOptions.UNDEF
 
 CSS Selectors
 -------------
@@ -173,34 +283,6 @@ Ensure exactly one match exists, otherwise raise an error.
 .. code-block:: text
 
     ValueError: Expected 1 match, but found 2 matches
-
-CSS Chaining
-~~~~~~~~~~~~
-
-Chain multiple CSS selectors to progressively filter results.
-
-.. code-block:: python
-
-    html = """
-    <div id="container">
-        <span class="red"></span>
-        <span class="green"></span>
-        <span class="red"></span>
-        <span class="green"></span>
-    </div>
-    """
-
-    parser = LexborHTMLParser(html)
-
-    # Chain selectors: start with div, then span, then .red
-    red_spans = parser.select('div').css("span").css(".red").matches
-    print([node.html for node in red_spans])
-
-**Output:**
-
-.. code-block:: text
-
-    ['<span class="red"></span>', '<span class="red"></span>']
 
 HTML manipulation
 -----------------
@@ -335,6 +417,92 @@ Walk all child nodes of an element.
     p <p class="p3" style="display:none;">Excepteur <i>sint</i> occaecat cupidatat non proident</p>
     p <p class="p3" vid>Lorem ipsum</p>
 
+Node Basics
+-----------
+
+Creating Nodes
+~~~~~~~~~~~~~~
+
+``create_tag()`` returns a standalone node, while
+``LexborHTMLParser.create_node()`` returns one tied to a specific parser.
+Neither can be inserted into an arbitrary tree, so use ``create_node()``
+whenever the node is destined for that parser's document.
+
+.. code-block:: python
+
+    from selectolax.lexbor import LexborHTMLParser, create_tag
+
+    node = create_tag("div")
+    node.attrs["class"] = "card"
+    print(node.html)
+
+    parser = LexborHTMLParser("<div id='main'></div>")
+    tied = parser.create_node("span")
+    print(tied.tag)
+
+**Output:**
+
+.. code-block:: text
+
+    <div class="card"></div>
+    span
+
+Identifying Nodes
+~~~~~~~~~~~~~~~~~
+
+``id`` is the ``id`` attribute ready-made, and ``tag_id`` is lexbor's numeric
+tag identifier, which is cheaper to compare than repeatedly comparing tag name
+strings. Both return ``None`` on a node that has no such value, such as a text
+or comment node.
+
+.. code-block:: python
+
+    parser = LexborHTMLParser("<div id='main'>Hi</div>")
+    main = parser.css_first("div")
+
+    print(main.id)
+    print(main.tag)
+    print(main.tag_id)
+
+**Output:**
+
+.. code-block:: text
+
+    main
+    div
+    52
+
+Reading Attributes Safely
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+An attribute that is present but valueless, such as ``<input disabled>``, has
+``None`` as its value, and a missing attribute raises ``KeyError`` on lookup.
+``attrs.sget()`` returns a string in both cases, so it is the convenient
+option when you only care about the value.
+
+.. code-block:: python
+
+    parser = LexborHTMLParser("<div id='main' data-tag></div>")
+    main = parser.css_first("div")
+
+    print(main.attributes)
+    print(main.attrs.get("data-tag"))
+    print(main.attrs.get("data-missing"))
+
+    # sget() never returns None: it falls back to the given default.
+    print(main.attrs.sget("data-missing", "none"))
+    print(main.attrs.sget("id"))
+
+**Output:**
+
+.. code-block:: text
+
+    {'id': 'main', 'data-tag': None}
+    None
+    None
+    none
+    main
+
 DOM Modification
 ----------------
 
@@ -447,23 +615,76 @@ Insert new content into the DOM at specific positions.
 
     parser = LexborHTMLParser(html)
 
-    # Insert text before an element
+    # Insert text before an element. A str is inserted as text, so any HTML
+    # in it is escaped rather than parsed.
     red_node = parser.css_first('.red')
     red_node.insert_before("Hello")
 
-    # Insert HTML nodes
-    subtree = LexborHTMLParser("<div>Hi</div>")
+    # Insert a node taken from another parser. The insert methods want a
+    # LexborNode, so reach into the parser you borrowed it from.
     green_node = parser.css_first('.green')
-    green_node.insert_before(subtree)
+    donor = LexborHTMLParser("<div>Hi</div>")
+    green_node.insert_before(donor.body.first_child)
 
-    # Insert before, after, or as child
+    # Insert before, after, or as a child. These methods move the node they
+    # are given, so clone() first when you want more than one copy.
     car_div = parser.create_node("div")
     car_div.inner_html = "Car"
     green_node.insert_before(car_div)
-    green_node.insert_after(car_div)
-    green_node.insert_child(car_div)
+    green_node.insert_after(car_div.clone())
+    green_node.insert_child(car_div.clone())
 
     print(parser.body.html)
+
+**Output:**
+
+.. code-block:: text
+
+    <body><div id="container">
+        Hello<span class="red"></span>
+        <div>Hi</div><div>Car</div><span class="green"><div>Car</div></span><div>Car</div>
+        <span class="red"></span>
+        <span class="green"></span>
+    </div>
+    </body>
+
+Cloning Trees and Nodes
+-----------------------
+
+``clone()`` makes an independent deep copy. The copy is tied to the parser it came from
+and is freed when that parser is, so keep a reference to the parser rather than
+to the clone.
+
+.. code-block:: python
+
+    from selectolax.lexbor import LexborHTMLParser
+
+    parser = LexborHTMLParser('<div id="main"><p>Hello</p></div>')
+
+    # A cloned parser is a whole separate document.
+    draft = parser.clone()
+    draft.css_first('div').attrs['id'] = 'draft'
+    print(parser.css_first('div').id, draft.css_first('div').id)
+
+    # A cloned node is independent, so editing it leaves the original alone.
+    div = parser.css_first('div')
+    copy = div.clone()
+    copy.attrs['id'] = 'copy'
+    copy.insert_child(' world')
+    print(div.html)
+    print(copy.html)
+
+**Output:**
+
+.. code-block:: text
+
+    main draft
+    <div id="main"><p>Hello</p></div>
+    <div id="copy"><p>Hello</p> world</div>
+
+Cloning is also how you reuse a node. Insertion methods move the node they are
+given rather than copying it, so inserting the same node twice leaves it in the
+last position only. ``clone()`` before each insert when you want copies.
 
 Tree Traversal
 --------------
@@ -502,6 +723,63 @@ Walk  every node in the DOM tree and extract text content.
     p
     Lorem ipsum dolor sit amet, ea quo modus meliore platonem.
 
+
+Text and Comment Nodes
+----------------------
+
+A tree holds more than elements. ``traverse()`` and ``iter()`` only yield text
+nodes when you ask for them with ``include_text=True``, and the type predicates
+tell the node kinds apart, which is cleaner than comparing ``node.tag``
+against the ``-text`` and ``-comment`` placeholders.
+
+Two properties read those nodes' content. ``text_content`` returns a text
+node's own data without descending into children, and ``comment_content``
+returns an HTML comment's body with the surrounding whitespace removed. On a
+node of the wrong kind both return ``None`` instead of raising.
+
+.. code-block:: python
+
+    from selectolax.lexbor import LexborHTMLParser
+
+    html = """
+    <div id="main">
+        <!-- updated 2026-10-06 -->
+        <p>Price: <b>10</b> EUR</p>
+    </div>
+    """
+
+    parser = LexborHTMLParser(html)
+    p = parser.css_first('p')
+
+    # text_content reads one text node; text() concatenates descendants.
+    print(repr(p.first_child.text_content))
+    print(repr(p.first_child.text()))
+    print(repr(p.text()))
+
+    # comment_content needs the comment node, which a tree walk finds.
+    comment = next(n for n in parser.css_first('#main').traverse() if n.is_comment_node)
+    print(repr(comment.comment_content))
+    print(comment.html)
+
+    # Neither property raises on the wrong node type.
+    print(p.comment_content)
+    print(comment.text_content)
+
+**Output:**
+
+.. code-block:: text
+
+    'Price: '
+    'Price: '
+    'Price: 10 EUR'
+    'updated 2026-10-06'
+    <!-- updated 2026-10-06 -->
+    None
+    None
+
+``is_empty_text_node`` reports whether a text node holds nothing but
+whitespace, which is what ``skip_empty=True`` filters out in ``text()``,
+``iter()`` and ``traverse()``.
 
 Common Patterns
 ---------------

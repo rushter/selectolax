@@ -103,8 +103,9 @@ def make_extensions():
             "-fPIC",
             "-Wno-unused-variable",
             "-Wno-unused-function",
+            "-Wno-overlength-strings",
             "-std=c99",
-            "-O2",
+            "-O3",
             "-g0",
         ]
         compile_arguments_lxb.extend(args)

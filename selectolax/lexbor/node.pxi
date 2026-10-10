@@ -36,6 +36,15 @@ cdef inline bytes to_bytes(str_or_LexborNode value):
     return bytes_val
 
 
+cdef inline bint _is_inclusive_ancestor(lxb_dom_node_t *candidate, lxb_dom_node_t *node):
+    cdef lxb_dom_node_t *cur = node
+    while cur != NULL:
+        if cur == candidate:
+            return True
+        cur = cur.parent
+    return False
+
+
 cdef LexborNode _template_content_node(LexborNode template_node):
     cdef lxb_dom_node_t *content
 
@@ -981,14 +990,15 @@ cdef class LexborNode:
     def replace_with(self, str_or_LexborNode value):
         """Replace current Node with specified value.
 
+        The node is removed from its current position and placed here.
+        When the node belongs to a different parser, a deep copy is created.
+
         Parameters
         ----------
         value : str, bytes or Node
             The text or Node instance to replace the Node with.
             When a text string is passed, it's treated as text. All HTML tags will be escaped.
             Convert and pass the ``Node`` object when you want to work with HTML.
-            Does not clone the ``Node`` object.
-            All future changes to the passed ``Node`` object will also be taken into account.
 
         Examples
         --------
@@ -1021,14 +1031,22 @@ cdef class LexborNode:
                 self.parser.document, <lxb_dom_node_t *> self.node
             )
         elif isinstance(value, LexborNode):
-            new_node = lxb_dom_document_import_node(
-                &self.parser.document.dom_document,
-                <lxb_dom_node_t *> value.node,
-                <bint> True
-            )
-            if new_node == NULL:
-                raise SelectolaxError("Can't create a new node")
-            lxb_dom_node_insert_before(self.node, <lxb_dom_node_t *> new_node)
+            if value.parser is self.parser:
+                if _is_inclusive_ancestor(<lxb_dom_node_t *> value.node, self.node):
+                    raise SelectolaxError("Can't move a node into its own subtree.")
+                lxb_dom_node_remove(<lxb_dom_node_t *> value.node)
+                lxb_dom_node_insert_before(self.node, <lxb_dom_node_t *> value.node)
+            else:
+                new_node = lxb_dom_document_import_node(
+                    &self.parser.document.dom_document,
+                    <lxb_dom_node_t *> value.node,
+                    <bint> True
+                )
+                if new_node == NULL:
+                    raise SelectolaxError("Can't create a new node")
+                lxb_dom_node_insert_before(self.node, <lxb_dom_node_t *> new_node)
+                lxb_dom_node_remove(<lxb_dom_node_t *> value.node)
+                value.parser._mark_mutated()
             lxb_dom_node_remove(<lxb_dom_node_t *> self.node)
             _maybe_refresh_head_body(
                 self.parser.document, <lxb_dom_node_t *> self.node
@@ -1042,14 +1060,15 @@ cdef class LexborNode:
         """
         Insert a node before the current Node.
 
+        The node is removed from its current position and placed here.
+        When the node belongs to a different parser, a deep copy is created.
+
         Parameters
         ----------
         value : str, bytes or Node
             The text or Node instance to insert before the Node.
             When a text string is passed, it's treated as text. All HTML tags will be escaped.
             Convert and pass the ``Node`` object when you want to work with HTML.
-            Does not clone the ``Node`` object.
-            All future changes to the passed ``Node`` object will also be taken into account.
 
         Examples
         --------
@@ -1078,14 +1097,22 @@ cdef class LexborNode:
                 raise SelectolaxError("Can't create a new node")
             lxb_dom_node_insert_before(self.node, new_node)
         elif isinstance(value, LexborNode):
-            new_node = lxb_dom_document_import_node(
-                &self.parser.document.dom_document,
-                <lxb_dom_node_t *> value.node,
-                <bint> True
-            )
-            if new_node == NULL:
-                raise SelectolaxError("Can't create a new node")
-            lxb_dom_node_insert_before(self.node, <lxb_dom_node_t *> new_node)
+            if value.parser is self.parser:
+                if _is_inclusive_ancestor(<lxb_dom_node_t *> value.node, self.node):
+                    raise SelectolaxError("Can't move a node into its own subtree.")
+                lxb_dom_node_remove(<lxb_dom_node_t *> value.node)
+                lxb_dom_node_insert_before(self.node, <lxb_dom_node_t *> value.node)
+            else:
+                new_node = lxb_dom_document_import_node(
+                    &self.parser.document.dom_document,
+                    <lxb_dom_node_t *> value.node,
+                    <bint> True
+                )
+                if new_node == NULL:
+                    raise SelectolaxError("Can't create a new node")
+                lxb_dom_node_insert_before(self.node, <lxb_dom_node_t *> new_node)
+                lxb_dom_node_remove(<lxb_dom_node_t *> value.node)
+                value.parser._mark_mutated()
         else:
             raise SelectolaxError("Expected a string or LexborNode instance, but %s found" % type(value).__name__)
 
@@ -1095,14 +1122,15 @@ cdef class LexborNode:
         """
         Insert a node after the current Node.
 
+        The node is removed from its current position and placed here.
+        When the node belongs to a different parser, a deep copy is created.
+
         Parameters
         ----------
         value : str, bytes or Node
             The text or Node instance to insert after the Node.
             When a text string is passed, it's treated as text. All HTML tags will be escaped.
             Convert and pass the ``Node`` object when you want to work with HTML.
-            Does not clone the ``Node`` object.
-            All future changes to the passed ``Node`` object will also be taken into account.
 
         Examples
         --------
@@ -1131,14 +1159,22 @@ cdef class LexborNode:
                 raise SelectolaxError("Can't create a new node")
             lxb_dom_node_insert_after(self.node, new_node)
         elif isinstance(value, LexborNode):
-            new_node = lxb_dom_document_import_node(
-                &self.parser.document.dom_document,
-                <lxb_dom_node_t *> value.node,
-                <bint> True
-            )
-            if new_node == NULL:
-                raise SelectolaxError("Can't create a new node")
-            lxb_dom_node_insert_after(self.node, <lxb_dom_node_t *> new_node)
+            if value.parser is self.parser:
+                if _is_inclusive_ancestor(<lxb_dom_node_t *> value.node, self.node):
+                    raise SelectolaxError("Can't move a node into its own subtree.")
+                lxb_dom_node_remove(<lxb_dom_node_t *> value.node)
+                lxb_dom_node_insert_after(self.node, <lxb_dom_node_t *> value.node)
+            else:
+                new_node = lxb_dom_document_import_node(
+                    &self.parser.document.dom_document,
+                    <lxb_dom_node_t *> value.node,
+                    <bint> True
+                )
+                if new_node == NULL:
+                    raise SelectolaxError("Can't create a new node")
+                lxb_dom_node_insert_after(self.node, <lxb_dom_node_t *> new_node)
+                lxb_dom_node_remove(<lxb_dom_node_t *> value.node)
+                value.parser._mark_mutated()
         else:
             raise SelectolaxError("Expected a string or LexborNode instance, but %s found" % type(value).__name__)
 
@@ -1148,14 +1184,15 @@ cdef class LexborNode:
         """
         Insert a node inside (at the end of) the current Node.
 
+        The node is removed from its current position and placed here.
+        When the node belongs to a different parser, a deep copy is created.
+
         Parameters
         ----------
         value : str, bytes or Node
             The text or Node instance to insert inside the Node.
             When a text string is passed, it's treated as text. All HTML tags will be escaped.
             Convert and pass the ``Node`` object when you want to work with HTML.
-            Does not clone the ``Node`` object.
-            All future changes to the passed ``Node`` object will also be taken into account.
 
         Examples
         --------
@@ -1184,14 +1221,22 @@ cdef class LexborNode:
                 raise SelectolaxError("Can't create a new node")
             lxb_dom_node_insert_child(self.node, new_node)
         elif isinstance(value, LexborNode):
-            new_node = lxb_dom_document_import_node(
-                &self.parser.document.dom_document,
-                <lxb_dom_node_t *> value.node,
-                <bint> True
-            )
-            if new_node == NULL:
-                raise SelectolaxError("Can't create a new node")
-            lxb_dom_node_insert_child(self.node, <lxb_dom_node_t *> new_node)
+            if value.parser is self.parser:
+                if _is_inclusive_ancestor(<lxb_dom_node_t *> value.node, self.node):
+                    raise SelectolaxError("Can't move a node into its own subtree.")
+                lxb_dom_node_remove(<lxb_dom_node_t *> value.node)
+                lxb_dom_node_insert_child(self.node, <lxb_dom_node_t *> value.node)
+            else:
+                new_node = lxb_dom_document_import_node(
+                    &self.parser.document.dom_document,
+                    <lxb_dom_node_t *> value.node,
+                    <bint> True
+                )
+                if new_node == NULL:
+                    raise SelectolaxError("Can't create a new node")
+                lxb_dom_node_insert_child(self.node, <lxb_dom_node_t *> new_node)
+                lxb_dom_node_remove(<lxb_dom_node_t *> value.node)
+                value.parser._mark_mutated()
         else:
             raise SelectolaxError("Expected a string or LexborNode instance, but %s found" % type(value).__name__)
 

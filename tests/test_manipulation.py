@@ -760,6 +760,54 @@ def test_node_insert_child():
     )
 
 
+def test_same_document_insert_child_moves_node():
+    parser = LexborHTMLParser("<div></div><span>hello</span>")
+    div = parser.css_first("div")
+    span = parser.css_first("span")
+    div.insert_child(span)
+    assert parser.body.html == "<body><div><span>hello</span></div></body>"
+
+
+def test_same_document_insert_before_moves_node():
+    parser = LexborHTMLParser("<p>first</p><p>second</p>")
+    p2 = parser.css("p")[1]
+    p1 = parser.css_first("p")
+    p2.insert_before(p1)
+    assert parser.body.html == "<body><p>first</p><p>second</p></body>"
+
+
+def test_same_document_insert_after_moves_node():
+    parser = LexborHTMLParser("<span>A</span><div>B</div><em>C</em>")
+    span = parser.css_first("span")
+    em = parser.css_first("em")
+    span.insert_after(em)
+    assert parser.body.html == "<body><span>A</span><em>C</em><div>B</div></body>"
+
+
+def test_same_document_replace_with_moves_node():
+    parser = LexborHTMLParser("<div><a>link</a><b>bold</b></div>")
+    a = parser.css_first("a")
+    b = parser.css_first("b")
+    a.replace_with(b)
+    assert parser.css_first("div").html == "<div><b>bold</b></div>"
+
+
+def test_cross_document_insert_child_moves_node():
+    html_parser = LexborHTMLParser("<div></div>")
+    html_parser2 = LexborHTMLParser("<span>foreign</span>")
+    html_parser.css_first("div").insert_child(html_parser2.css_first("span"))
+    assert "<span>foreign</span>" in html_parser.body.html
+    assert html_parser2.css_first("span") is None
+
+
+def test_cross_document_replace_with_moves_node():
+    html_parser = LexborHTMLParser("<div><a>link</a></div>")
+    html_parser2 = LexborHTMLParser("<b>bold</b>")
+    html_parser.css_first("a").replace_with(html_parser2.css_first("b"))
+    assert "<b>bold</b>" in html_parser.css_first("div").html
+    assert html_parser2.css_first("b") is None
+
+
 def test_merge_text_nodes():
     html = """<div><p><strong>J</strong>ohn</p><p>Doe</p></div>"""
     tree = LexborHTMLParser(html)

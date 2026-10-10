@@ -317,4 +317,5 @@ def test_set_inner_html_on_a_detached_node_leaves_the_document_alone():
     # The write landed on the detached node, leaving the document untouched.
     assert old_div.inner_html == "<p>x</p>boom"
     assert holder.html == expected
+    # 5 structural nodes (html/head/body/em/section) + 200 <i> children.
     assert len(list(tree.root.traverse())) == 205

@@ -73,6 +73,38 @@ def test_declaration_wins_over_a_bom_free_default():
     assert parser.text() == "café"
 
 
+@pytest.mark.parametrize(
+    "declarations",
+    [
+        ["<meta charset='iso-8859-1'>"],
+        [
+            "<meta charset='iso-8859-1'>",
+            "<meta http-equiv=content-type content='charset=shift_jis'>",
+        ],
+        ["<meta name=x content='yo'>", "<meta charset='iso-8859-1'>"],
+        # More declarations than one prescan array holds, so the entries have to
+        # grow past their initial size.
+        ["<meta name=a content=b>"] * 40 + ["<meta charset='iso-8859-1'>"],
+        ["<meta charset=iso-8859-1><meta charset=shift_jis>"],
+    ],
+)
+def test_declaration_is_found_among_many_entries(declarations):
+    # Each declaration lands an entry in the prescan's arrays. Getting the
+    # right answer out of a document with many of them is what keeps that
+    # collection honest: the arrays have to be sized before they are pushed to,
+    # or the write past the block they hand out corrupts the entries.
+    raw = "".join(declarations).encode("ascii") + "<p>café</p>".encode("iso-8859-1")
+
+    parser = LexborHTMLParser(raw, encoding=True)
+
+    assert parser.text() == "café"
+    # Where the declaration sits among the other meta tags is up to the case;
+    # what matters is that it is the one that was read.
+    assert any(
+        meta.attributes.get("charset") == "iso-8859-1" for meta in parser.css("meta")
+    )
+
+
 def test_utf8_bom_is_skipped():
     raw = b"\xef\xbb\xbf" + "<p>café</p>".encode()
 

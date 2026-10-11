@@ -343,6 +343,7 @@ cdef extern from "lexbor/html/encoding.h" nogil:
         pass
 
     lxb_html_encoding_t *lxb_html_encoding_create()
+    lxb_status_t lxb_html_encoding_init(lxb_html_encoding_t *em)
     lxb_html_encoding_t *lxb_html_encoding_destroy(lxb_html_encoding_t *em, bint self_destroy)
     const lxb_char_t *lxb_html_encoding_prescan(
         lxb_html_encoding_t *em,

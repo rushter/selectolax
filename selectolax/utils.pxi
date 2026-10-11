@@ -66,6 +66,7 @@ def _prescan_encoding_label(bytes html_bytes):
         If the prescan object cannot be allocated.
     """
     cdef lxb_html_encoding_t* encoding
+    cdef lxb_status_t status
     cdef const lxb_char_t* data
     cdef const lxb_char_t* label
     cdef size_t label_len = 0
@@ -78,6 +79,10 @@ def _prescan_encoding_label(bytes html_bytes):
         raise MemoryError("Can't allocate memory for the encoding prescan.")
 
     try:
+        status = lxb_html_encoding_init(encoding)
+        if status != LXB_STATUS_OK:
+            raise SelectolaxError("Can't initialize the encoding prescan.")
+
         with nogil:
             label = lxb_html_encoding_prescan(encoding, data,
                                               data + scan_len, &label_len)

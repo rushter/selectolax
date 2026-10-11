@@ -88,9 +88,8 @@ def test_attributes_len_and_contains():
 
 def test_attributes_len_matches_iteration_on_a_wide_element():
     """``len`` counts the attribute list directly, so it must still agree."""
-    html = "<div %s></div>" % " ".join(
-        'data-a%d="%d"' % (i, i) for i in range(64)
-    ) + "<div bare hidden data-a=''></div>"
+    attrs = " ".join(f'data-a{i}="{i}"' for i in range(64))
+    html = f"<div {attrs}></div><div bare hidden data-a=''></div>"
     parser = LexborHTMLParser(html)
     root = parser.root
     assert root is not None

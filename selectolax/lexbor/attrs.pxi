@@ -77,6 +77,16 @@ cdef inline lxb_dom_attr_t* _attr_by_qualified_name(
     return NULL
 
 
+cdef inline size_t _count_attrs(lxb_dom_node_t *node) noexcept nogil:
+    cdef lxb_dom_attr_t *attr = lxb_dom_element_first_attribute_noi(<lxb_dom_element_t *> node)
+    cdef size_t count = 0
+
+    while attr != NULL:
+        count += 1
+        attr = attr.next
+    return count
+
+
 cdef inline lxb_status_t _remove_attr(lxb_dom_node_t *node, lxb_dom_attr_t *attr) noexcept nogil:
     """Unlink and free an attribute already resolved to a pointer.
 
@@ -233,7 +243,7 @@ cdef class LexborAttributes:
         raise KeyError(key)
 
     def __len__(self):
-        return len(list(self.__iter__()))
+        return _count_attrs(<lxb_dom_node_t *> self.node)
 
     def keys(self):
         return self.__iter__()

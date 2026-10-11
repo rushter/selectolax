@@ -12,6 +12,7 @@
   `tfoot`, `th`, `thead`, `tr`).
 - Fix `inner_html` covering only the first top-level node of an HTML fragment.
 - Improve the speed of comment extraction
+- Improve the speed of `len(attrs)` by counting the attribute list directly
 
 # Version 1.0.0
 

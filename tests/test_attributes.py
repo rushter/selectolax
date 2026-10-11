@@ -86,6 +86,25 @@ def test_attributes_len_and_contains():
     assert "missing" not in attrs
 
 
+def test_attributes_len_matches_iteration_on_a_wide_element():
+    """``len`` counts the attribute list directly, so it must still agree."""
+    html = "<div %s></div>" % " ".join(
+        'data-a%d="%d"' % (i, i) for i in range(64)
+    ) + "<div bare hidden data-a=''></div>"
+    parser = LexborHTMLParser(html)
+    root = parser.root
+    assert root is not None
+
+    wide = root.css_first("div")
+    assert wide is not None
+    assert len(wide.attrs) == 64 == len(wide.attributes) == len(list(wide.attrs.items()))
+
+    mixed = root.css_first("div:nth-of-type(2)")
+    assert mixed is not None
+    assert len(mixed.attrs) == 3
+    assert list(mixed.attrs) == ["bare", "hidden", "data-a"]
+
+
 def test_attributes_get():
     html = '<div id="test" empty></div>'
     parser = LexborHTMLParser(html)

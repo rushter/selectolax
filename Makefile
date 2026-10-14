@@ -52,9 +52,12 @@ lint: ## check style with ruff
 	cython-lint selectolax/
 	mypy selectolax tests
 
-.PHONY: test
+.PHONY: test test_all
 test: ## run tests quickly with the default Python
 	pytest tests -s -v
+
+test_all: ## run all tests, including lexbor version-gated ones
+	SELECTOLAX_TEST_ALL=1 pytest tests -s -v
 
 coverage: ## check code coverage quickly with the default Python
 	coverage run --source selectolax -m pytest

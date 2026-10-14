@@ -2,6 +2,9 @@
 
 # Unreleased
 
+- Add the `scripting` option to `LexborHTMLParser`, which parses `<noscript>` the way a browser
+  with scripting enabled does: its content becomes raw text, so a `<noscript>` in `<head>` no
+  longer pushes the head elements after it into `<body>`. The default is unchanged.
 - Add `template_fragments()` for reaching the content of `<template>` elements
   which are ignored by HTML5 compliant parsers.
 - Do not replace `<-undef>` it not longer possible to get it.

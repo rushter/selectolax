@@ -36,6 +36,11 @@ cdef extern from "lexbor/core/core.h" nogil:
                                    const lxb_char_t *data, size_t length)
     void * lexbor_mraw_free(lexbor_mraw_t *mraw, void *data)
 
+cdef extern from "lexbor/core/base.h" nogil:
+    int _LEXBOR_VERSION_MAJOR "LEXBOR_VERSION_MAJOR"
+    int _LEXBOR_VERSION_MINOR "LEXBOR_VERSION_MINOR"
+
+
 cdef extern from "lexbor/core/lexbor.h" nogil:
     ctypedef void *(*lexbor_memory_malloc_f)(size_t size) nogil
     ctypedef void *(*lexbor_memory_realloc_f)(void *dst, size_t size) nogil

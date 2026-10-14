@@ -1,7 +1,7 @@
 import pytest
 
 from selectolax.lexbor import LexborHTMLParser
-from tests.helpers import clean_doc
+from tests.helpers import clean_doc, requires_lexbor_gt
 
 
 @pytest.mark.parametrize(
@@ -106,6 +106,7 @@ def test_fragment_root_html_serialization():
     assert p.html == "<div>Hello!</div><span>World</span>"
 
 
+@requires_lexbor_gt(3, 1)
 def test_fragment_root_html_pretty_serialization():
     html = "<div><span>Hello</span></div>\n<span>World</span>"
     p = LexborHTMLParser(html, is_fragment=True)

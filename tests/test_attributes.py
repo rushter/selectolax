@@ -5,6 +5,7 @@ from selectolax.lexbor import (
     LexborHTMLParser,
     create_tag,
 )
+from tests.helpers import requires_lexbor_gt
 
 _SHARED_LOCAL_NAME = [
     ('<svg><use href="/plain" xlink:href="/xlinked"></use></svg>', "use"),
@@ -290,12 +291,14 @@ def test_attrs_keep_document_alive():
     assert attrs["data-x"] == "1"
 
 
+@requires_lexbor_gt(3, 1)
 def test_attributes_keeps_both_names_of_a_shared_local_name():
     for html, selector in _SHARED_LOCAL_NAME:
         node = LexborHTMLParser(html).css_first(selector)
         assert node.attributes == {"href": "/plain", "xlink:href": "/xlinked"}, html
 
 
+@requires_lexbor_gt(3, 1)
 def test_attrs_iteration_yields_each_attribute_once():
     for html, selector in _SHARED_LOCAL_NAME:
         node = LexborHTMLParser(html).css_first(selector)
@@ -330,6 +333,7 @@ def test_attrs_items_and_values_agree_with_lookup():
     assert dict(node.attrs.items()) == node.attributes
 
 
+@requires_lexbor_gt(3, 1)
 def test_attrs_removes_the_attribute_it_looked_up():
     # __delitem__ used to re-resolve the name through lexbor, which could drop
     # the attribute sharing a local name instead of the requested one.

@@ -4,6 +4,9 @@ from typing import NoReturn, TypeVar, overload
 
 _DefaultT = TypeVar("_DefaultT")
 
+LEXBOR_VERSION_MAJOR: int
+LEXBOR_VERSION_MINOR: int
+
 class LexborDocumentOptions(IntFlag):
     """Parser options for the Lexbor document.
 

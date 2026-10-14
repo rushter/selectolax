@@ -12,6 +12,10 @@ from libc.string cimport memcpy
 
 _ENCODING = 'UTF-8'
 
+# Version of the Lexbor engine the extension was built against.
+LEXBOR_VERSION_MAJOR = _LEXBOR_VERSION_MAJOR
+LEXBOR_VERSION_MINOR = _LEXBOR_VERSION_MINOR
+
 include "base.pxi"
 include "utils.pxi"
 include "lexbor/attrs.pxi"

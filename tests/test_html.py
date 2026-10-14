@@ -1,7 +1,7 @@
 import pytest
 
 from selectolax.lexbor import LexborHTMLParser
-from tests.helpers import clean_doc
+from tests.helpers import clean_doc, requires_lexbor_gt
 
 
 def test_reads_inner_html():
@@ -79,6 +79,7 @@ def test_inner_html_pretty_node_with_options():
     )
 
 
+@requires_lexbor_gt(3, 1)
 def test_inner_html_pretty_parser():
     parser = LexborHTMLParser("<div><span>Hello</span></div>", is_fragment=True)
     assert parser.inner_html_pretty(skip_ws_nodes=True) == clean_doc(

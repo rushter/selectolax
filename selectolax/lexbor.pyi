@@ -907,6 +907,7 @@ class LexborHTMLParser:
         fragment_namespace: str = "html",
         options: int = 0,
         encoding: bool = False,
+        scripting: bool = False,
     ) -> None:
         """Create a parser and load HTML.
 
@@ -997,6 +998,34 @@ class LexborHTMLParser:
 
             The encoding is resolved before parsing, so this costs one extra pass
             over non-UTF-8 input and nothing at all for UTF-8.
+
+        scripting : bool, optional
+            Parse the way a browser with scripting enabled does. Defaults to
+            ``False``, the way a browser with scripting disabled does.
+
+            The HTML Standard parses ``<noscript>`` by this flag. With scripting
+            disabled, its content is parsed as markup, so a ``<noscript>`` in
+            ``<head>`` that holds an element ``<head>`` does not allow, such as a
+            tracking ``<img>``, closes ``<head>``, and every head element after
+            it ends up in ``<body>``::
+
+                >>> html = (
+                ...     '<head><noscript><img src="p.gif"></noscript>'
+                ...     '<link rel="canonical" href="/a"></head>'
+                ... )
+                >>> LexborHTMLParser(html).css_first("head link") is None
+                True
+
+            With scripting enabled, as in a browser that runs scripts, the
+            content of ``<noscript>`` is one text node, and the head elements
+            after it stay in ``<head>``::
+
+                >>> parser = LexborHTMLParser(html, scripting=True)
+                >>> parser.css_first("head link").attributes["href"]
+                '/a'
+
+            The flag also applies to HTML parsed into the document later, such
+            as an ``inner_html`` assignment, and :meth:`clone` keeps it.
 
         """
 
@@ -1369,7 +1398,7 @@ class LexborHTMLParser:
         You can use it to do temporary modifications without affecting the original HTML tree.
         It is tied to the current parser instance.
         Gets destroyed when the parser instance is destroyed.
-        Document options are preserved in the cloned parser.
+        Document options and the ``scripting`` flag are preserved in the cloned parser.
         The document ``head`` and ``body`` are preserved when available.
 
         Returns

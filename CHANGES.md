@@ -1,6 +1,6 @@
 # selectolax Changelog
 
-# Unreleased
+# Version 1.0.1
 
 - Add the `scripting` option to `LexborHTMLParser`, which parses `<noscript>` the way a browser
   with scripting enabled does: its content becomes raw text, so a `<noscript>` in `<head>` no

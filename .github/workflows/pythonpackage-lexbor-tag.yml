@@ -1,0 +1,49 @@
+name: Python package (latest lexbor tag)
+
+on:
+  pull_request:
+    branches:
+      - master
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Latest lexbor tag on ${{ matrix.platform }}
+    strategy:
+      max-parallel: 6
+      matrix:
+        python-version: ["3.15"]
+        platform: [ubuntu-24.04]
+    runs-on: ${{ matrix.platform }}
+    timeout-minutes: 10
+    steps:
+    - uses: actions/checkout@v4
+    # Build against the newest released lexbor tag instead of the pinned submodule commit.
+    - name: Check out latest lexbor tag
+      run: |
+        TAG=$(git ls-remote --tags --sort=-v:refname https://github.com/lexbor/lexbor \
+          | sed -n 's#.*refs/tags/##p' | grep -v '\^{}' | head -n1)
+        echo "Using lexbor $TAG"
+        rm -rf lexbor
+        git clone --quiet --depth 1 --branch "$TAG" https://github.com/lexbor/lexbor lexbor
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+        allow-prereleases: true
+    - name: Install dependencies
+      env:
+        BUILD_JOBS: "auto"
+      run: |
+        python -m pip install --upgrade pip setuptools
+        pip install -r requirements_dev.txt
+        python setup.py build_ext --inplace --cython
+    - name: Test with pytest
+      run: |
+        pytest tests
+    - name: Test typesafety
+      run: |
+        pytest typesafety

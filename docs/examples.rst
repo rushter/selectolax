@@ -171,6 +171,67 @@ equivalent plain integer:
 
     options = LexborDocumentOptions.WO_EVENTS | LexborDocumentOptions.UNDEF
 
+Scripting Mode
+--------------
+
+Browsers parse ``<noscript>`` differently depending on whether scripting is
+enabled. Selectolax defaults to scripting disabled, like a browser that does
+not run scripts, so the content of ``<noscript>`` is parsed as markup. Pass
+``scripting=True`` to parse it the way a browser with scripting enabled does:
+the content becomes a single raw text node, and a ``<noscript>`` in ``<head>``
+no longer closes it.
+
+.. code-block:: python
+
+    from selectolax.lexbor import LexborHTMLParser
+
+    html = (
+        "<head>"
+        '<noscript><img src="pixel.gif"></noscript>'
+        '<link rel="canonical" href="/a">'
+        "</head>"
+    )
+
+    # Scripting disabled (default): the <img> is real markup, so it closes
+    # <head> and the <link> that follows ends up in <body>.
+    parser = LexborHTMLParser(html)
+    print(parser.css_first("head link"))
+    print(parser.css_first("body link").attributes["href"])
+
+    # Scripting enabled: the <noscript> holds one text node, so the <link>
+    # stays in <head>.
+    parser = LexborHTMLParser(html, scripting=True)
+    print(parser.css_first("head link").attributes["href"])
+    print(parser.css_first("noscript").first_child.text_content)
+
+**Output:**
+
+.. code-block:: text
+
+    None
+    /a
+    /a
+    <img src="pixel.gif">
+
+The flag also applies to HTML parsed later, such as an ``inner_html``
+assignment and fragments parsed with ``is_fragment=True``. ``clone()`` keeps it:
+
+.. code-block:: python
+
+    from selectolax.lexbor import LexborHTMLParser
+
+    parser = LexborHTMLParser("<div></div>", scripting=True)
+    parser.css_first("div").inner_html = "<noscript><p>no js</p></noscript>"
+
+    # The content is raw text, so the <p> is not an element in the tree.
+    print(parser.css_first("noscript p"))
+
+**Output:**
+
+.. code-block:: text
+
+    None
+
 CSS Selectors
 -------------
 

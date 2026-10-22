@@ -183,7 +183,7 @@ class build_ext_parallel(_build_ext):
 
 setup(
     name="selectolax",
-    version="1.0.1",
+    version="1.0.2",
     description="A fast HTML5 parser with CSS selectors, written in Cython, using the Lexbor engine.",
     long_description=readme,
     author="Artem Golubin",

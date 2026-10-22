@@ -1,5 +1,16 @@
 # selectolax Changelog
 
+# Version 1.0.2
+
+Bugfix release for 1.0.1.
+
+- Fix `insert_child()`, `insert_before()`, `insert_after()` and `replace_with()` move nodes.
+- Add the `move` parameter to `insert_child()`, `insert_before()`, `insert_after()` and
+  `replace_with()`. Pass `move=True` to move the node instead of copying it: the node is
+  removed from its current position and placed in the new one. A node taken from another
+  parser is copied into the target document and removed from the document it came from.
+  The default is `move=False`, which keeps the copying behaviour.
+
 # Version 1.0.1
 
 - Add the `scripting` option to `LexborHTMLParser`, which parses `<noscript>` the way a browser

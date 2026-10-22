@@ -535,11 +535,8 @@ class LexborNode:
             node, filtered according to the provided options.
         """
 
-    def replace_with(self, value: bytes | str | LexborNode) -> None:
+    def replace_with(self, value: bytes | str | LexborNode, move: bool = False) -> None:
         """Replace current Node with specified value.
-
-        The node is removed from its current position and placed here.
-        When the node belongs to a different parser, a deep copy is created.
 
         Parameters
         ----------
@@ -547,6 +544,9 @@ class LexborNode:
             The text or Node instance to replace the Node with.
             When a text string is passed, it's treated as text. All HTML tags will be escaped.
             Convert and pass the ``Node`` object when you want to work with HTML.
+        move : bool, optional
+            When ``True``, the ``Node`` object is moved instead of copied: it is
+            removed from its current position and placed here. Defaults to ``False``.
 
         Examples
         --------
@@ -564,11 +564,10 @@ class LexborNode:
         '<div>Get <span alt="Laptop"><div>Test</div> <div></div></span></div>'
         """
 
-    def insert_before(self, value: bytes | str | LexborNode) -> None:
+    def insert_before(
+        self, value: bytes | str | LexborNode, move: bool = False
+    ) -> None:
         """Insert a node before the current Node.
-
-        The node is removed from its current position and placed here.
-        When the node belongs to a different parser, a deep copy is created.
 
         Parameters
         ----------
@@ -576,6 +575,9 @@ class LexborNode:
             The text or Node instance to insert before the Node.
             When a text string is passed, it's treated as text. All HTML tags will be escaped.
             Convert and pass the ``Node`` object when you want to work with HTML.
+        move : bool, optional
+            When ``True``, the ``Node`` object is moved instead of copied: it is
+            removed from its current position and placed here. Defaults to ``False``.
 
         Examples
         --------
@@ -593,11 +595,8 @@ class LexborNode:
         <div>Get <span alt="Laptop"><div>Test</div><img src="/jpg"> <div></div></span></div>'
         """
 
-    def insert_after(self, value: bytes | str | LexborNode) -> None:
+    def insert_after(self, value: bytes | str | LexborNode, move: bool = False) -> None:
         """Insert a node after the current Node.
-
-        The node is removed from its current position and placed here.
-        When the node belongs to a different parser, a deep copy is created.
 
         Parameters
         ----------
@@ -605,6 +604,9 @@ class LexborNode:
             The text or Node instance to insert after the Node.
             When a text string is passed, it's treated as text. All HTML tags will be escaped.
             Convert and pass the ``Node`` object when you want to work with HTML.
+        move : bool, optional
+            When ``True``, the ``Node`` object is moved instead of copied: it is
+            removed from its current position and placed here. Defaults to ``False``.
 
         Examples
         --------
@@ -622,11 +624,8 @@ class LexborNode:
         <div>Get <span alt="Laptop"><img src="/jpg"><div>Test</div> <div></div></span></div>'
         """
 
-    def insert_child(self, value: bytes | str | LexborNode) -> None:
+    def insert_child(self, value: bytes | str | LexborNode, move: bool = False) -> None:
         """Insert a node inside (at the end of) the current Node.
-
-        The node is removed from its current position and placed here.
-        When the node belongs to a different parser, a deep copy is created.
 
         Parameters
         ----------
@@ -634,6 +633,9 @@ class LexborNode:
             The text or Node instance to insert inside the Node.
             When a text string is passed, it's treated as text. All HTML tags will be escaped.
             Convert and pass the ``Node`` object when you want to work with HTML.
+        move : bool, optional
+            When ``True``, the ``Node`` object is moved instead of copied: it is
+            removed from its current position and placed here. Defaults to ``False``.
 
         Examples
         --------

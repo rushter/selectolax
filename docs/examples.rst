@@ -687,8 +687,8 @@ Insert new content into the DOM at specific positions.
     donor = LexborHTMLParser("<div>Hi</div>")
     green_node.insert_before(donor.body.first_child)
 
-    # Insert before, after, or as a child. These methods move the node they
-    # are given, so clone() first when you want more than one copy.
+    # Insert before, after, or as a child. These methods copy the node they
+    # are given, so pass move=True to move it instead.
     car_div = parser.create_node("div")
     car_div.inner_html = "Car"
     green_node.insert_before(car_div)
@@ -743,9 +743,10 @@ to the clone.
     <div id="main"><p>Hello</p></div>
     <div id="copy"><p>Hello</p> world</div>
 
-Cloning is also how you reuse a node. Insertion methods move the node they are
-given rather than copying it, so inserting the same node twice leaves it in the
-last position only. ``clone()`` before each insert when you want copies.
+Cloning is also how you reuse a node. Insertion methods copy the node they are
+given by default, so inserting the same node twice leaves the original in place
+and puts a copy in each new position. Pass ``move=True`` to move the node
+instead, which leaves it in the last position only.
 
 Tree Traversal
 --------------

@@ -10,7 +10,7 @@ name = 'selectolax'
 version = '1.0.2'
 description = 'A fast HTML5 parser with CSS selectors, written in Cython, using the Lexbor engine.'
 readme = 'README.md'
-requires-python = '>=3.9,<3.16'
+requires-python = '>=3.9'
 license = 'MIT'
 authors = [
     { name = 'Artem Golubin', email = 'me@rushter.com' }

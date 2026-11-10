@@ -38,10 +38,27 @@ cdef inline bytes to_bytes(str_or_LexborNode value):
 
 cdef inline bint _is_inclusive_ancestor(lxb_dom_node_t *candidate, lxb_dom_node_t *node):
     cdef lxb_dom_node_t *cur = node
+    cdef lxb_dom_node_t *host
+
     while cur != NULL:
         if cur == candidate:
             return True
+
+        # A <template>'s content is a DocumentFragment whose link to its host
+        # element is the fragment's private ``host`` field, not ``parent``, so a
+        # plain parent walk cannot see that the host -- or an ancestor of it --
+        # contains the fragment. Without following that edge, moving a
+        # <template> (or one of its ancestors) into its own content is accepted,
+        # and the resulting cycle makes the serializer recurse until the C
+        # stack is exhausted. Treat the host as the fragment's parent.
+        if cur.type == LXB_DOM_NODE_TYPE_DOCUMENT_FRAGMENT:
+            host = selectolax_template_content_host(cur)
+            if host != NULL:
+                cur = host
+                continue
+
         cur = cur.parent
+
     return False
 
 

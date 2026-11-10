@@ -1,4 +1,6 @@
-from selectolax.lexbor import LexborHTMLParser
+import pytest
+
+from selectolax.lexbor import LexborHTMLParser, SelectolaxError
 
 
 def test_template_content_is_not_part_of_the_document_tree():
@@ -259,3 +261,58 @@ def test_template_content_unwrap():
     assert tree.html == (
         "<html><head><template><span>keep</span></template></head><body></body></html>"
     )
+
+
+@pytest.mark.parametrize(
+    "operation", ["insert_child", "insert_before", "insert_after", "replace_with"]
+)
+def test_template_cannot_be_moved_into_its_own_content(operation):
+    """A cycle here used to exhaust the C stack when the template was serialized."""
+    tree = LexborHTMLParser("<template><b>x</b></template>")
+    fragment = tree.template_fragments()[0]
+    template = tree.css_first("template")
+    anchor = fragment.first_child
+
+    with pytest.raises(SelectolaxError, match="own subtree"):
+        if operation == "insert_child":
+            fragment.insert_child(template, move=True)
+        elif operation == "insert_before":
+            anchor.insert_before(template, move=True)
+        elif operation == "insert_after":
+            anchor.insert_after(template, move=True)
+        else:
+            anchor.replace_with(template, move=True)
+
+    # The rejected move must leave the tree intact and serializable.
+    assert template.html == "<template><b>x</b></template>"
+    assert tree.html == (
+        "<html><head><template><b>x</b></template></head><body></body></html>"
+    )
+
+
+def test_template_ancestor_cannot_be_moved_into_its_content():
+    tree = LexborHTMLParser("<div><template><b>x</b></template></div>")
+    fragment = tree.template_fragments()[0]
+    wrapper = tree.css_first("div")
+
+    with pytest.raises(SelectolaxError, match="own subtree"):
+        fragment.insert_child(wrapper, move=True)
+
+    assert tree.html == (
+        "<html><head></head><body>"
+        "<div><template><b>x</b></template></div>"
+        "</body></html>"
+    )
+
+
+def test_unrelated_node_can_still_be_moved_into_template_content():
+    tree = LexborHTMLParser(
+        "<div><span>a</span><template><b>x</b></template></div>"
+    )
+    fragment = tree.template_fragments()[0]
+    span = tree.css_first("span")
+
+    fragment.insert_child(span, move=True)
+
+    assert fragment.html == "<b>x</b><span>a</span>"
+    assert tree.css_first("span") is None
